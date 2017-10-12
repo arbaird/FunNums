@@ -13,7 +13,8 @@ public class MainMenuActivity extends Activity
 
     // This is the entry point to our game
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         //Here we set our UI layout as the view
@@ -24,19 +25,19 @@ public class MainMenuActivity extends Activity
         // Listen for clicks
         buttonPlay.setOnClickListener(this);
 
-        // Prepare to load fastest time
+        // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
         SharedPreferences prefs;
         SharedPreferences.Editor editor;
-        prefs = getSharedPreferences("HiScores", MODE_PRIVATE);
+        prefs = getSharedPreferences("HighScore", MODE_PRIVATE);
 
         // Load fastest time
         // if not available our high score = 1000000
-        long fastestTime = prefs.getLong("fastestTime", 1000000);
+        long highScore = prefs.getLong("HighScore", 1000000);
 
         // Get a refference to the TextView in our layout
         final TextView textFastestTime = (TextView)findViewById(R.id.textHiScore);
         // Put the high score in our TextView
-        textFastestTime.setText("Fastest Time:" + fastestTime);
+        textFastestTime.setText("Your High Score:" + highScore);
 
     }
 

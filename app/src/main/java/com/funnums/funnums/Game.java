@@ -25,109 +25,72 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Iterator;
-import android.os.CountDownTimer;
 
 
 
-public class Game extends SurfaceView implements Runnable {
+
+public class Game extends SurfaceView implements Runnable
+{
 
     public String logTag = "Game"; //for debugging
 
-    private final static int NANOS_TO_SECONDS = 1000000000;
+    public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
-    // Countdown timer.
-    private CountDownTimer newNumTimer;
 
     // Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent access
     // not likely that these threads would interact, but if they do the game will crash!! which is why
     //we keep events in a separate list to be processed in the game loop
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-    //For the FX
-    private SoundPool soundPool;
-    int start = -1;
-    int bump = -1;
-    int destroyed = -1;
-    int win = -1;
-
     private boolean gameEnded;
 
+    //for drawing
     private Context context;
 
+    //dimensions of the sc
     private int screenX;
     private int screenY;
 
-    private float distanceRemaining;
-    private long timeTaken;
-    private long timeStarted;
-    private long fastestTime;
+    //while playing is true, we keep updating game loop
+    public boolean playing;
 
-    volatile boolean playing;
+    //thread for the game
     Thread gameThread = null;
 
-    // Game objects
-    private TouchableNumber num;
 
     //running time, used to generate new numbers every few seconds
     private long runningMilis = 0;
-    /*public EnemyShip enemy1;
-    public EnemyShip enemy2;
-    public EnemyShip enemy3;
-    public EnemyShip enemy4;
-    public EnemyShip enemy5;
 
 
-    // Make some random space dust
-    ArrayList<SpaceDust> dustList = new ArrayList<SpaceDust>();*/
-
-    private int score;
+    //player's current sum
+    private int sum;
+    //target player is trying to sum to
     private int target;
 
+    //list of all the touchable numbers on screen
     ArrayList<TouchableNumber> numberList = new ArrayList<>();
+
     // For drawing
     private Paint paint;
     private Canvas canvas;
     private SurfaceHolder ourHolder;
 
-    // For saving and loading the high score
-    private SharedPreferences prefs;
-    private SharedPreferences.Editor editor;
-
+    //generates random numbers for us
     private Random r;
 
+    //used to animate text, i.e show +3 when a 3 is touched
+    ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
-    Game(Context context, int x, int y) {
+
+    Game(Context context, int x, int y)
+    {
+        //set up view properly
         super(context);
         this.context  = context;
 
+        //initalize random generator and make the first target between 5 and 15
         r = new Random();
         target = r.nextInt(10)+5;
-
-        // This SoundPool is deprecated but don't worry
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
-        try{
-            //Create objects of the 2 required classes
-            AssetManager assetManager = context.getAssets();
-            AssetFileDescriptor descriptor;
-
-            //create our three fx in memory ready for use
-            descriptor = assetManager.openFd("start.ogg");
-            start = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("win.ogg");
-            win = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("bump.ogg");
-            bump = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("crash.ogg");
-            destroyed = soundPool.load(descriptor, 0);
-
-
-        }catch(IOException e){
-            //Print an error message to the console
-            Log.e("error", "failed to load sound files");
-        }
 
         screenX = x;
         screenY = y;
@@ -136,104 +99,109 @@ public class Game extends SurfaceView implements Runnable {
         ourHolder = getHolder();
         paint = new Paint();
 
-
-
-        // Initialise our player ship
-        //player = new PlayerShip(context, x, y);
-        //enemy1 = new EnemyShip(context, x, y);
-        //enemy2 = new EnemyShip(context, x, y);
-        //enemy3 = new EnemyShip(context, x, y);
-
-        //int numSpecs = 40;
-
-        //for (int i = 0; i < numSpecs; i++) {
-        // Where will the dust spawn?
-        //SpaceDust spec = new SpaceDust(x, y);
-        //dustList.add(spec);
-        //}
-
-        // Load fastest time
-        prefs = context.getSharedPreferences("HiScores", context.MODE_PRIVATE);
-        // Initialize the editor ready
-        editor = prefs.edit();
-        // Load fastest time
-        // if not available our highscore = 1000000
-        fastestTime = prefs.getLong("fastestTime", 1000000);
-
         startGame();
     }
 
-
-    private void generateNumber()
+    /*
+    Used to round a number to 0 if it is less than the cutoff or to max if it is greater than the
+    cutoff
+     */
+    private int bin(int cutoff, int max, int num)
     {
-        int x = r.nextInt(screenX - 100)+50;
-        TouchableNumber firstNum = new TouchableNumber(context, x, 200);
-        numberList.add(firstNum);
+        if (num > cutoff)
+            return max;
+        else
+            return 0;
     }
 
-    private void startGame(){
-        // Play the start sound
-        soundPool.play(start,1, 1, 0, 0, 1);
+    /*
+    Generates a touchable number on screen
+     */
+    private void generateNumber()
+    {
+        int x, y;
+        do
+        {
+            //random coordinates
+            x = r.nextInt(screenX);
+            y = r.nextInt(screenY);
 
-        //Initialise game objects
-
-        int x = r.nextInt(screenX - 100)+50;
-        TouchableNumber firstNum = new TouchableNumber(context, x, 0);
-        numberList.add(firstNum);
-
-        //initialize timer for making new numbers
-
-
-
-
-        /*enemy1 = new EnemyShip(context, screenX, screenY);
-        enemy2 = new EnemyShip(context, screenX, screenY);
-        enemy3 = new EnemyShip(context, screenX, screenY);
-        if(screenX > 1000){
-            enemy4 = new EnemyShip(context, screenX, screenY);
+            //randomly decide if next number appears along top/bottom of screen or far left/right of screen
+            if (r.nextBoolean())
+                x = bin(screenX / 2, screenX, x);
+            else
+                y = bin(screenY/2, screenY - 50, y);
         }
-        if(screenX > 1200){
-            enemy5 = new EnemyShip(context, screenX, screenY);
-        }*/
+        while(findCollisions(x,y,0));
+        //while this new coordinate causes collisions, keep generating a new coordinates until
+        //it finds coordinates in a place without collisions
 
+        //angle is direction number travels, max and min are the max and min angles for a number
+        //determined by which quadrant the number spawns in. i.e if it spawns in bottom right corner,
+        //we want it to travel up and to the left (min = 90 max = 180)
+        int angle, max, min;
+        //determine the quadrant the number will spawn in to plan the angle
+        if (x >= screenX/2)
+        {
+            if(y >= screenY / 2) //lower right quadrant
+            {
+                max = 180;
+                min = 91;
+            }
+            else //upper right quadrant
+            {
+                max = 270;
+                min = 181;
+            }
+        }
+        else
+        {
+            if(y >= screenY / 2) //lower left quadranr
+            {
+                max = 90;
+                min = 1;
+            }
+            else //upper left qudrant
+            {
+                max = 360;
+                min = 270;
+            }
+        }
 
+        //make angles more diagonal
+        max -= 25;
+        min += 25;
 
+        angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
-        int numSpecs = 400;
+        TouchableNumber num = new TouchableNumber(context, x, y, angle);
+        numberList.add(num);
+    }
 
-        /*for (int i = 0; i < numSpecs; i++) {
-            // Where will the dust spawn?
-            SpaceDust spec = new SpaceDust(screenX, screenY);
-            dustList.add(spec);
-        }*/
-
-
-        // Reset time and distance
-        distanceRemaining = 10000;// 10 km
-        timeTaken = 0;
-
-        // Get start time
-        timeStarted = System.currentTimeMillis();
-
+    private void startGame()
+    {
+        generateNumber();
         gameEnded = false;
-        soundPool.play(start, 1, 1, 0, 0, 1);
     }
 
     @Override
     public void run()
     {
 
+        //keep track of dela time, that is, how much time has passed in between each iteration of
+        //the game loop
+        long updateDurationMillis = 0;
         while (playing)
         {
             long beforeUpdateRender = System.nanoTime();
 
-
-            update();
+            //three main functions of game loop
+            update(updateDurationMillis);
             draw();
             control();
 
-            long updateDurationMillis = (System.nanoTime() - beforeUpdateRender); // / 1000000L;
-            //Log.d(VIEW_LOG_TAG, String.valueOf(updateDurationMillis));
+            //update delta time
+            updateDurationMillis = (System.nanoTime() - beforeUpdateRender);
             runningMilis += updateDurationMillis;
         }
     }
@@ -242,165 +210,109 @@ public class Game extends SurfaceView implements Runnable {
 
 
 
-    private void update() {
-        // Collision detection on new positions
-        // Before move because we are testing last frames
-        // position which has just been drawn
-        boolean hitDetected = false;
-        /*if(Rect.intersects(player.getHitbox(), enemy1.getHitbox())){
-            hitDetected = true;
-            enemy1.setX(-100);//this will cause mine to respawn in 1 frame
-        }
-        if(Rect.intersects(player.getHitbox(), enemy2.getHitbox())){
-            hitDetected = true;
-            enemy2.setX(-100);//this will cause mine to respawn in 1 frame
-        }
-        if(Rect.intersects(player.getHitbox(), enemy3.getHitbox())){
-            hitDetected = true;
-            enemy3.setX(-100);//this will cause mine to respawn in 1 frame
-        }
-        if(screenX > 1000){
-            if(Rect.intersects(player.getHitbox(), enemy4.getHitbox())){
-                hitDetected = true;
-                enemy4.setX(-100);//this will cause mine to respawn in 1 frame
-            }
-        }
-        if(screenX > 1200){
-            if(Rect.intersects(player.getHitbox(), enemy3.getHitbox())){
-                hitDetected = true;
-                enemy5.setX(-100);//this will cause mine to respawn in 1 frame
-            }
-        }
+    private void update(long delta)
+    {
+        //detect and handle collisions
+        findCollisions();
 
-        if(hitDetected) {
-            soundPool.play(bump, 1, 1, 0, 0, 1);
-            player.reduceShieldStrength();
-            if (player.getShieldStrength() < 0) {
-                soundPool.play(destroyed, 1, 1, 0, 0, 1);
-                gameEnded = true;
-            }
-        }*/
-
-
+        //create a list that will hold numbers that have drifted offscreen so we can remove them
+        //we can't remove them while iterating through numberList without a ConcurrentModificationError,
+        //google "ConcurrentModificationError ArrayList" to get some helpful StackOverflow explanations
         ArrayList<TouchableNumber> toRemove = new ArrayList<>();
-        // Update the numbers
         for(TouchableNumber num : numberList)
         {
+            //update the number
             num.update();
-            if (num.getY() > screenY + num.getRadius())
+
+            //Check for numbers off screen and add them to list of numbers to remove
+            if (num.getY() > screenY + num.getRadius() || num.getY() < 0 - num.getRadius()
+                    || num.getX() > screenX + num.getRadius() || num.getX() < 0 - num.getRadius())
             {
                 toRemove.add(num);
+                Log.d(VIEW_LOG_TAG, "Remove Off screen!");
             }
         }
 
+        //remove offscreen numbers
         for(TouchableNumber offScreen : toRemove)
             numberList.remove(offScreen);
 
-        // Update the enemies
-        /*enemy1.update(player.getSpeed());
-        enemy2.update(player.getSpeed());
-        enemy3.update(player.getSpeed());
-        if(screenX > 1000) {
-            enemy4.update(player.getSpeed());
-        }
-        if(screenX > 1200) {
-            enemy5.update(player.getSpeed());
-        }
-        for (SpaceDust sd : dustList) {
-            sd.update(player.getSpeed());
-        }
-
-        if(!gameEnded) {
-            //subtract distance to home planet based on current speed
-            distanceRemaining -= player.getSpeed();
-
-            //How long has the player been flying
-            timeTaken = System.currentTimeMillis() - timeStarted;
-        }*/
-
-
+        //generate a new number every 2 seconds
         if (runningMilis > 2 * NANOS_TO_SECONDS)
         {
             generateNumber();
             runningMilis = 0;
         }
+
+        //process all touch events
         processEvents();
 
+        //create a list that will hold textAnimations that have completed so we can remove them
+        //we can't remove them while iterating through numberList without a ConcurrentModificationError,
+        //google "ConcurrentModificationError ArrayList" to get some helpful StackOverflow explanations
+        ArrayList<TextAnimator> scoresToRemove = new ArrayList<>();
+        for(TextAnimator score : scoreAnimations)
+        {
+            score.update(delta);
+            if (score.alpha <= 0)
+                scoresToRemove.add(score);
+        }
+        for(TextAnimator faded : scoresToRemove)
+            scoreAnimations.remove(faded);
 
     }
 
-    private void draw() {
+    private void draw()
+    {
 
-        if (ourHolder.getSurface().isValid()) {
+        if (ourHolder.getSurface().isValid())
+        {
             //First we lock the area of memory we will be drawing to
             canvas = ourHolder.lockCanvas();
 
             // Rub out the last frame
             canvas.drawColor(Color.argb(255, 0, 0, 0));
+            //!!May not need to set color here
+            //paint.setColor(Color.argb(255, 255, 255, 255));
 
-            // For debugging
-            // Switch to white pixels
-            paint.setColor(Color.argb(255, 255, 255, 255));
-            // Draw Hit boxes
-            //canvas.drawRect(player.getHitbox().left, player.getHitbox().top, player.getHitbox().right, player.getHitbox().bottom, paint);
-            //canvas.drawRect(enemy1.getHitbox().left, enemy1.getHitbox().top, enemy1.getHitbox().right, enemy1.getHitbox().bottom, paint);
-            //canvas.drawRect(enemy2.getHitbox().left, enemy2.getHitbox().top, enemy2.getHitbox().right, enemy2.getHitbox().bottom, paint);
-            //canvas.drawRect(enemy3.getHitbox().left, enemy3.getHitbox().top, enemy3.getHitbox().right, enemy3.getHitbox().bottom, paint);
-
-
-            // White specs of dust
-            paint.setColor(Color.argb(255, 255, 255, 255));
-            //Draw the dust from our arrayList
-            /*for (SpaceDust sd : dustList) {
-                canvas.drawPoint(sd.getX(), sd.getY(), paint);
-            }*/
-
-            // Draw the player
-            /*
-            canvas.drawBitmap(player.getBitmap(), player.getX(), player.getY(), paint);
-            canvas.drawBitmap(enemy1.getBitmap(), enemy1.getX(), enemy1.getY(), paint);
-            canvas.drawBitmap(enemy2.getBitmap(), enemy2.getX(), enemy2.getY(), paint);
-            canvas.drawBitmap(enemy3.getBitmap(), enemy3.getX(), enemy3.getY(), paint);
-            */
+            //draw all the numbers
             for(TouchableNumber num : numberList)
-                num.draw(canvas, paint); //canvas.drawCircle(num.getX(), num.getY(), num.getRadius(), paint);
+                num.draw(canvas, paint);
+            //draw all text animations
+            for(TextAnimator score : scoreAnimations)
+                score.render(canvas, paint);
 
 
-            if(!gameEnded) {
-                // Draw the hud
+            if(!gameEnded)
+            {
+                // Draw the Current Sum and Target Score at top of screen
                 paint.setColor(Color.argb(255, 0, 0, 255));
                 paint.setTextSize(45);
                 paint.setTextAlign(Paint.Align.CENTER);
                 canvas.drawText("Current", screenX/4, 50, paint);
-                canvas.drawText(String.valueOf(score),  screenX/4, 100, paint);
-
+                canvas.drawText(String.valueOf(sum),  screenX/4, 100, paint);
 
                 canvas.drawText("Target", screenX * 3/4, 50, paint);
                 canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
-                //canvas.drawText("Fastest:" + fastestTime + "s", 10, 20, paint);
-                /*canvas.drawText("Fastest:" + formatTime(fastestTime) + "s", 10, 20, paint);
-                //canvas.drawText("Time:" + timeTaken + "s", screenX / 2, 20, paint);
-                canvas.drawText("Time:" + formatTime(timeTaken) + "s", screenX / 2, 20, paint);
-                canvas.drawText("Distance:" + distanceRemaining / 1000 + " KM", screenX / 3, screenY - 20, paint);*/
-                //canvas.drawText("Shield:" + player.getShieldStrength(), 10, screenY - 20, paint);
-                //canvas.drawText("Speed:" + player.getSpeed() * 60 + " MPS", (screenX / 3) * 2, screenY - 20, paint);
-            }else{
-                // Show pause screen
-                paint.setTextSize(80);
-                paint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText("Game Over", screenX/2, 100, paint);
-                paint.setTextSize(25);
-                //canvas.drawText("Fastest:"+ fastestTime + "s", screenX/2, 160, paint);
-                canvas.drawText("Fastest:"+ formatTime(fastestTime) + "s", screenX/2, 160, paint);
-                //canvas.drawText("Time:" + timeTaken + "s", screenX / 2, 200, paint);
-                canvas.drawText("Time:" + formatTime(timeTaken) + "s", screenX / 2, 200, paint);
-                canvas.drawText("Distance remaining:" + distanceRemaining/1000 + " KM",screenX/2, 240, paint);
-                paint.setTextSize(80);
-                canvas.drawText("Tap to replay!", screenX/2, 350, paint);
+
             }
+            else
+            {
+                //TODO, what do we want to happen? we can end game when time runs out, but a running timer
+                //is not implemented currently
+
+                /*if(userScore < highScore) {
+                    // Save high score
+                    editor.putLong("highScore", userScore);
+                    editor.commit();
+                    highScore = userScore;
+                }*/
+            }
+
             // Unlock and draw the scene
             ourHolder.unlockCanvasAndPost(canvas);
         }
+
 
     }
 
@@ -420,51 +332,43 @@ public class Game extends SurfaceView implements Runnable {
 
 
     // Clean up our thread if the game is interrupted or the player quits
-    public void pause() {
+    public void pause()
+    {
         playing = false;
-        try {
+        try
+        {
             gameThread.join();
-        } catch (InterruptedException e) {
-
         }
-
-        if (newNumTimer != null) {
-            newNumTimer.cancel();
-            newNumTimer = null;
+        catch (InterruptedException e)
+        {
+            Log.e(logTag, "Error joining gameThread\n" + e.getStackTrace());
         }
     }
 
     // Make a new thread and start it
-    // Execution moves to our R
-    public void resume() {
+    public void resume()
+    {
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
 
-        /*if (newNumTimer == null) {
-            initNewNumTimer();
-            newNumTimer.start();
-        }*/
-    }
-
-    private String formatTime(long time){
-        long seconds = (time) / 1000;
-        long thousandths = (time) - (seconds * 1000);
-        String strThousandths = "" + thousandths;
-        if (thousandths < 100){strThousandths = "0" + thousandths;}
-        if (thousandths < 10){strThousandths = "0" + strThousandths;}
-        String stringTime = "" + seconds + "." + strThousandths;
-        return stringTime;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent)
     {
+        //add touch event to eventsQueue rather than processing it immediately. This is because
+        //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
+        //in this touch UI thread while our game thread is accessing that same number, the game crashes
+        //because two threads are accessing same memory being removed. We could do mutex but this setup
+        //is pretty standard I believe.
         events.add(motionEvent);
-        //checkTouchRadius((int)motionEvent.getX(), (int)motionEvent.getY());
         return true;
     }
 
+    /*
+    Process the touch events
+     */
     private void processEvents()
     {
         for(MotionEvent e : events)
@@ -472,24 +376,107 @@ public class Game extends SurfaceView implements Runnable {
         events.clear();
     }
 
+    /*
+    Check if where the player touched the screen is on a touchable number and, if it is, call
+    processScore() to update the number/score/etc
+     */
     private void checkTouchRadius(int x, int y)
     {
-        //(x - center_x)^2 + (y - center_y)^2 < radius^2;
-        //Math.pow(x - x, 2) + Math.pow(y - y, 2) < Math.pow(radius, 2);
-
         for(TouchableNumber num : numberList)
         {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2))
             {
                 Log.d(VIEW_LOG_TAG, "Circle touched!");
-                score += num.getValue();
+                processScore(num);
                 numberList.remove(num);
                 break;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
+                //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
             }
         }
 
+    }
+
+    /*
+        When a number is touched, call this function. It will update the current Sum and check it
+        player has reached the target, in which case we make a new target. Else, if the target is
+        exceeded, for now we tell the player they exceeded the target and reset the game
+     */
+    private void processScore(TouchableNumber num)
+    {
+
+        sum += num.getValue();
+        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
+        scoreAnimations.add(textAnimator);
+        if(sum == target)
+            makeNewTarget();
+        else if(sum > target)
+        {
+            resetGame();
+        }
+    }
+
+    /*
+        Create a new target
+     */
+    private void makeNewTarget()
+    {
+        //text, x, y, r, g, b, interval, size
+        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
+        scoreAnimations.add(textAnimator);
+
+        target += r.nextInt(10)+5;
+    }
+
+    /*
+        For now, tell player they missed the target and reset the target and current sum
+     */
+    private void resetGame()
+    {
+        //text, x, y, r, g, b, interval, size
+        TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
+        scoreAnimations.add(textAnimator);
+
+        target = r.nextInt(10)+5;
+        sum = 0;
+
+        //if we want game to stop, make playing false here
+        //   playing = false;
+    }
+
+    /*
+        Detect collisions for all our numbers on screen and bouce numbers that have collided
+     */
+    private void findCollisions()
+    {
+        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
+        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
+        for(int i = 0; i < numberList.size(); i++)
+            for(int j = i+1; j < numberList.size(); j++)
+                if(CollisionDetector.isCollision(numberList.get(i), numberList.get(j)))
+                {
+                    numberList.get(i).bounce();
+                    Log.d(VIEW_LOG_TAG, "Bounce " + numberList.get(i).getValue());
+                    numberList.get(j).bounce();
+                    Log.d(VIEW_LOG_TAG, "Bounce " + numberList.get(j).getValue());
+                }
+
+    }
+
+    /*
+        Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
+     */
+    private boolean findCollisions(int x, int y, int radius)
+    {
+        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
+        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
+        TouchableNumber num = new TouchableNumber(context, x, y, 50);
+        for(int i = 0; i < numberList.size(); i++)
+            if(CollisionDetector.isCollision(numberList.get(i), num))
+                return true;
+
+        return false;
     }
 }
 

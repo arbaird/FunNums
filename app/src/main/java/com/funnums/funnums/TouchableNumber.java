@@ -16,21 +16,12 @@ import android.graphics.Paint;
 import java.util.Random;
 
 public class TouchableNumber {
-    private Bitmap bitmap;
+
+    //use bitmap when we add in our own images
+    //private Bitmap bitmap;
     private int x, y, radius;
     private int speed;
 
-    private int shieldStrength;
-    private boolean boosting;
-
-    private final int GRAVITY = -12;
-
-    // Stop ship leaving the screen
-    private int maxY;
-    private int minY;
-
-    private final int MIN_SPEED = 1;
-    private final int MAX_SPEED = 20;
 
     private static Random r = new Random();
     // A hit box for collision detection
@@ -40,53 +31,52 @@ public class TouchableNumber {
 
     private int xVelocity, yVelocity;
 
+    //the angle the number will travel at
+    private int angle;
+
 
 
     // Constructor
-    public TouchableNumber(Context context, int screenX, int screenY) {
-        boosting = false;
+    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle)
+    {
         x = screenX;
         y = screenY;
+        angle = travelAngle;
 
         xVelocity = 0;
         yVelocity = 5;
 
         radius = 100;
 
-        shieldStrength = 10000;
-        speed = 1;
-        //bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ship);
+        speed = 5;
 
-        //maxY = screenY - bitmap.getHeight();
-        minY = 0;
-
+        //make number random.
+        //TODO, change constructor so we pass random number as argument so we can check if the
+        //number is already on the screen before we generate it, this way we can prevent a bunch
+        //of the same number appearing over and over
         number = r.nextInt(4) + 1;
 
-        // Initialize the hit box
-//        hitBox = new Rect(x, y, bitmap.getWidth(), bitmap.getHeight());
 
     }
 
-    public void update() {
+    public void update()
+    {
 
-        // Don't let ship stray off screen
-        /*if (y < minY) {
-            y = minY;
-        }
-        if (y > maxY) {
-            y = maxY;
-        }*/
+        //Trig! I looked this up on StackOverflow
 
-        // Refresh hit box location
+        xVelocity = (int) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  (int) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+
         move();
     }
 
     public void draw(Canvas canvas, Paint paint)
     {
+        //draw the circle(bubble)
         paint.setColor(Color.argb(255, 255, 255, 255));
         canvas.drawCircle(x, y, radius, paint);
 
-
+        //draw the value of the number in the center of the circle(bubble)
         paint.setColor(Color.argb(100, 100, 100, 100));
         paint.setTextSize(40);
         paint.setTextAlign(Paint.Align.CENTER);
@@ -94,23 +84,8 @@ public class TouchableNumber {
     }
 
 
-    public void setBoosting() {
-
-        boosting = true;
-    }
-
-    public void stopBoosting() {
-
-        boosting = false;
-    }
-
-    //Getters
-    public Bitmap getBitmap() {
-
-        return bitmap;
-    }
-
-    public int getSpeed() {
+    public int getSpeed()
+    {
 
         return speed;
     }
@@ -133,13 +108,27 @@ public class TouchableNumber {
 
 
 
-    public int getValue() {
+    public int getValue()
+    {
 
         return number;
     }
 
-    public void reduceShieldStrength(){
-        shieldStrength --;
+    //bounce the number by reversing its travel angle
+    public void bounce()
+    {
+
+        // Reverse the travelling angle
+        if(angle >= 180)
+            angle -= 180;
+        else
+            angle += 180;
+
+
+        // Reverse velocity because occasionally they get stuck
+
+        x -= (xVelocity);
+        y -=(yVelocity);
     }
 
     public int getRadius()
