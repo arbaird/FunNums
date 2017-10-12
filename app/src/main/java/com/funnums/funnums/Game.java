@@ -90,7 +90,7 @@ public class Game extends SurfaceView implements Runnable
 
         //initalize random generator and make the first target between 5 and 15
         r = new Random();
-        target = r.nextInt(10)+5;
+        target = r.nextInt(5)+5;
 
         screenX = x;
         screenY = y;
@@ -191,7 +191,7 @@ public class Game extends SurfaceView implements Runnable
         //keep track of dela time, that is, how much time has passed in between each iteration of
         //the game loop
         long updateDurationMillis = 0;
-        while (playing)
+        while(playing)
         {
             long beforeUpdateRender = System.nanoTime();
 
@@ -272,8 +272,7 @@ public class Game extends SurfaceView implements Runnable
 
             // Rub out the last frame
             canvas.drawColor(Color.argb(255, 0, 0, 0));
-            //!!May not need to set color here
-            //paint.setColor(Color.argb(255, 255, 255, 255));
+
 
             //draw all the numbers
             for(TouchableNumber num : numberList)

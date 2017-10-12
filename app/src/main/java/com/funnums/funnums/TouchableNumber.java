@@ -15,7 +15,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import java.util.Random;
 
-public class TouchableNumber {
+public class TouchableNumber
+{
 
     //use bitmap when we add in our own images
     //private Bitmap bitmap;

@@ -5,7 +5,8 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 
-public class GameActivity extends Activity {
+public class GameActivity extends Activity
+{
 
     // Our object to handle the View
     private Game game;
@@ -15,6 +16,7 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
 
         // Get a Display object to access screen details
         DisplayMetrics display = this.getResources().getDisplayMetrics();
