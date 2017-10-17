@@ -20,11 +20,11 @@ public class TextAnimator
     double interval;
 
     int alpha;
-    int x, y;
+    float x, y;
     int r,g,b;
     int size;
 
-    public TextAnimator(String text, int x, int y, int r, int g, int b)
+    public TextAnimator(String text, float x, float y, int r, int g, int b)
     {
         this.text = text;
         this.x = x;

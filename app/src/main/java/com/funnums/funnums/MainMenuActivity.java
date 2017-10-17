@@ -49,6 +49,6 @@ public class MainMenuActivity extends Activity
         Intent i = new Intent(this, GameActivity.class);
         // Start our GameActivity class via the Intent
         startActivity(i);
-        finish();
+        //finish();
     }
 }

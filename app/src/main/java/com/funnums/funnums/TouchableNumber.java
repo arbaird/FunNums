@@ -13,14 +13,17 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
+
 import java.util.Random;
 
 public class TouchableNumber
 {
 
+    private String VIEW_LOG_TAG = "l";
     //use bitmap when we add in our own images
     //private Bitmap bitmap;
-    private int x, y, radius;
+    private float x, y, radius;
     private int speed;
 
 
@@ -30,15 +33,15 @@ public class TouchableNumber
     //the actual value of this number
     private int number;
 
-    private int xVelocity, yVelocity;
+    private float xVelocity, yVelocity;
 
     //the angle the number will travel at
-    private int angle;
+    public double angle;
 
 
 
     // Constructor
-    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle)
+    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle, int value)
     {
         x = screenX;
         y = screenY;
@@ -55,7 +58,14 @@ public class TouchableNumber
         //TODO, change constructor so we pass random number as argument so we can check if the
         //number is already on the screen before we generate it, this way we can prevent a bunch
         //of the same number appearing over and over
-        number = r.nextInt(4) + 1;
+        number = value; //r.nextInt(4) + 1;
+
+        //Trig! I looked this up on StackOverflow
+
+        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+
+        Log.d(VIEW_LOG_TAG, "INITAL: " + String.valueOf(x + ", " + y ));
 
 
     }
@@ -63,10 +73,6 @@ public class TouchableNumber
     public void update()
     {
 
-        //Trig! I looked this up on StackOverflow
-
-        xVelocity = (int) (getSpeed() * Math.cos(Math.toRadians(angle)));
-        yVelocity =  (int) -(getSpeed() * Math.sin(Math.toRadians(angle )));
 
         move();
     }
@@ -91,18 +97,21 @@ public class TouchableNumber
         return speed;
     }
 
-    public int getX() {
+    public float getX() {
 
         return x;
     }
 
-    public int getY() {
+    public float getY() {
 
         return y;
     }
 
     void move()
     {
+       // xVelocity = (int) (getSpeed() * Math.cos(Math.toRadians(angle)));
+       // yVelocity =  (int) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+
         x += xVelocity;
         y += yVelocity;
     }
@@ -116,25 +125,63 @@ public class TouchableNumber
     }
 
     //bounce the number by reversing its travel angle
-    public void bounce()
+    public void bounceWith(TouchableNumber collidingNum)
     {
 
-        // Reverse the travelling angle
-        if(angle >= 180)
-            angle -= 180;
-        else
-            angle += 180;
+        float tempX = xVelocity;
+        float tempY = yVelocity;
 
+        float x1velocity = tempX;
+        float y1velocity = tempY;
+        float x2velocity = collidingNum.getXVelocity();
+        float y2velocity = collidingNum.getYVelocity();
 
-        // Reverse velocity because occasionally they get stuck
+        x1velocity  = x2velocity;
+        x2velocity = tempX;
 
-        x -= (xVelocity);
-        y -=(yVelocity);
+        y1velocity  = y2velocity;
+        y2velocity = tempY;
+
+        setXVelocity(x1velocity);
+        setYVelocity(y1velocity);
+
+        collidingNum.setXVelocity(x2velocity);
+        collidingNum.setYVelocity(y2velocity);
     }
 
-    public int getRadius()
+    public float getRadius()
     {
         return radius;
+    }
+
+    public void setXVelocity(float velocity)
+    {
+        xVelocity = velocity;
+    }
+
+    public float getXVelocity()
+    {
+        return xVelocity;
+    }
+
+    public void setYVelocity(float velocity)
+    {
+        yVelocity = velocity;
+    }
+
+    public float getYVelocity()
+    {
+        return yVelocity;
+    }
+
+    public void fixAngle()
+    {
+        angle = Math.toDegrees(Math.atan2(yVelocity, xVelocity));
+    }
+
+    public void setRadius(float newRad)
+    {
+        radius = newRad;
     }
 
 }

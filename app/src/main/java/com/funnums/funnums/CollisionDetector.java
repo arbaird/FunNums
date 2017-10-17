@@ -21,6 +21,8 @@ public class CollisionDetector
         double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
 
+
+
         //if the distance is contained in the radius of each cicle, the circles overlap!
         if (distance < num1.getRadius() + num2.getRadius())
             collision = true;

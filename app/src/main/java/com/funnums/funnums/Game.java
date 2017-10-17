@@ -62,6 +62,11 @@ public class Game extends SurfaceView implements Runnable
     private long runningMilis = 0;
 
 
+    private int maxNumsOnScreen = 6;
+
+
+
+
     //player's current sum
     private int sum;
     //target player is trying to sum to
@@ -81,6 +86,8 @@ public class Game extends SurfaceView implements Runnable
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
+    private int maxVal = 4; //maximum value to appear on a bubble
+
 
     Game(Context context, int x, int y)
     {
@@ -88,12 +95,14 @@ public class Game extends SurfaceView implements Runnable
         super(context);
         this.context  = context;
 
-        //initalize random generator and make the first target between 5 and 15
+        //initalize random generator and make the first target between 5 and 8
         r = new Random();
-        target = r.nextInt(5)+5;
+        target = r.nextInt(3)+5;
 
         screenX = x;
         screenY = y;
+
+        Log.d(VIEW_LOG_TAG, String.valueOf(x) + ", " + String.valueOf(y));
 
         // Initialize our drawing objects
         ourHolder = getHolder();
@@ -106,12 +115,12 @@ public class Game extends SurfaceView implements Runnable
     Used to round a number to 0 if it is less than the cutoff or to max if it is greater than the
     cutoff
      */
-    private int bin(int cutoff, int max, int num)
+    private int bin(int cutoff, int max, int min, int num)
     {
         if (num > cutoff)
             return max;
         else
-            return 0;
+            return min;
     }
 
     /*
@@ -124,13 +133,13 @@ public class Game extends SurfaceView implements Runnable
         {
             //random coordinates
             x = r.nextInt(screenX);
-            y = r.nextInt(screenY);
+            y = r.nextInt(screenY - 150) + 150;
 
             //randomly decide if next number appears along top/bottom of screen or far left/right of screen
             if (r.nextBoolean())
-                x = bin(screenX / 2, screenX, x);
+                x = bin(screenX / 2, screenX, 0, x);
             else
-                y = bin(screenY/2, screenY - 50, y);
+                y = bin(screenY/2, screenY, 150, y);
         }
         while(findCollisions(x,y,0));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -174,13 +183,25 @@ public class Game extends SurfaceView implements Runnable
 
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
-        TouchableNumber num = new TouchableNumber(context, x, y, angle);
+        int value;
+        int iterations = 0;
+        do
+        {
+            value = r.nextInt(maxVal) + 1;
+            iterations++;
+        }while(valueAlreadyOnScreen(value) && iterations < maxVal * 2);
+        //get a random number until we find one thats not already on the screen.
+        //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
+        //left to generate a number that is not already on the screen.
+
+        TouchableNumber num = new TouchableNumber(context, x, y, angle, value);
         numberList.add(num);
     }
 
     private void startGame()
     {
-        generateNumber();
+        for(int i = 0; i < maxNumsOnScreen; i++)
+            generateNumber();
         gameEnded = false;
     }
 
@@ -225,20 +246,36 @@ public class Game extends SurfaceView implements Runnable
             num.update();
 
             //Check for numbers off screen and add them to list of numbers to remove
-            if (num.getY() > screenY + num.getRadius() || num.getY() < 0 - num.getRadius()
+            /*if (num.getY() > screenY + num.getRadius() || num.getY() < 0 - num.getRadius()
                     || num.getX() > screenX + num.getRadius() || num.getX() < 0 - num.getRadius())
             {
                 toRemove.add(num);
                 Log.d(VIEW_LOG_TAG, "Remove Off screen!");
+            }*/
+
+            if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
+                    || (num.getX() < 0 && num.getXVelocity() < 0) )
+            {
+                num.setXVelocity(-num.getXVelocity());// num.setAngle(180 - num.angle)
+                //num.fixAngle();
+                Log.d(VIEW_LOG_TAG, String.valueOf(num.getX()) + ", " + String.valueOf(num.getY()) );
             }
+            if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
+                    || (num.getY() < 100 + num.getRadius() && num.getYVelocity() < 0))
+            {
+                num.setYVelocity(-num.getYVelocity()); //num.setAngle(num.angle - 180);
+                //num.fixAngle();
+                Log.d(VIEW_LOG_TAG, String.valueOf(num.getX()) + ", " + String.valueOf(num.getY()) );
+            }
+
         }
 
         //remove offscreen numbers
         for(TouchableNumber offScreen : toRemove)
             numberList.remove(offScreen);
 
-        //generate a new number every 2 seconds
-        if (runningMilis > 2 * NANOS_TO_SECONDS)
+        //generate a new number every 1 second if there are less than the max amount of numbers on the screen
+        if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen)
         {
             generateNumber();
             runningMilis = 0;
@@ -318,6 +355,7 @@ public class Game extends SurfaceView implements Runnable
     private void control() {
         try
         {
+            //TODO don't hard code 17 in sleep, should be variable based on milis,
             //this acheives approximately 60FPS,
             // 17 milliseconds =  (1000(milliseconds)/60(FPS))
             gameThread.sleep(17);
@@ -425,7 +463,7 @@ public class Game extends SurfaceView implements Runnable
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target += r.nextInt(10)+5;
+        target += r.nextInt(3)+5;
     }
 
     /*
@@ -437,7 +475,7 @@ public class Game extends SurfaceView implements Runnable
         TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target = r.nextInt(10)+5;
+        target = r.nextInt(3)+5;
         sum = 0;
 
         //if we want game to stop, make playing false here
@@ -455,13 +493,11 @@ public class Game extends SurfaceView implements Runnable
             for(int j = i+1; j < numberList.size(); j++)
                 if(CollisionDetector.isCollision(numberList.get(i), numberList.get(j)))
                 {
-                    numberList.get(i).bounce();
-                    Log.d(VIEW_LOG_TAG, "Bounce " + numberList.get(i).getValue());
-                    numberList.get(j).bounce();
-                    Log.d(VIEW_LOG_TAG, "Bounce " + numberList.get(j).getValue());
+                    numberList.get(i).bounceWith(numberList.get(j));
                 }
 
     }
+
 
     /*
         Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
@@ -470,11 +506,22 @@ public class Game extends SurfaceView implements Runnable
     {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        TouchableNumber num = new TouchableNumber(context, x, y, 50);
+        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0);
+        num.setRadius(num.getRadius() + 25);
         for(int i = 0; i < numberList.size(); i++)
             if(CollisionDetector.isCollision(numberList.get(i), num))
                 return true;
 
+        return false;
+    }
+
+    private boolean valueAlreadyOnScreen(int value)
+    {
+        for(TouchableNumber num : numberList)
+        {
+            if(num.getValue() == value)
+                return true;
+        }
         return false;
     }
 }
