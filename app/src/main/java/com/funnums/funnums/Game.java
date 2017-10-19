@@ -32,6 +32,8 @@ import java.util.Iterator;
 public class Game extends SurfaceView implements Runnable
 {
 
+    public State currentState;
+
     public String logTag = "Game"; //for debugging
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
@@ -53,6 +55,8 @@ public class Game extends SurfaceView implements Runnable
 
     //Optimal bubble radius
     private int bRadius;
+
+    private int topBuffer = 200;
 
     //while playing is true, we keep updating game loop
     public boolean playing;
@@ -89,7 +93,7 @@ public class Game extends SurfaceView implements Runnable
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
-    private int maxVal = 4; //maximum value to appear on a bubble
+    private int maxVal = 4; //one less than the maximum value to appear on a bubble
 
 
     Game(Context context, int x, int y)
@@ -134,17 +138,18 @@ public class Game extends SurfaceView implements Runnable
     private void generateNumber()
     {
         int x, y;
+        int radius = 50;
         do
         {
             //random coordinates
             x = r.nextInt(screenX);
-            y = r.nextInt(screenY - 150) + 150;
+            y = r.nextInt(screenY - topBuffer - radius) + topBuffer + radius;
 
             //randomly decide if next number appears along top/bottom of screen or far left/right of screen
             if (r.nextBoolean())
                 x = bin(screenX / 2, screenX, 0, x);
             else
-                y = bin(screenY/2, screenY, 150, y);
+                y = bin(screenY/2, screenY, topBuffer + radius, y);
         }
         while(findCollisions(x,y,0));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -224,6 +229,8 @@ public class Game extends SurfaceView implements Runnable
             //three main functions of game loop
             update(updateDurationMillis);
             draw();
+            /*currentState.update(updateDurationMillis);
+            currentState.draw();*/
             control();
 
             //update delta time
@@ -266,7 +273,7 @@ public class Game extends SurfaceView implements Runnable
                 Log.d(VIEW_LOG_TAG, String.valueOf(num.getX()) + ", " + String.valueOf(num.getY()) );
             }
             if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
-                    || (num.getY() < 100 + num.getRadius() && num.getYVelocity() < 0))
+                    || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
             {
                 num.setYVelocity(-num.getYVelocity()); //num.setAngle(num.angle - 180);
                 //num.fixAngle();
@@ -327,14 +334,19 @@ public class Game extends SurfaceView implements Runnable
             if(!gameEnded)
             {
                 // Draw the Current Sum and Target Score at top of screen
+                int offset = 50;
+
                 paint.setColor(Color.argb(255, 0, 0, 255));
                 paint.setTextSize(45);
                 paint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText("Current", screenX/4, 50, paint);
-                canvas.drawText(String.valueOf(sum),  screenX/4, 100, paint);
+                canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
+                canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
 
-                canvas.drawText("Target", screenX * 3/4, 50, paint);
-                canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
+                canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
+                canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
+
+                canvas.drawText("Pause", screenX * 1/2, offset, paint);
+                //canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
 
             }
             else
