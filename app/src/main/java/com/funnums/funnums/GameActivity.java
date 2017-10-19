@@ -9,7 +9,7 @@ public class GameActivity extends Activity
 {
 
     // Our object to handle the View
-    private Game game;
+    public static Game game;
 
     // This is where the "Play" button from MainMenuActivity sends us
     @Override

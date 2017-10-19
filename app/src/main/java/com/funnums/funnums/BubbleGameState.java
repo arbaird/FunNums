@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -15,7 +16,7 @@ import java.util.Random;
  * Created by austinbaird on 10/19/17.
  */
 
-public class BubbleGameState
+public class BubbleGameState extends State
 {
     public String VIEW_LOG_TAG = "Game"; //for debugging
 
@@ -28,6 +29,10 @@ public class BubbleGameState
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
     private boolean gameEnded;
+
+    private boolean isPaused;
+    public Pause pause;
+
 
     //for drawing
     private Context context;
@@ -52,7 +57,7 @@ public class BubbleGameState
     private int maxNumsOnScreen = 6;
 
 
-
+    private Rect pauseRect;
 
     //player's current sum
     private int sum;
@@ -63,9 +68,9 @@ public class BubbleGameState
     ArrayList<TouchableNumber> numberList = new ArrayList<>();
 
     // For drawing
-    private Paint paint;
-    private Canvas canvas;
-    private SurfaceHolder ourHolder;
+    //private Paint paint;
+    //private Canvas canvas;
+    //private SurfaceHolder ourHolder;
 
     //generates random numbers for us
     private Random r;
@@ -76,6 +81,26 @@ public class BubbleGameState
     private int maxVal = 4; //one less than the maximum value to appear on a bubble
 
 
+    public void init(int x, int y)
+    {
+
+        //initalize random generator and make the first target between 5 and 8
+        r = new Random();
+        target = r.nextInt(3)+5;
+
+        screenX = x;
+        screenY = y;
+
+
+        for(int i = 0; i < maxNumsOnScreen; i++)
+            generateNumber();
+        gameEnded = false;
+
+        int offset = 100;
+        pauseRect = new Rect(screenX *3/4, 0, screenX, offset);
+
+    }
+
     public void init()
     {
 
@@ -83,6 +108,9 @@ public class BubbleGameState
 
     public void update(long delta)
     {
+        if(isPaused)
+            return;
+
         //detect and handle collisions
         findCollisions();
 
@@ -100,7 +128,6 @@ public class BubbleGameState
                     || num.getX() > screenX + num.getRadius() || num.getX() < 0 - num.getRadius())
             {
                 toRemove.add(num);
-                Log.d(VIEW_LOG_TAG, "Remove Off screen!");
             }*/
 
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
@@ -108,14 +135,12 @@ public class BubbleGameState
             {
                 num.setXVelocity(-num.getXVelocity());// num.setAngle(180 - num.angle)
                 //num.fixAngle();
-                Log.d(VIEW_LOG_TAG, String.valueOf(num.getX()) + ", " + String.valueOf(num.getY()) );
             }
             if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
                     || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
             {
                 num.setYVelocity(-num.getYVelocity()); //num.setAngle(num.angle - 180);
                 //num.fixAngle();
-                Log.d(VIEW_LOG_TAG, String.valueOf(num.getX()) + ", " + String.valueOf(num.getY()) );
             }
 
         }
@@ -124,6 +149,7 @@ public class BubbleGameState
         for(TouchableNumber offScreen : toRemove)
             numberList.remove(offScreen);
 
+        runningMilis += delta;
         //generate a new number every 1 second if there are less than the max amount of numbers on the screen
         if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen)
         {
@@ -247,7 +273,7 @@ public class BubbleGameState
     private void processEvents()
     {
         for(MotionEvent e : events)
-            checkTouchRadius((int) e.getX(), (int) e.getY());
+            checkTouchCoords((int) e.getX(), (int) e.getY());
         events.clear();
     }
 
@@ -261,6 +287,27 @@ public class BubbleGameState
         return false;
     }
 
+    private void checkTouchCoords(int x, int y)
+    {
+        checkPauseTouch(x, y);
+        checkTouchRadius(x, y);
+
+    }
+
+    private void checkPauseTouch(int x, int y)
+    {
+        //canvas.drawText("Pause", screenX * 1/2, offset, paint);
+        Log.d(VIEW_LOG_TAG, x + " " + y);
+        if(pauseRect.contains(x, y))
+        {
+            Log.d(VIEW_LOG_TAG, "YOOO");
+            isPaused = true;
+            //setCurrentState(new PauseState());
+
+        }
+        //if(x <= )
+    }
+
     /*
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
@@ -272,7 +319,6 @@ public class BubbleGameState
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2))
             {
-                Log.d(VIEW_LOG_TAG, "Circle touched!");
                 processScore(num);
                 numberList.remove(num);
                 break;
@@ -358,7 +404,7 @@ public class BubbleGameState
         return false;
     }
 
-    private void draw()
+    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint)
     {
 
         if (ourHolder.getSurface().isValid())
@@ -392,7 +438,9 @@ public class BubbleGameState
                 canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
                 canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
 
-                canvas.drawText("Pause", screenX * 1/2, offset, paint);
+                canvas.drawRect(pauseRect, paint);
+                paint.setColor(Color.argb(255, 0, 0, 0));
+                canvas.drawText("Pause", screenX * 3/4, offset, paint);
                 //canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
 
             }
@@ -409,6 +457,11 @@ public class BubbleGameState
                 }*/
             }
 
+            /*if(isPaused)
+            {
+                pause.draw(canvas, paint);
+            }*/
+
             // Unlock and draw the scene
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -416,6 +469,12 @@ public class BubbleGameState
 
     }
 
+
+    public boolean onTouch(MotionEvent e)
+    {
+        events.add(e);
+        return true;
+    }
 
 
 }
