@@ -51,6 +51,9 @@ public class Game extends SurfaceView implements Runnable
     private int screenX;
     private int screenY;
 
+    //Optimal bubble radius
+    private int bRadius;
+
     //while playing is true, we keep updating game loop
     public boolean playing;
 
@@ -101,6 +104,8 @@ public class Game extends SurfaceView implements Runnable
 
         screenX = x;
         screenY = y;
+
+        bRadius = (int) (screenX * .13);
 
         Log.d(VIEW_LOG_TAG, String.valueOf(x) + ", " + String.valueOf(y));
 
@@ -194,7 +199,7 @@ public class Game extends SurfaceView implements Runnable
         //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
         //left to generate a number that is not already on the screen.
 
-        TouchableNumber num = new TouchableNumber(context, x, y, angle, value);
+        TouchableNumber num = new TouchableNumber(context, x, y, angle, value, bRadius);
         numberList.add(num);
     }
 
@@ -209,7 +214,7 @@ public class Game extends SurfaceView implements Runnable
     public void run()
     {
 
-        //keep track of dela time, that is, how much time has passed in between each iteration of
+        //keep track of delta time, that is, how much time has passed in between each iteration of
         //the game loop
         long updateDurationMillis = 0;
         while(playing)
@@ -506,7 +511,7 @@ public class Game extends SurfaceView implements Runnable
     {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0);
+        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0, bRadius);
         num.setRadius(num.getRadius() + 25);
         for(int i = 0; i < numberList.size(); i++)
             if(CollisionDetector.isCollision(numberList.get(i), num))

@@ -41,7 +41,7 @@ public class TouchableNumber
 
 
     // Constructor
-    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle, int value)
+    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle, int value, int radius)
     {
         x = screenX;
         y = screenY;
@@ -50,7 +50,7 @@ public class TouchableNumber
         xVelocity = 0;
         yVelocity = 5;
 
-        radius = 100;
+        this.radius = radius;
 
         speed = 5;
 
