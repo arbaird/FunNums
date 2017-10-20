@@ -26,8 +26,6 @@ public class BubbleGame extends MiniGame
     //we keep events in a separate list to be processed in the game loop
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-    private boolean gameEnded;
-
     //dimensions of the sc
     private int screenX;
     private int screenY;
@@ -78,7 +76,6 @@ public class BubbleGame extends MiniGame
 
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
-        gameEnded = false;
 
         //set up the pause button
         int offset = 100;
@@ -364,7 +361,6 @@ public class BubbleGame extends MiniGame
             // Rub out the last frame
             canvas.drawColor(Color.argb(255, 0, 0, 0));
 
-
             //draw all the numbers
             for(TouchableNumber num : numberList)
                 num.draw(canvas, paint);
@@ -372,23 +368,21 @@ public class BubbleGame extends MiniGame
             for(TextAnimator score : scoreAnimations)
                 score.render(canvas, paint);
 
+            // Draw the Current Sum and Target Score at top of screen
+            int offset = 50;
 
-            if(!gameEnded)
-            {
-                // Draw the Current Sum and Target Score at top of screen
-                int offset = 50;
-
-                paint.setColor(Color.argb(255, 0, 0, 255));
-                paint.setTextSize(45);
-                paint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-                canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
-
-                canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
-                canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
-
-                pauseButton.render(canvas, paint);
-            }
+            //Draw Current
+            paint.setColor(Color.argb(255, 0, 0, 255));
+            paint.setTextSize(45);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
+            canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
+            //Draw Target
+            canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
+            canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
+            //Draw pause button
+            pauseButton.render(canvas, paint);
+            //draw pause menu, if paused
             if(isPaused)
                 com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
 
