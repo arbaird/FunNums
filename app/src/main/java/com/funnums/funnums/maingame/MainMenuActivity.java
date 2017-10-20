@@ -1,4 +1,4 @@
-package com.funnums.funnums;
+package com.funnums.funnums.maingame;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,10 +18,10 @@ public class MainMenuActivity extends Activity
         super.onCreate(savedInstanceState);
 
         //Here we set our UI layout as the view
-        setContentView(R.layout.activity_main_menu);
+        setContentView(com.funnums.funnums.R.layout.activity_main_menu);
 
         // Get a reference to the button in our layout
-        final Button buttonPlay = (Button)findViewById(R.id.buttonPlay);
+        final Button buttonPlay = (Button)findViewById(com.funnums.funnums.R.id.buttonPlay);
         // Listen for clicks
         buttonPlay.setOnClickListener(this);
 
@@ -35,7 +35,7 @@ public class MainMenuActivity extends Activity
         long highScore = prefs.getLong("HighScore", 1000000);
 
         // Get a refference to the TextView in our layout
-        final TextView textFastestTime = (TextView)findViewById(R.id.textHiScore);
+        final TextView textFastestTime = (TextView)findViewById(com.funnums.funnums.R.id.textHiScore);
         // Put the high score in our TextView
         textFastestTime.setText("Your High Score:" + highScore);
 

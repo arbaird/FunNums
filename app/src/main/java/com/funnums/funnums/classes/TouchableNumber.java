@@ -1,4 +1,4 @@
-package com.funnums.funnums;
+package com.funnums.funnums.classes;
 
 /**
  * Created by austinbaird on 10/6/17.
@@ -41,7 +41,7 @@ public class TouchableNumber
 
 
     // Constructor
-    public TouchableNumber(Context context, int screenX, int screenY, int travelAngle, int value)
+    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius)
     {
         x = screenX;
         y = screenY;
@@ -50,15 +50,11 @@ public class TouchableNumber
         xVelocity = 0;
         yVelocity = 5;
 
-        radius = 100;
+        this.radius = radius;
 
         speed = 5;
 
-        //make number random.
-        //TODO, change constructor so we pass random number as argument so we can check if the
-        //number is already on the screen before we generate it, this way we can prevent a bunch
-        //of the same number appearing over and over
-        number = value; //r.nextInt(4) + 1;
+        number = value;
 
         //Trig! I looked this up on StackOverflow
 
@@ -109,9 +105,6 @@ public class TouchableNumber
 
     void move()
     {
-       // xVelocity = (int) (getSpeed() * Math.cos(Math.toRadians(angle)));
-       // yVelocity =  (int) -(getSpeed() * Math.sin(Math.toRadians(angle )));
-
         x += xVelocity;
         y += yVelocity;
     }

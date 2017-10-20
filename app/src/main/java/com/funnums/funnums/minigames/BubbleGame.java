@@ -1,22 +1,20 @@
-package com.funnums.funnums;
+package com.funnums.funnums.minigames;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-
 import java.util.ArrayList;
 import java.util.Random;
+import android.graphics.Bitmap;
 
-/**
- * Created by austinbaird on 10/19/17.
- */
+import com.funnums.funnums.classes.CollisionDetector;
+import com.funnums.funnums.classes.TouchableNumber;
+import com.funnums.funnums.uihelpers.TextAnimator;
+import com.funnums.funnums.uihelpers.UIButton;
 
-public class BubbleGameState extends State
+public class BubbleGame extends MiniGame
 {
     public String VIEW_LOG_TAG = "Game"; //for debugging
 
@@ -30,34 +28,17 @@ public class BubbleGameState extends State
 
     private boolean gameEnded;
 
-    private boolean isPaused;
-    public Pause pause;
-
-
-    //for drawing
-    private Context context;
-
     //dimensions of the sc
     private int screenX;
     private int screenY;
 
     private int topBuffer = 200;
 
-    //while playing is true, we keep updating game loop
-    public boolean playing;
-
-    //thread for the game
-    Thread gameThread = null;
-
-
     //running time, used to generate new numbers every few seconds
     private long runningMilis = 0;
 
 
     private int maxNumsOnScreen = 6;
-
-
-    private Rect pauseRect;
 
     //player's current sum
     private int sum;
@@ -80,31 +61,33 @@ public class BubbleGameState extends State
 
     private int maxVal = 4; //one less than the maximum value to appear on a bubble
 
+    //Optimal bubble radius
+    private int bRadius;
 
-    public void init(int x, int y)
+    public void init()
     {
 
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
         target = r.nextInt(3)+5;
 
-        screenX = x;
-        screenY = y;
+        screenX = com.funnums.funnums.maingame.GameActivity.screenX;
+        screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
+        bRadius = (int) (screenX * .13);
 
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
         gameEnded = false;
 
+        //set up the pause button
         int offset = 100;
-        pauseRect = new Rect(screenX *3/4, 0, screenX, offset);
-
+        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
+        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
+        pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
     }
 
-    public void init()
-    {
 
-    }
 
     public void update(long delta)
     {
@@ -114,43 +97,23 @@ public class BubbleGameState extends State
         //detect and handle collisions
         findCollisions();
 
-        //create a list that will hold numbers that have drifted offscreen so we can remove them
-        //we can't remove them while iterating through numberList without a ConcurrentModificationError,
-        //google "ConcurrentModificationError ArrayList" to get some helpful StackOverflow explanations
-        ArrayList<TouchableNumber> toRemove = new ArrayList<>();
         for(TouchableNumber num : numberList)
         {
             //update the number
             num.update();
 
-            //Check for numbers off screen and add them to list of numbers to remove
-            /*if (num.getY() > screenY + num.getRadius() || num.getY() < 0 - num.getRadius()
-                    || num.getX() > screenX + num.getRadius() || num.getX() < 0 - num.getRadius())
-            {
-                toRemove.add(num);
-            }*/
 
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
-            {
-                num.setXVelocity(-num.getXVelocity());// num.setAngle(180 - num.angle)
-                //num.fixAngle();
-            }
+                num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
             if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
                     || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
-            {
-                num.setYVelocity(-num.getYVelocity()); //num.setAngle(num.angle - 180);
-                //num.fixAngle();
-            }
+                num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge
 
         }
 
-        //remove offscreen numbers
-        for(TouchableNumber offScreen : toRemove)
-            numberList.remove(offScreen);
-
         runningMilis += delta;
-        //generate a new number every 1 second if there are less than the max amount of numbers on the screen
+        //generate a new number every 1/2 second if there are less than the max amount of numbers on the screen
         if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen)
         {
             generateNumber();
@@ -263,7 +226,7 @@ public class BubbleGameState extends State
         //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
         //left to generate a number that is not already on the screen.
 
-        TouchableNumber num = new TouchableNumber(context, x, y, angle, value);
+        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius);
         numberList.add(num);
     }
 
@@ -273,7 +236,14 @@ public class BubbleGameState extends State
     private void processEvents()
     {
         for(MotionEvent e : events)
-            checkTouchCoords((int) e.getX(), (int) e.getY());
+        {
+            int x = (int) e.getX();
+            int y = (int) e.getY();
+
+            checkTouchRadius(x, y);
+
+
+        }
         events.clear();
     }
 
@@ -285,27 +255,6 @@ public class BubbleGameState extends State
                 return true;
         }
         return false;
-    }
-
-    private void checkTouchCoords(int x, int y)
-    {
-        checkPauseTouch(x, y);
-        checkTouchRadius(x, y);
-
-    }
-
-    private void checkPauseTouch(int x, int y)
-    {
-        //canvas.drawText("Pause", screenX * 1/2, offset, paint);
-        Log.d(VIEW_LOG_TAG, x + " " + y);
-        if(pauseRect.contains(x, y))
-        {
-            Log.d(VIEW_LOG_TAG, "YOOO");
-            isPaused = true;
-            //setCurrentState(new PauseState());
-
-        }
-        //if(x <= )
     }
 
     /*
@@ -395,7 +344,7 @@ public class BubbleGameState extends State
     {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0);
+        TouchableNumber num = new TouchableNumber(x, y, 0, 0, bRadius);
         num.setRadius(num.getRadius() + 25);
         for(int i = 0; i < numberList.size(); i++)
             if(CollisionDetector.isCollision(numberList.get(i), num))
@@ -438,31 +387,11 @@ public class BubbleGameState extends State
                 canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
                 canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
 
-                canvas.drawRect(pauseRect, paint);
-                paint.setColor(Color.argb(255, 0, 0, 0));
-                canvas.drawText("Pause", screenX * 3/4, offset, paint);
-                //canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
-
+                pauseButton.render(canvas, paint);
             }
-            else
-            {
-                //TODO, what do we want to happen? we can end game when time runs out, but a running timer
-                //is not implemented currently
+            if(isPaused)
+                com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
 
-                /*if(userScore < highScore) {
-                    // Save high score
-                    editor.putLong("highScore", userScore);
-                    editor.commit();
-                    highScore = userScore;
-                }*/
-            }
-
-            /*if(isPaused)
-            {
-                pause.draw(canvas, paint);
-            }*/
-
-            // Unlock and draw the scene
             ourHolder.unlockCanvasAndPost(canvas);
         }
 
@@ -472,6 +401,12 @@ public class BubbleGameState extends State
 
     public boolean onTouch(MotionEvent e)
     {
+        //add touch event to eventsQueue rather than processing it immediately. This is because
+        //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
+        //in this touch UI thread while our game thread is accessing that same number, the game crashes
+        //because two threads are accessing same memory being removed. We could do mutex but this setup
+        //is pretty standard I believe.
+
         events.add(e);
         return true;
     }

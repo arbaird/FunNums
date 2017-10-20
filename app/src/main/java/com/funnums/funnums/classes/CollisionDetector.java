@@ -1,4 +1,4 @@
-package com.funnums.funnums;
+package com.funnums.funnums.classes;
 
 /**
  * Created by austinbaird on 10/9/17.

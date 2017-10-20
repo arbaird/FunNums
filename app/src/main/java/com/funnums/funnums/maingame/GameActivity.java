@@ -1,15 +1,23 @@
-package com.funnums.funnums;
+package com.funnums.funnums.maingame;
 
 import android.app.Activity;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.content.res.AssetManager;
+
+
 
 public class GameActivity extends Activity
 {
 
     // Our object to handle the View
-    public static Game game;
+    public static GameView gameView;
+
+    //used to load bitmaps
+    public static AssetManager assets;
+
+    public static int screenX;
+    public static int screenY;
 
     // This is where the "Play" button from MainMenuActivity sends us
     @Override
@@ -17,23 +25,19 @@ public class GameActivity extends Activity
     {
         super.onCreate(savedInstanceState);
 
-
         // Get a Display object to access screen details
         DisplayMetrics display = this.getResources().getDisplayMetrics();
+        assets = getAssets();
 
-
-        // Load the screen size into a Point object
-        Point size = new Point();
-
-        size.x = display.widthPixels;
-        size.y = display.heightPixels;
+        screenX = display.widthPixels;
+        screenY = display.heightPixels;
 
         // Create an instance of our Game
-        game = new Game(this, size.x, size.y);
+        gameView = new GameView(this);
+        gameView.startGame();
 
         // Make our gameView the view for the Activity
-        setContentView(game);
-
+        setContentView(gameView);
     }
 
     // If the Activity is paused make sure to pause our thread
@@ -41,7 +45,7 @@ public class GameActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        game.pause();
+        gameView.pause();
     }
 
     // If the Activity is resumed make sure to resume our thread
@@ -49,8 +53,6 @@ public class GameActivity extends Activity
     protected void onResume()
     {
         super.onResume();
-        game.resume();
+        gameView.resume();
     }
-
-
 }

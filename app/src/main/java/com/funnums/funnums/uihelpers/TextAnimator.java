@@ -1,4 +1,4 @@
-package com.funnums.funnums;
+package com.funnums.funnums.uihelpers;
 
 /**
  * Created by austinbaird on 10/10/17.
@@ -19,7 +19,7 @@ public class TextAnimator
     //interval thhat we want to update alpha, move text, etc.
     double interval;
 
-    int alpha;
+    public int alpha;
     float x, y;
     int r,g,b;
     int size;
@@ -37,7 +37,7 @@ public class TextAnimator
         alpha = 255;
 
         //if no interval is given, default to updating every tenth of a second
-        interval = Game.NANOS_TO_SECONDS * 0.1;
+        interval = com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS * 0.1;
         size = 40;
     }
     public TextAnimator(String text, int x, int y, int r, int g, int b, double interval, int size)
@@ -53,7 +53,7 @@ public class TextAnimator
         alpha = 255;
 
         //convert interval to NanoSceonds
-        this.interval = Game.NANOS_TO_SECONDS * interval;
+        this.interval = com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS * interval;
     }
 
 
