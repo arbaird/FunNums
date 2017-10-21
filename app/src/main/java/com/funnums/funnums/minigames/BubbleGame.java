@@ -30,6 +30,8 @@ public class BubbleGame extends MiniGame
     private int screenX;
     private int screenY;
 
+    //TODO make this vary based on phone size
+    //this is the amount of space at the top of the sceen used for the current sum, target, timer, and pause button
     private int topBuffer = 200;
 
     //running time, used to generate new numbers every few seconds
@@ -135,21 +137,7 @@ public class BubbleGame extends MiniGame
 
     }
 
-    /*
-        Detect collisions for all our numbers on screen and bouce numbers that have collided
-     */
-    private void findCollisions()
-    {
-        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
-        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        for(int i = 0; i < numberList.size(); i++)
-            for(int j = i+1; j < numberList.size(); j++)
-                if(CollisionDetector.isCollision(numberList.get(i), numberList.get(j)))
-                {
-                    numberList.get(i).bounceWith(numberList.get(j));
-                }
 
-    }
 
     /*
     Generates a touchable number on screen
@@ -157,7 +145,7 @@ public class BubbleGame extends MiniGame
     private void generateNumber()
     {
         int x, y;
-        int radius = 50;
+        int radius = bRadius;
         do
         {
             //random coordinates
@@ -170,7 +158,7 @@ public class BubbleGame extends MiniGame
             else
                 y = bin(screenY/2, screenY, topBuffer + radius, y);
         }
-        while(findCollisions(x,y,0));
+        while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
         //it finds coordinates in a place without collisions
 
@@ -238,8 +226,6 @@ public class BubbleGame extends MiniGame
             int y = (int) e.getY();
 
             checkTouchRadius(x, y);
-
-
         }
         events.clear();
     }
@@ -334,17 +320,36 @@ public class BubbleGame extends MiniGame
             return min;
     }
 
+
     /*
-        Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
+        Detect collisions for all our numbers on screen and bouce numbers that have collided
      */
-    private boolean findCollisions(int x, int y, int radius)
+    private void findCollisions()
     {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        TouchableNumber num = new TouchableNumber(x, y, 0, 0, bRadius);
-        num.setRadius(num.getRadius() + 25);
         for(int i = 0; i < numberList.size(); i++)
-            if(CollisionDetector.isCollision(numberList.get(i), num))
+            for(int j = i+1; j < numberList.size(); j++)
+                if(CollisionDetector.isCollision(numberList.get(i), numberList.get(j)))
+                {
+                    numberList.get(i).bounceWith(numberList.get(j));
+                }
+
+    }
+
+    /*
+        Overloaded to take an x and y coordinate as arguments.
+        Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
+     */
+    private boolean findCollisions(int x, int y)
+    {
+        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
+        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
+
+        //allow a little extra space for new appearing numbers
+        int buffer = bRadius / 2;
+        for(int i = 0; i < numberList.size(); i++)
+            if(CollisionDetector.isCollision(numberList.get(i), x, y, bRadius + buffer))
                 return true;
 
         return false;

@@ -26,10 +26,6 @@ public class GameView extends SurfaceView implements Runnable
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
-    //dimensions of the sc
-    public int screenX;
-    public int screenY;
-
     //while playing is true, we keep updating game loop
     public boolean playing;
 
@@ -41,7 +37,7 @@ public class GameView extends SurfaceView implements Runnable
     private Canvas canvas;
     private SurfaceHolder ourHolder;
 
-    public Pause pauseScreen;
+    public PauseMenu pauseScreen;
 
     GameView(Context context)
     {
@@ -63,7 +59,7 @@ public class GameView extends SurfaceView implements Runnable
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
         int offset = 100;
-        pauseScreen = new Pause(GameActivity.screenX/4, offset, GameActivity.screenX * 3/4, GameActivity.screenY - offset, resumeButton, menuButton);
+        pauseScreen = new PauseMenu(GameActivity.screenX/4, offset, GameActivity.screenX * 3/4, GameActivity.screenY - offset, resumeButton, menuButton);
 
     }
 
