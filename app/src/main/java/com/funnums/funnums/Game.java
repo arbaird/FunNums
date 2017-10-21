@@ -90,6 +90,9 @@ public class Game extends SurfaceView implements Runnable
     //generates random numbers for us
     private Random r;
 
+    //Timer object
+    private GameCountdownTimer gameTimer;
+
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
@@ -109,6 +112,7 @@ public class Game extends SurfaceView implements Runnable
         screenX = x;
         screenY = y;
 
+        //Calculate bRadius based on width of device
         bRadius = (int) (screenX * .13);
 
         Log.d(VIEW_LOG_TAG, String.valueOf(x) + ", " + String.valueOf(y));
@@ -116,6 +120,10 @@ public class Game extends SurfaceView implements Runnable
         // Initialize our drawing objects
         ourHolder = getHolder();
         paint = new Paint();
+
+        //Initialize timer to 61 seconds, update after 1 sec interval
+        gameTimer = new GameCountdownTimer(context, 61000, 1000);
+        gameTimer.start();
 
         startGame();
     }
@@ -345,8 +353,8 @@ public class Game extends SurfaceView implements Runnable
                 canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
                 canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
 
-                canvas.drawText("Pause", screenX * 1/2, offset, paint);
-                //canvas.drawText(String.valueOf(target),  screenX * 3/4, 100, paint);
+                canvas.drawText("Timer", screenX * 1/2, offset, paint);
+                canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
 
             }
             else

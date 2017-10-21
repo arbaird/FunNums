@@ -237,7 +237,7 @@ public class BubbleGameState
         //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
         //left to generate a number that is not already on the screen.
 
-        TouchableNumber num = new TouchableNumber(context, x, y, angle, value);
+        TouchableNumber num = new TouchableNumber(context, x, y, angle, value, radius);
         numberList.add(num);
     }
 
@@ -349,7 +349,7 @@ public class BubbleGameState
     {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0);
+        TouchableNumber num = new TouchableNumber(context, x, y, 0, 0, radius);
         num.setRadius(num.getRadius() + 25);
         for(int i = 0; i < numberList.size(); i++)
             if(CollisionDetector.isCollision(numberList.get(i), num))
