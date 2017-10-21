@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableNumber;
+import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 
@@ -64,6 +65,9 @@ public class BubbleGame extends MiniGame
     //Optimal bubble radius
     private int bRadius;
 
+    //Timer object
+    private GameCountdownTimer gameTimer;
+
     public void init()
     {
 
@@ -78,6 +82,10 @@ public class BubbleGame extends MiniGame
 
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
+
+        //Initialize timer to 61 seconds, update after 1 sec interval
+        gameTimer = new GameCountdownTimer(61000, 1000);
+        gameTimer.start();
 
         //set up the pause button
         int offset = 100;
@@ -385,6 +393,9 @@ public class BubbleGame extends MiniGame
             //Draw Target
             canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
             canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
+            //draw timer
+            canvas.drawText("Timer", screenX * 1/2, offset, paint);
+            canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
             //Draw pause button
             pauseButton.render(canvas, paint);
             //draw pause menu, if paused
