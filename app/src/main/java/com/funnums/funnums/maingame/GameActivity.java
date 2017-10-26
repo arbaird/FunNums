@@ -7,8 +7,7 @@ import android.content.res.AssetManager;
 
 
 
-public class GameActivity extends Activity
-{
+public class GameActivity extends Activity {
 
     // Our object to handle the View
     public static GameView gameView;
@@ -21,8 +20,7 @@ public class GameActivity extends Activity
 
     // This is where the "Play" button from MainMenuActivity sends us
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Get a Display object to access screen details
@@ -42,16 +40,14 @@ public class GameActivity extends Activity
 
     // If the Activity is paused make sure to pause our thread
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         gameView.pause();
     }
 
     // If the Activity is resumed make sure to resume our thread
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         gameView.resume();
     }
