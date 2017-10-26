@@ -57,9 +57,9 @@ public class MainMenuActivity extends AppCompatActivity
     */
     public void onPressedSelect(View v)
     {
-        Log.d(TAG, "onPlayPressed");
+        Log.d(TAG, "[SELECT GAME] pressed");
         // Create a new Intent object
-        Intent i = new Intent(this, GameActivity.class);
+        Intent i = new Intent(this, SelectGameActivity.class);
         // Start our GameActivity class via the Intent
         startActivity(i);
     }

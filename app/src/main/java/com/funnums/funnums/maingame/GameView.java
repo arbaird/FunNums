@@ -22,7 +22,7 @@ public class GameView extends SurfaceView implements Runnable
     //current minigame
     public MiniGame currentGame;
 
-    public String logTag = "Game"; //for debugging
+    public String TAG = "Game"; //for debugging
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
@@ -106,7 +106,7 @@ public class GameView extends SurfaceView implements Runnable
         }
         catch (InterruptedException e)
         {
-            Log.e(logTag, "Error causing thread to sleep\n" + e.getStackTrace());
+            Log.e(TAG, "Error causing thread to sleep\n" + e.getStackTrace());
         }
     }
 
@@ -120,7 +120,7 @@ public class GameView extends SurfaceView implements Runnable
         }
         catch (InterruptedException e)
         {
-            Log.e(logTag, "Error joining gameThread\n" + e.getStackTrace());
+            Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
     }
 
