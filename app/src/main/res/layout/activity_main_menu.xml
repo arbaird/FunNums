@@ -3,7 +3,7 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainMenuActivity">
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context="com.funnums.funnums.maingame.MainMenuActivity">
 
     <TextView android:text="High Score: 9999" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,5 +24,19 @@
         android:layout_marginRight="127dp"
         android:layout_marginEnd="127dp"
         android:layout_marginBottom="78dp" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:paddingBottom="5dp"
+        android:layout_marginTop="20dp"
+
+        android:layout_below="@+id/textHiScore"
+        android:layout_above="@+id/buttonPlay"
+
+        android:listSelector="@android:color/transparent"
+        />
+
 
 </RelativeLayout>
