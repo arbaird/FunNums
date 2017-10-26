@@ -15,8 +15,9 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Play"
-        android:id="@+id/buttonPlay"
+        android:text="@string/play_button"
+        android:id="@+id/buttonSelect"
+        android:onClick="onPressedSelect"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
