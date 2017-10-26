@@ -17,8 +17,7 @@ import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.uihelpers.*;
 
 
-public class GameView extends SurfaceView implements Runnable
-{
+public class GameView extends SurfaceView implements Runnable {
     //current minigame
     public MiniGame currentGame;
 
@@ -39,8 +38,7 @@ public class GameView extends SurfaceView implements Runnable
 
     public PauseMenu pauseScreen;
 
-    GameView(Context context)
-    {
+    GameView(Context context) {
         //set up view properly
         super(context);
 
@@ -63,8 +61,7 @@ public class GameView extends SurfaceView implements Runnable
 
     }
 
-    public void startGame()
-    {
+    public void startGame() {
         currentGame = new BubbleGame();
         currentGame.init();
     }
@@ -75,14 +72,12 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
 
         //keep track of dela time, that is, how much time has passed in between each iteration of
         //the game loop
         long updateDurationMillis = 0;
-        while(playing)
-        {
+        while(playing) {
             long beforeUpdateRender = System.nanoTime();
 
             //three main functions of game loop
@@ -97,36 +92,30 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     private void control() {
-        try
-        {
+        try {
             //TODO don't hard code 17 in sleep, should be variable based on milis,
             //this acheives approximately 60FPS,
             // 17 milliseconds =  (1000(milliseconds)/60(FPS))
             gameThread.sleep(17);
         }
-        catch (InterruptedException e)
-        {
+        catch (InterruptedException e) {
             Log.e(TAG, "Error causing thread to sleep\n" + e.getStackTrace());
         }
     }
 
     // Clean up our thread if the game is interrupted or the player quits
-    public void pause()
-    {
+    public void pause() {
         playing = false;
-        try
-        {
+        try {
             gameThread.join();
         }
-        catch (InterruptedException e)
-        {
+        catch (InterruptedException e) {
             Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
     }
 
     // Make a new thread and start it
-    public void resume()
-    {
+    public void resume() {
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
@@ -134,8 +123,7 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e)
-    {
+    public boolean onTouchEvent(MotionEvent e) {
         //first check if the pause menu should handle the touch
         if(currentGame.isPaused)
             return pauseScreen.onTouch(e);
@@ -147,14 +135,12 @@ public class GameView extends SurfaceView implements Runnable
             currentGame.pauseButton.onTouchDown(x, y);
         }
         if (e.getAction() == MotionEvent.ACTION_UP) {
-            if (currentGame.pauseButton.isPressed(x, y))
-            {
+            if (currentGame.pauseButton.isPressed(x, y)) {
                 currentGame.pauseButton.cancel();
                 currentGame.isPaused = true;
                 //setCurrentState(new PlayState());
             }
-            else
-            {
+            else {
                 currentGame.pauseButton.cancel();
             }
         }
@@ -165,8 +151,7 @@ public class GameView extends SurfaceView implements Runnable
         return true;
     }
 
-    public static Bitmap loadBitmap(String filename, boolean transparency)
-    {
+    public static Bitmap loadBitmap(String filename, boolean transparency) {
         InputStream inputStream = null;
         try {
             inputStream = GameActivity.assets.open(filename);
