@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "67236716788",
+    "firebase_url": "https://funnumsbackend.firebaseio.com",
+    "project_id": "funnumsbackend",
+    "storage_bucket": "funnumsbackend.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:67236716788:android:8f9d0e35d09c79b5",
+        "android_client_info": {
+          "package_name": "com.funnums.funnums"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "67236716788-3qltkufrdigimmpq79tvln456k4ktl64.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.funnums.funnums",
+            "certificate_hash": "aba174030adb5bc666b325ec926c7d2140d973df"
+          }
+        },
+        {
+          "client_id": "67236716788-7bqj25b9p0fqppq06fn9q1r0otldgvhj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7CPId0iXYpWFU7fEC4ivn9lLNylOtoYE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "67236716788-7bqj25b9p0fqppq06fn9q1r0otldgvhj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
