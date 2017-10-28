@@ -10,6 +10,7 @@ import java.util.Random;
 import android.graphics.Bitmap;
 
 import com.funnums.funnums.classes.CollisionDetector;
+import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.TextAnimator;
@@ -92,6 +93,17 @@ public class BubbleGame extends MiniGame
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+
+
+        /*!!This will beremoved is just a test*/
+        FractionNumberGenerator lol = new FractionNumberGenerator(0);
+        lol.runTest();
+        /*!!*/
+        lol.new_game(1);
+        lol.runTest();
+        /*!!*/
+        lol.new_game(2);
+        lol.runTest();
     }
 
 
