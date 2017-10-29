@@ -53,7 +53,6 @@ public class MainMenuActivity extends AppCompatActivity {
 
 
 
-
         //get the stored data on this phone
         final SharedPreferences prefs = getSharedPreferences("HighScore", MODE_PRIVATE);
         //get the editor so we can update stored data, if needed
@@ -90,9 +89,6 @@ public class MainMenuActivity extends AppCompatActivity {
                             .setCancelable(false)
                             .create();
             dialog.show();
-
-
-
         }
 
         // Prepare to highest Score fo rthis user. We don't need this yet, we can keep it for later when we implement scoring

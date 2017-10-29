@@ -12,8 +12,7 @@ package com.funnums.funnums.classes;
 import java.util.concurrent.TimeUnit;
 import android.os.CountDownTimer;
 
-public class GameCountdownTimer extends CountDownTimer
-{
+public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
 

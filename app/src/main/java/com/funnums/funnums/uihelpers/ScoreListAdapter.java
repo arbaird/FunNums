@@ -17,7 +17,6 @@ import java.util.List;
 import com.funnums.funnums.classes.PlayerScore;
 
 
-
 public class ScoreListAdapter extends ArrayAdapter<PlayerScore> {
 
     //resource is the listview id we want to attach this adapter to
