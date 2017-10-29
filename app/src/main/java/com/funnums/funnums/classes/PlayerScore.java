@@ -8,28 +8,23 @@ import java.io.Serializable;
  * and received in JSON format. This is required by Firebase
  */
 
-public class PlayerScore implements Serializable
-{
+public class PlayerScore implements Serializable {
     public String name;
     public int hiScore;
 
     public String scoreID;
 
-    PlayerScore()
-    {
+    PlayerScore() {
         this.name = "";
     }
 
-    PlayerScore(String name, int hiScore)
-    {
+    PlayerScore(String name, int hiScore) {
         this.name = name;
         this.hiScore = hiScore;
     }
 
-
     @Override
-    public String toString()
-    {
+    public String toString() {
         return name + ": " + hiScore;
     }
 }

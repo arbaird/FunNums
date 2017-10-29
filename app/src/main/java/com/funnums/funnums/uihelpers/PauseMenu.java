@@ -11,8 +11,8 @@ import android.graphics.Rect;
 import android.graphics.Bitmap;
 import android.view.MotionEvent;
 
-public class PauseMenu
-{
+public class PauseMenu {
+
     public String VIEW_LOG_TAG = "pause";
 
     //will use when we have a cooler background for pause menu
@@ -26,6 +26,7 @@ public class PauseMenu
 
     public PauseMenu(int left, int top, int right, int bottom,
                      UIButton resumeButton,  UIButton menuButton) {
+
         backDropRect = new Rect(left, top, right, bottom);
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
@@ -34,12 +35,10 @@ public class PauseMenu
 
         resume.setRect(left + 100, top +100);
         mainMenu.setRect(left + 100, top +200);
-
-
     }
 
-    public void draw(Canvas canvas, Paint paint)
-    {
+    public void draw(Canvas canvas, Paint paint) {
+
         paint.setColor(Color.argb(126, 0, 0, 0));
         canvas.drawRect(fade, paint);
 
@@ -55,37 +54,33 @@ public class PauseMenu
     }
 
     //handle touches
-    public boolean onTouch(MotionEvent e)
-    {
+    public boolean onTouch(MotionEvent e) {
+
         int x = (int)e.getX();
         int y = (int)e.getY();
-        if (e.getAction() == MotionEvent.ACTION_DOWN)
-        {
+
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
             resume.onTouchDown(x, y);
             mainMenu.onTouchDown(x, y);
         }
-        if (e.getAction() == MotionEvent.ACTION_UP)
-        {
-            if (resume.isPressed(x, y))
-            {
+
+        if (e.getAction() == MotionEvent.ACTION_UP) {
+            if (resume.isPressed(x, y)) {
                 resume.cancel();
                 com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isPaused = false;
             }
-            else if(mainMenu.isPressed(x, y))
-            {
+            else if(mainMenu.isPressed(x, y)) {
                 mainMenu.cancel();
                 Intent i = new Intent(com.funnums.funnums.maingame.GameActivity.gameView.getContext(), com.funnums.funnums.maingame.MainMenuActivity.class);
                 // Start our GameActivity class via the Intent
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 com.funnums.funnums.maingame.GameActivity.gameView.getContext().startActivity(i);
             }
-            else
-            {
+            else {
                 resume.cancel();
                 mainMenu.cancel();
             }
         }
         return true;
     }
-
 }

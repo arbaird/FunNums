@@ -1,11 +1,7 @@
 package com.funnums.funnums.classes;
-
 /**
  * Created by austinbaird on 10/6/17.
  */
-
-
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,8 +13,7 @@ import android.util.Log;
 
 import java.util.Random;
 
-public class TouchableNumber
-{
+public class TouchableNumber {
 
     private String VIEW_LOG_TAG = "l";
     //use bitmap when we add in our own images
@@ -41,8 +36,7 @@ public class TouchableNumber
 
 
     // Constructor
-    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius)
-    {
+    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius) {
         x = screenX;
         y = screenY;
         angle = travelAngle;
@@ -66,15 +60,11 @@ public class TouchableNumber
 
     }
 
-    public void update()
-    {
-
-
+    public void update() {
         move();
     }
 
-    public void draw(Canvas canvas, Paint paint)
-    {
+    public void draw(Canvas canvas, Paint paint) {
         //draw the circle(bubble)
         paint.setColor(Color.argb(255, 255, 255, 255));
         canvas.drawCircle(x, y, radius, paint);
@@ -87,40 +77,31 @@ public class TouchableNumber
     }
 
 
-    public int getSpeed()
-    {
-
+    public int getSpeed() {
         return speed;
     }
 
     public float getX() {
-
         return x;
     }
 
     public float getY() {
-
         return y;
     }
 
-    void move()
-    {
+    void move() {
         x += xVelocity;
         y += yVelocity;
     }
 
 
 
-    public int getValue()
-    {
-
+    public int getValue() {
         return number;
     }
 
     //bounce the number by reversing its travel angle
-    public void bounceWith(TouchableNumber collidingNum)
-    {
-
+    public void bounceWith(TouchableNumber collidingNum) {
         float tempX = xVelocity;
         float tempY = yVelocity;
 

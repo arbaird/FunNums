@@ -61,9 +61,6 @@ public class MainMenuActivity extends AppCompatActivity {
                             .setCancelable(false)
                             .create();
             dialog.show();
-
-
-
         }
 
         // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
