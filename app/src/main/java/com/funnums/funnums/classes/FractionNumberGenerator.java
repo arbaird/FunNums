@@ -15,6 +15,7 @@ import java.util.Random;
  */
 
 public class FractionNumberGenerator {
+    static final public String TAG_F = "Fraction";
 
     //Object of type fraction defined. No actual fraction math supported, only used for representation
     class Fraction{
@@ -48,13 +49,10 @@ public class FractionNumberGenerator {
     int gType;                                  /*Current game type, must be one of the following: {0, 1, 2} */
     Random rd;                                  /*Random Object*/
 
-    /*Debugging tag*/
-    String TEST_LOG_TAG = "Fraction Test";
-
     //Hash table containing ArrayLists with pre defined equivalent fractions, decimal value of fraction used as hash key
     Hashtable <Double, ArrayList<Fraction>> eqivFracs;
     //Array containing the different hash keys
-    private double fracKeys [] = {1.0/2, 1.0/4, 1.0/3, 1.0/5, 1.0/6, 2.0/3, 2.0/5, 3.0/4, 3.0/5};
+    private final double fracKeys [] = {1.0/2, 1.0/4, 1.0/3, 1.0/5, 4.0/5, 2.0/3, 2.0/5, 3.0/4, 3.0/5};
 
 
     //Constructor takes value type (0,1,2) to specify current game mode.
@@ -92,7 +90,7 @@ public class FractionNumberGenerator {
         eqivFracs.put(new Double(1.0/4),pointTwoFiveL);
         eqivFracs.put(new Double(1.0/3),pointThreeL);
         eqivFracs.put(new Double(1.0/5),pointTwoL);
-        eqivFracs.put(new Double(1.0/6),pointEightL);
+        eqivFracs.put(new Double(4.0/5),pointEightL);
         eqivFracs.put(new Double(2.0/3),pointSixSixL);
         eqivFracs.put(new Double(2.0/5),pointFourL);
         eqivFracs.put(new Double(3.0/4),pointSevenFiveL);
@@ -197,11 +195,11 @@ public class FractionNumberGenerator {
     //Test generates 10 balloons
     public void runTest(){
 
-        Log.d(TEST_LOG_TAG, "Test of type: " + String.valueOf(gType));
+        Log.d(TAG_F, "Test of type: " + String.valueOf(gType));
 
-        Log.d(TEST_LOG_TAG, "Target: " + String.valueOf(target));
+        Log.d(TAG_F, "Target: " + String.valueOf(target));
         for (int i = 0; i < 10; i++) {
-            Log.d(TEST_LOG_TAG, "Balloon: " + String.valueOf(getNewBalloon()));
+            Log.d(TAG_F, "Balloon: " + String.valueOf(getNewBalloon()));
         }
     }
 

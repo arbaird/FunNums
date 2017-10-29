@@ -3,6 +3,7 @@ package com.funnums.funnums.minigames;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import java.util.ArrayList;
@@ -95,15 +96,19 @@ public class BubbleGame extends MiniGame
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
 
-        /*!!This will beremoved is just a test*/
+        /**!!This will be removed is just a test*/
+        Log.d("Fraction", "Test LT or GT");
         FractionNumberGenerator lol = new FractionNumberGenerator(0);
         lol.runTest();
         /*!!*/
+        Log.d("Fraction", "Test LEQ or GEQ ");
         lol.new_game(1);
         lol.runTest();
         /*!!*/
+        Log.d("Fraction", "Test EQ");
         lol.new_game(2);
         lol.runTest();
+        /****************************************************/
     }
 
 

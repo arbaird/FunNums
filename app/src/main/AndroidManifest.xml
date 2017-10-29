@@ -25,6 +25,10 @@
             android:screenOrientation="portrait">
         </activity>
 
+        <activity android:name="com.funnums.funnums.maingame.LeaderboardGameActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
     </application>
 
 </manifest>

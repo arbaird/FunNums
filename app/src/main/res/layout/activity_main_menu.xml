@@ -13,30 +13,33 @@
         android:layout_alignParentEnd="true" />
 
     <Button
+        android:id="@+id/buttonHScore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/play_button"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:onClick="onPressedScores"
+        android:text="@string/high_score_button" />
+
+    <Button
+        android:id="@+id/buttonSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/buttonHScore"
+        android:layout_marginTop="30dp"
+        android:onClick="onPressedSettings"
+        android:text="@string/settings_button" />
+
+    <Button
         android:id="@+id/buttonSelect"
-        android:onClick="onPressedSelect"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="127dp"
-        android:layout_marginEnd="127dp"
-        android:layout_marginBottom="78dp" />
-
-    <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:paddingBottom="5dp"
-        android:layout_marginTop="20dp"
-
-        android:layout_below="@+id/textHiScore"
-        android:layout_above="@+id/buttonPlay"
-
-        android:listSelector="@android:color/transparent"
-        />
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/buttonHScore"
+        android:layout_marginBottom="30dp"
+        android:onClick="onPressedSelect"
+        android:text="@string/play_button" />
 
 
 </RelativeLayout>
