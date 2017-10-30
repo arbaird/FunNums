@@ -39,7 +39,7 @@ public class BalloonGame extends MiniGame {
     private long runningMilis = 0;
 
 
-    private int maxNumsOnScreen = 6;
+    private int maxNumsOnScreen = 10;
 
     //player's current sum
     private int sum;
@@ -68,8 +68,7 @@ public class BalloonGame extends MiniGame {
     //Timer object
     private GameCountdownTimer gameTimer;
 
-    public void init()
-    {
+    public void init() {
 
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
@@ -78,7 +77,7 @@ public class BalloonGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
-        bRadius = (int) (screenX * .13);
+        bRadius = (int) (screenX * .07);
 
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
@@ -96,16 +95,14 @@ public class BalloonGame extends MiniGame {
 
 
 
-    public void update(long delta)
-    {
+    public void update(long delta){
         if(isPaused)
             return;
-        //change here
+
         //detect and handle collisions
         findCollisions();
 
-        for(TouchableNumber num : numberList)
-        {
+        for(TouchableNumber num : numberList) {
             //update the number
             num.update();
 
@@ -113,21 +110,17 @@ public class BalloonGame extends MiniGame {
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
                 num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
-
-            //change here
-            if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
-                    || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
-                num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge
-
         }
 
         runningMilis += delta;
         //generate a new number every 1/2 second if there are less than the max amount of numbers on the screen
-        if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen)
-        {
+        if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen) {
             generateNumber();
             runningMilis = 0;
         }
+
+        //Remove and checks the ballons when they reach off screen
+        offScreenCheck();
 
         //process all touch events
         processEvents();
@@ -136,8 +129,7 @@ public class BalloonGame extends MiniGame {
         //we can't remove them while iterating through numberList without a ConcurrentModificationError,
         //google "ConcurrentModificationError ArrayList" to get some helpful StackOverflow explanations
         ArrayList<TextAnimator> scoresToRemove = new ArrayList<>();
-        for(TextAnimator score : scoreAnimations)
-        {
+        for(TextAnimator score : scoreAnimations) {
             score.update(delta);
             if (score.alpha <= 0)
                 scoresToRemove.add(score);
@@ -152,21 +144,13 @@ public class BalloonGame extends MiniGame {
     /*
     Generates a touchable number on screen
      */
-    private void generateNumber()
-    {
+    private void generateNumber() {
         int x, y;
         int radius = bRadius;
-        do
-        {
+        do {
             //Setting coordinates x and y
             x = r.nextInt(screenX);
-            y = screenY;
-
-            //randomly decide if next number appears along top/bottom of screen or far left/right of screen
-            if (r.nextBoolean())
-                x = bin(screenX / 2, screenX, 0, x);
-            else
-                y = bin(screenY/2, screenY, topBuffer + radius, y);
+            y = screenY+r.nextInt(2*screenY/3);
         }
         while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -177,13 +161,11 @@ public class BalloonGame extends MiniGame {
         //we want it to travel up and to the left (min = 90 max = 180)
         int angle, max, min;
         //determine the quadrant the number will spawn in to plan the angle
-        if (x >= screenX/2)
-        {
+        if (x >= screenX/2) {
             max = 180;
             min = 91;
         }
-        else
-        {
+        else {
             max = 90;
             min = 1;
         }
@@ -196,8 +178,7 @@ public class BalloonGame extends MiniGame {
 
         int value;
         int iterations = 0;
-        do
-        {
+        do{
             value = r.nextInt(maxVal) + 1;
             iterations++;
         }while(valueAlreadyOnScreen(value) && iterations < maxVal * 2);
@@ -212,8 +193,7 @@ public class BalloonGame extends MiniGame {
     /*
     Process the touch events
      */
-    private void processEvents()
-    {
+    private void processEvents() {
         for(MotionEvent e : events)
         {
             int x = (int) e.getX();
@@ -224,8 +204,7 @@ public class BalloonGame extends MiniGame {
         events.clear();
     }
 
-    private boolean valueAlreadyOnScreen(int value)
-    {
+    private boolean valueAlreadyOnScreen(int value) {
         for(TouchableNumber num : numberList)
         {
             if(num.getValue() == value)
@@ -238,8 +217,7 @@ public class BalloonGame extends MiniGame {
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
     */
-    private void checkTouchRadius(int x, int y)
-    {
+    private void checkTouchRadius(int x, int y) {
         for(TouchableNumber num : numberList)
         {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
@@ -260,8 +238,7 @@ public class BalloonGame extends MiniGame {
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
     */
-    private void processScore(TouchableNumber num)
-    {
+    private void processScore(TouchableNumber num) {
 
         sum += num.getValue();
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
@@ -277,8 +254,7 @@ public class BalloonGame extends MiniGame {
     /*
        Create a new target
     */
-    private void makeNewTarget()
-    {
+    private void makeNewTarget() {
         //text, x, y, r, g, b, interval, size
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
@@ -289,8 +265,7 @@ public class BalloonGame extends MiniGame {
     /*
         For now, tell player they missed the target and reset the target and current sum
      */
-    private void resetGame()
-    {
+    private void resetGame() {
         //text, x, y, r, g, b, interval, size
         TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
         scoreAnimations.add(textAnimator);
@@ -306,20 +281,30 @@ public class BalloonGame extends MiniGame {
     Used to round a number to min if it is less than the cutoff or to max if it is greater than the
     cutoff
      */
-    private int bin(int cutoff, int max, int min, int num)
-    {
+    private int bin(int cutoff, int max, int min, int num) {
         if (num > cutoff)
             return max;
         else
             return min;
     }
 
+    //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remve balloon.
+    private void offScreenCheck() {
+        for(TouchableNumber num : numberList) {
+            if(num.getY()<-bRadius) {
+                processScore(num);
+                numberList.remove(num);
+                break;
+                //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
+                //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
+            }
+        }
+    }
 
     /*
         Detect collisions for all our numbers on screen and bouce numbers that have collided
      */
-    private void findCollisions()
-    {
+    private void findCollisions() {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
         for(int i = 0; i < numberList.size(); i++)
@@ -335,8 +320,7 @@ public class BalloonGame extends MiniGame {
         Overloaded to take an x and y coordinate as arguments.
         Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
      */
-    private boolean findCollisions(int x, int y)
-    {
+    private boolean findCollisions(int x, int y) {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
 
@@ -349,11 +333,9 @@ public class BalloonGame extends MiniGame {
         return false;
     }
 
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint)
-    {
+    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
 
-        if (ourHolder.getSurface().isValid())
-        {
+        if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
             canvas = ourHolder.lockCanvas();
 
@@ -395,8 +377,7 @@ public class BalloonGame extends MiniGame {
     }
 
 
-    public boolean onTouch(MotionEvent e)
-    {
+    public boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes

@@ -48,11 +48,11 @@ public class TouchableNumber
         angle = travelAngle;
 
         xVelocity = 0;
-        yVelocity = 5;
+        yVelocity = 6;
 
         this.radius = radius;
 
-        speed = 5;
+        speed = 10;
 
         number = value;
 

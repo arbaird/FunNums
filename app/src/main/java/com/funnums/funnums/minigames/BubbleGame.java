@@ -113,6 +113,7 @@ public class BubbleGame extends MiniGame
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
                 num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
+
             if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
                     || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
                 num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge

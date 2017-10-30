@@ -30,6 +30,9 @@ public class SelectGameActivity extends AppCompatActivity {
 
 
     public void onPressedBalloons(View v) {
+        Log.d(TAG, "Bubble game pressed");
+        Intent i = new Intent(this, GameActivity.class);
+        startActivity(i);
     }
 
 
