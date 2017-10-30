@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
 
+import com.funnums.funnums.classes.BubbleTargetGenerator;
+import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
@@ -41,12 +43,16 @@ public class BubbleGame extends MiniGame {
     private long runningMilis = 0;
 
 
-    private int maxNumsOnScreen = 6;
+    private int maxNumsOnScreen = 7;
 
     //player's current sum
     private int sum;
     //target player is trying to sum to
     private int target;
+    //The target generator
+    BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
+    //The number generator
+    BubbleNumberGenerator numGen = new BubbleNumberGenerator();
 
     //list of all the touchable numbers on screen
     ArrayList<TouchableNumber> numberList = new ArrayList<>();
@@ -71,9 +77,10 @@ public class BubbleGame extends MiniGame {
     private GameCountdownTimer gameTimer;
 
     public void init() {
-        //initalize random generator and make the first target between 5 and 8
+        //initalize random generator
         r = new Random();
-        target = r.nextInt(3)+5;
+        //get a target from the target generator
+        target = targetGen.nextTarget();
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -215,17 +222,8 @@ public class BubbleGame extends MiniGame {
 
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
-        int value;
-        int iterations = 0;
-        do {
-            value = r.nextInt(maxVal) + 1;
-            iterations++;
-        }while(valueAlreadyOnScreen(value) && iterations < maxVal * 2);
-        //get a random number until we find one thats not already on the screen.
-        //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
-        //left to generate a number that is not already on the screen.
-
-        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius);
+        int newNumber = numGen.nextNum(); // get generated number from our num gen
+        TouchableNumber num = new TouchableNumber(x, y, angle, newNumber, bRadius);
         numberList.add(num);
     }
 
@@ -296,7 +294,9 @@ public class BubbleGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target += r.nextInt(3)+5;
+        int oldTarget = target;
+        target = targetGen.nextTarget();
+        numGen.setAbsoluteTarget(target - oldTarget); //
     }
 
     /*
@@ -307,7 +307,7 @@ public class BubbleGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target = r.nextInt(3)+5;
+        target = targetGen.nextTarget();
         sum = 0;
 
         //if we want game to stop, make playing false here
