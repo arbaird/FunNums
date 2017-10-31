@@ -43,7 +43,7 @@ public class BubbleGame extends MiniGame {
     private long runningMilis = 0;
 
 
-    private int maxNumsOnScreen = 7;
+    private int maxNumsOnScreen = 6;
 
     //player's current sum
     private int sum;

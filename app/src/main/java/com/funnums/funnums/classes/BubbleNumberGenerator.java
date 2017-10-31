@@ -13,14 +13,13 @@ public class BubbleNumberGenerator {
     /* There are 4 bubble types: Mini, Small, Medium, and Large.
        Each Type corresponds to how large relatively the bubble's number is .
        The CHANCES correspond to the chance for each bubble type to be generated,
-       and must add up to 100.
        The FACTORS relate to what fraction of absTarget we generate,
        so a larger FACTOR will mean a smaller generated number.
     */
-    private int MINI_CHANCE   = 20;
-    private int SMALL_CHANCE  = 35;
-    private int MEDIUM_CHANCE = 30;
-    private int LARGE_CHANCE  = 15;
+    private int MINI_THRES   = 20;  //20%
+    private int SMALL_THRES  = 55;  //35%
+    private int MEDIUM_THRES = 85;  //30%
+    private int LARGE_THRES  = 100; //15%
 
     private int MINI_FACTOR   = 5;
     private int SMALL_FACTOR  = 4;
@@ -39,15 +38,15 @@ public class BubbleNumberGenerator {
         int num = absTarget;
         int bubbleType = r.nextInt(100); // generates [0:99]
         Log.d(TAG, "Bubble Type Chance: "+bubbleType);
-        if (bubbleType < MINI_CHANCE) {
+        if (bubbleType < MINI_THRES) {
             Log.d(TAG, "Generating MINI bubble");
             num = num/MINI_FACTOR;
 
-        }else if (bubbleType < SMALL_CHANCE) {
+        }else if (bubbleType < SMALL_THRES) {
             Log.d(TAG, "Generating SMALL bubble");
             num = num/SMALL_FACTOR;
 
-        }else if (bubbleType < MEDIUM_CHANCE) {
+        }else if (bubbleType < MEDIUM_THRES) {
             Log.d(TAG, "Generating MEDIUM bubble");
             num = num/MEDIUM_FACTOR;
 
@@ -56,7 +55,7 @@ public class BubbleNumberGenerator {
             num = num/LARGE_FACTOR;
         }
         //We want to return a number that's from 1-2 at minimum
-        int min = Math.max(r.nextInt(3), 1);
+        int min = Math.max(r.nextInt(6), 1);
         return Math.max(num, min);
     }
 
