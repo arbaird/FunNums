@@ -46,6 +46,7 @@ public class BubbleGame extends MiniGame
     //target player is trying to sum to
     private int target;
 
+
     //list of all the touchable numbers on screen
     ArrayList<TouchableNumber> numberList = new ArrayList<>();
 

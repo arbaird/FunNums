@@ -24,6 +24,9 @@ public class PauseMenu
 
     private Rect backDropRect;
 
+    //space between each button
+    private int padding;
+
     public PauseMenu(int left, int top, int right, int bottom,
                      UIButton resumeButton,  UIButton menuButton) {
         backDropRect = new Rect(left, top, right, bottom);
@@ -32,17 +35,21 @@ public class PauseMenu
         resume = resumeButton;
         mainMenu = menuButton;
 
-        resume.setRect(left + 100, top +100);
-        mainMenu.setRect(left + 100, top +200);
+        padding = 100;
+
+        resume.setRect(left + padding, top +padding);
+        mainMenu.setRect(left + padding, top + padding*2);
 
 
     }
 
     public void draw(Canvas canvas, Paint paint)
     {
+        //draw grey, tanslucent rectangle over entire screen
         paint.setColor(Color.argb(126, 0, 0, 0));
         canvas.drawRect(fade, paint);
 
+        //draw the rectangle containing the pasue menu buttons
         paint.setColor(Color.argb(255, 100, 100, 100));
         canvas.drawRect(backDropRect, paint);
 

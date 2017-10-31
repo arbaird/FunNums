@@ -15,6 +15,7 @@ public class GameActivity extends Activity {
     //used to load bitmaps
     public static AssetManager assets;
 
+    //hold dimension of screen
     public static int screenX;
     public static int screenY;
 
@@ -34,7 +35,8 @@ public class GameActivity extends Activity {
         gameView = new GameView(this);
         gameView.startGame();
 
-        // Make our gameView the view for the Activity
+        // Make our gameView the view for the Activity, gameView will ahndle all drawing and
+        //respond to touch since it implements runnable and SurfaceView.
         setContentView(gameView);
     }
 

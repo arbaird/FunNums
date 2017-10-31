@@ -95,10 +95,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
         }
 
-        // Prepare to highest Score fo rthis user. We don't need this yet, we can keep it for later when we implement scoring
-
         // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
-
         // Load fastest time
         // if not available our high score = 1000000
         long highScore = prefs.getLong("HighScore", 1000000);
@@ -130,7 +127,7 @@ public class MainMenuActivity extends AppCompatActivity {
         //get reference to the playerScores in our database
         playerScoreCloudEndPoint = mDatabase.child("playerScores");
 
-        /*following function call will display the listview with 10 highets scores, left commented
+        /*following function call will display the listview with 10 highest scores, left commented
         out for now so we can add it to a button click later
          */
         //getHighScores();
@@ -150,7 +147,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     /*
-        Gets the top ten high scores from Fierbase and displays them on screen
+        Gets the top ten high scores from Firebase and displays them on screen
      */
     public void getHighScores() {
         //empty the arraylist so we don't keep adding ten scores to it everytime we call this function
