@@ -58,8 +58,12 @@ public class GameView extends SurfaceView implements Runnable {
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
         int offset = 100;
-        pauseScreen = new PauseMenu(GameActivity.screenX/4, offset, GameActivity.screenX * 3/4, GameActivity.screenY - offset, resumeButton, menuButton);
-
+        pauseScreen = new PauseMenu(GameActivity.screenX/4,
+                                    offset,
+                                    GameActivity.screenX * 3/4,
+                                    GameActivity.screenY - offset,
+                                    resumeButton,
+                                    menuButton);
     }
 
     public void startGame() {
@@ -120,7 +124,6 @@ public class GameView extends SurfaceView implements Runnable {
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
-
     }
 
     @Override
@@ -165,8 +168,8 @@ public class GameView extends SurfaceView implements Runnable {
         } else {
             options.inPreferredConfig = Bitmap.Config.RGB_565;
         }
-        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null,
-                options);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+
         return bitmap;
     }
 }

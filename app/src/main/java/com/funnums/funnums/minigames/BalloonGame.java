@@ -12,6 +12,8 @@ import android.graphics.Bitmap;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.classes.FractionNumberGenerator;
+import com.funnums.funnums.classes.Fraction;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 
@@ -32,7 +34,7 @@ public class BalloonGame extends MiniGame {
     private int screenY;
 
     //TODO make this vary based on phone size
-    //this is the amount of space at the top of the sceen used for the current sum, target, timer, and pause button
+    //this is the amount of space at the top of the screen used for the current sum, target, timer, and pause button
     private int topBuffer = 200;
 
     //running time, used to generate new numbers every few seconds
@@ -46,6 +48,10 @@ public class BalloonGame extends MiniGame {
     //target player is trying to sum to
     private int target;
 
+    //speed of the balloons
+    private int speed=10;
+
+
     //list of all the touchable numbers on screen
     ArrayList<TouchableNumber> numberList = new ArrayList<>();
 
@@ -56,6 +62,9 @@ public class BalloonGame extends MiniGame {
 
     //generates random numbers for us
     private Random r;
+
+    //generates random fractions for us
+    private FractionNumberGenerator rFrac= new FractionNumberGenerator(0);
 
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
@@ -77,7 +86,7 @@ public class BalloonGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
-        bRadius = (int) (screenX * .07);
+        bRadius = (int) (screenX * .1);
 
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
@@ -119,7 +128,7 @@ public class BalloonGame extends MiniGame {
             runningMilis = 0;
         }
 
-        //Remove and checks the ballons when they reach off screen
+        //Remove and checks the balloons when they left the screen
         offScreenCheck();
 
         //process all touch events
@@ -134,6 +143,7 @@ public class BalloonGame extends MiniGame {
             if (score.alpha <= 0)
                 scoresToRemove.add(score);
         }
+
         for(TextAnimator faded : scoresToRemove)
             scoreAnimations.remove(faded);
 
@@ -146,11 +156,10 @@ public class BalloonGame extends MiniGame {
      */
     private void generateNumber() {
         int x, y;
-        int radius = bRadius;
         do {
             //Setting coordinates x and y
             x = r.nextInt(screenX);
-            y = screenY+r.nextInt(2*screenY/3);
+            y = screenY+r.nextInt(3*screenY/4);
         }
         while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -162,31 +171,19 @@ public class BalloonGame extends MiniGame {
         int angle, max, min;
         //determine the quadrant the number will spawn in to plan the angle
         if (x >= screenX/2) {
-            max = 180;
+            max = 120;
             min = 91;
         }
         else {
             max = 90;
-            min = 1;
+            min = 60;
         }
-
-        //make angles more diagonal
-        max -= 25;
-        min += 25;
 
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
-        int value;
-        int iterations = 0;
-        do{
-            value = r.nextInt(maxVal) + 1;
-            iterations++;
-        }while(valueAlreadyOnScreen(value) && iterations < maxVal * 2);
-        //get a random number until we find one thats not already on the screen.
-        //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
-        //left to generate a number that is not already on the screen.
+        Fraction value = rFrac.getNewBalloon();
 
-        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius);
+        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius,speed);
         numberList.add(num);
     }
 
@@ -218,11 +215,9 @@ public class BalloonGame extends MiniGame {
    processScore() to update the number/score/etc
     */
     private void checkTouchRadius(int x, int y) {
-        for(TouchableNumber num : numberList)
-        {
+        for(TouchableNumber num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
-            if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2))
-            {
+            if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
                 numberList.remove(num);
                 break;
@@ -245,8 +240,7 @@ public class BalloonGame extends MiniGame {
         scoreAnimations.add(textAnimator);
         if(sum == target)
             makeNewTarget();
-        else if(sum > target)
-        {
+        else if(sum > target) {
             resetGame();
         }
     }
@@ -291,7 +285,7 @@ public class BalloonGame extends MiniGame {
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remve balloon.
     private void offScreenCheck() {
         for(TouchableNumber num : numberList) {
-            if(num.getY()<-bRadius) {
+            if(num.getY()<topBuffer-bRadius) {
                 processScore(num);
                 numberList.remove(num);
                 break;

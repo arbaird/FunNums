@@ -1,11 +1,7 @@
 package com.funnums.funnums.classes;
-
 /**
  * Created by austinbaird on 10/6/17.
  */
-
-
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,8 +13,7 @@ import android.util.Log;
 
 import java.util.Random;
 
-public class TouchableNumber
-{
+public class TouchableNumber {
 
     private String VIEW_LOG_TAG = "l";
     //use bitmap when we add in our own images
@@ -33,6 +28,8 @@ public class TouchableNumber
     //the actual value of this number
     private int number;
 
+    private Fraction frac;
+
     private float xVelocity, yVelocity;
 
     //the angle the number will travel at
@@ -41,8 +38,7 @@ public class TouchableNumber
 
 
     // Constructor
-    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius)
-    {
+    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius, int speed) {
         x = screenX;
         y = screenY;
         angle = travelAngle;
@@ -52,9 +48,31 @@ public class TouchableNumber
 
         this.radius = radius;
 
-        speed = 10;
+        this.speed = speed;
 
         number = value;
+
+        //Trig! I looked this up on StackOverflow
+
+        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+
+        Log.d(VIEW_LOG_TAG, "INITAL: " + String.valueOf(x + ", " + y ));
+    }
+    //alternate constructor for balloon game
+    public TouchableNumber(int screenX, int screenY, int travelAngle, Fraction value, int radius, int speed) {
+        x = screenX;
+        y = screenY;
+        angle = travelAngle;
+
+        xVelocity = 0;
+        yVelocity = 6;
+
+        this.radius = radius;
+
+        this.speed = speed;
+
+        frac = value;
 
         //Trig! I looked this up on StackOverflow
 
@@ -66,15 +84,11 @@ public class TouchableNumber
 
     }
 
-    public void update()
-    {
-
-
+    public void update() {
         move();
     }
 
-    public void draw(Canvas canvas, Paint paint)
-    {
+    public void draw(Canvas canvas, Paint paint) {
         //draw the circle(bubble)
         paint.setColor(Color.argb(255, 255, 255, 255));
         canvas.drawCircle(x, y, radius, paint);
@@ -83,44 +97,37 @@ public class TouchableNumber
         paint.setColor(Color.argb(100, 100, 100, 100));
         paint.setTextSize(40);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(number), x, y, paint);
+
+        //For now, I changed number to frac but in the future, we need to seperate numbers and fractions
+        canvas.drawText(String.valueOf(frac), x, y, paint);
     }
 
 
-    public int getSpeed()
-    {
-
+    public int getSpeed() {
         return speed;
     }
 
     public float getX() {
-
         return x;
     }
 
     public float getY() {
-
         return y;
     }
 
-    void move()
-    {
+    void move() {
         x += xVelocity;
         y += yVelocity;
     }
 
 
 
-    public int getValue()
-    {
-
+    public int getValue() {
         return number;
     }
 
     //bounce the number by reversing its travel angle
-    public void bounceWith(TouchableNumber collidingNum)
-    {
-
+    public void bounceWith(TouchableNumber collidingNum) {
         float tempX = xVelocity;
         float tempY = yVelocity;
 
