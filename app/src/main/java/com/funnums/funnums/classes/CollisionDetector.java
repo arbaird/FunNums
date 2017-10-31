@@ -4,10 +4,9 @@ package com.funnums.funnums.classes;
  * Created by austinbaird on 10/9/17.
  */
 
-public class CollisionDetector
-{
-    public static boolean isCollision(TouchableNumber num1, TouchableNumber num2)
-    {
+public class CollisionDetector {
+
+    public static boolean isCollision(TouchableNumber num1, TouchableNumber num2) {
         boolean collision = false;
 
         float distanceX = num1.getX() - num2.getX();
@@ -16,26 +15,23 @@ public class CollisionDetector
         // the centre of the circles on the y axis
         float distanceY = num1.getY() - num2.getY();
 
-
         // Calculate the distance between the center of each circle
         double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-
-
 
         //if the distance is contained in the radius of each cicle, the circles overlap!
         if (distance < num1.getRadius() + num2.getRadius())
             collision = true;
 
-
         return collision;
     }
 
-    //overload method so we don't have to create otherwise unused TouchableNumber objects on every
-    //iteration of the game loop when checking spawn points, instead this overloaded method will
-    // just take an x, y, and radius instead of a whole new object
-    public static boolean isCollision(TouchableNumber num1, float x, float y, int radius)
-    {
+
+
+        //overload method so we don't have to create otherwise unused TouchableNumber objects on every
+        //iteration of the game loop when checking spawn points, instead this overloaded method will
+        // just take an x, y, and radius instead of a whole new object
+    public static boolean isCollision(TouchableNumber num1, int x, int y, int radius) {
+        
         boolean collision = false;
 
         float distanceX = num1.getX() - x;
@@ -44,17 +40,12 @@ public class CollisionDetector
         // the centre of the circles on the y axis
         float distanceY = num1.getY() - y;
 
-
         // Calculate the distance between the center of each circle
         double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-
-
 
         //if the distance is contained in the radius of each cicle, the circles overlap!
         if (distance < num1.getRadius() + radius)
             collision = true;
-
 
         return collision;
     }

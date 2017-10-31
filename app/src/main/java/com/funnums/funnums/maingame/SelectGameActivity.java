@@ -22,12 +22,12 @@ public class SelectGameActivity extends AppCompatActivity {
         Log.d(TAG, "End of onCreate");
     }
 
+
     public void onPressedBubbles(View v) {
         Log.d(TAG, "Bubble game pressed");
         Intent i = new Intent(this, GameActivity.class);
         startActivity(i);
     }
-
 
     public void onPressedBalloons(View v) {
     }

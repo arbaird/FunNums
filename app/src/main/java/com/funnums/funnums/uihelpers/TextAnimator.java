@@ -10,8 +10,7 @@ import android.graphics.Paint;
 
 //make canvas text fade, move, etc
 //TODO, make text that can move across screen, if we ned that
-public class TextAnimator
-{
+public class TextAnimator {
     String text;
 
     float currentElapsed;
@@ -24,8 +23,7 @@ public class TextAnimator
     int r,g,b;
     int size;
 
-    public TextAnimator(String text, float x, float y, int r, int g, int b)
-    {
+    public TextAnimator(String text, float x, float y, int r, int g, int b) {
         this.text = text;
         this.x = x;
         this.y = y;
@@ -40,8 +38,8 @@ public class TextAnimator
         interval = com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS * 0.1;
         size = 40;
     }
-    public TextAnimator(String text, int x, int y, int r, int g, int b, double interval, int size)
-    {
+
+    public TextAnimator(String text, int x, int y, int r, int g, int b, double interval, int size) {
         this.text = text;
         this.x = x;
         this.y = y;
@@ -64,8 +62,7 @@ public class TextAnimator
     public void update(float increment) {
         currentElapsed += increment;
 
-        if(currentElapsed > interval)
-        {
+        if(currentElapsed > interval) {
             alpha = Math.max(0, alpha -= 10);
             //currentElapsed = 0;
         }
@@ -73,8 +70,7 @@ public class TextAnimator
 
 
 
-    public void render(Canvas canvas, Paint paint)
-    {
+    public void render(Canvas canvas, Paint paint) {
         paint.setTextSize(size);
         paint.setColor(Color.argb(alpha, r, g, b));
         canvas.drawText(text, x, y, paint);
