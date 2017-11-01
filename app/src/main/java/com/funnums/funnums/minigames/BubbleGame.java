@@ -48,6 +48,7 @@ public class BubbleGame extends MiniGame {
     //target player is trying to sum to
     private int target;
 
+
     //speed of the bubbles
     private int speed=7;
 
