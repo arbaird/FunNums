@@ -14,6 +14,7 @@ import java.io.InputStream;
 
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
+import com.funnums.funnums.minigames.BalloonGame;
 import com.funnums.funnums.uihelpers.*;
 
 
@@ -66,7 +67,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     public void startGame() {
-        currentGame = new BubbleGame();
+        currentGame = new BalloonGame();
         currentGame.init();
     }
 

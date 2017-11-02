@@ -17,34 +17,6 @@ import java.util.Random;
 public class FractionNumberGenerator {
     static final public String TAG_F = "Fraction";
 
-    //Object of type fraction defined. No actual fraction math supported, only used for representation
-    class Fraction{
-
-        int numerator;
-        int denominator;
-
-        Fraction(int n, int d){
-            this.numerator = n;
-            this.denominator = d;
-        }
-
-        //Returns decimal value of the fraction as a Double object
-        Double get_key(){
-            return (double) numerator / denominator;
-        }
-
-        //Denominator is returned, used to differentiate one equivalent fraction from one another
-        int get_denom(){
-            return denominator;
-        }
-
-        @Override
-        public String toString(){
-            return numerator + "/" + denominator;
-        }
-
-    }
-
     Fraction target;                            /*Current fraction target*/
     int gType;                                  /*Current game type, must be one of the following: {0, 1, 2} */
     Random rd;                                  /*Random Object*/

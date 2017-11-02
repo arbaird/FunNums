@@ -18,7 +18,7 @@ public class TouchableNumber {
     private String VIEW_LOG_TAG = "l";
     //use bitmap when we add in our own images
     //private Bitmap bitmap;
-    private float x, y, radius;
+    public float x, y, radius;
     private int speed;
 
 
@@ -28,6 +28,9 @@ public class TouchableNumber {
     //the actual value of this number
     private int number;
 
+
+    private Fraction frac;
+
     private float xVelocity, yVelocity;
 
     //the angle the number will travel at
@@ -36,19 +39,41 @@ public class TouchableNumber {
 
 
     // Constructor
-    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius) {
+    public TouchableNumber(int screenX, int screenY, int travelAngle, int value, int radius, int speed) {
         x = screenX;
         y = screenY;
         angle = travelAngle;
 
         xVelocity = 0;
-        yVelocity = 5;
+        yVelocity = 6;
 
         this.radius = radius;
 
-        speed = 5;
+        this.speed = speed;
 
         number = value;
+
+        //Trig! I looked this up on StackOverflow
+
+        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+
+        Log.d(VIEW_LOG_TAG, "INITAL: " + String.valueOf(x + ", " + y ));
+    }
+    //alternate constructor for balloon game
+    public TouchableNumber(int screenX, int screenY, int travelAngle, Fraction value, int radius, int speed) {
+        x = screenX;
+        y = screenY;
+        angle = travelAngle;
+
+        xVelocity = 0;
+        yVelocity = 6;
+
+        this.radius = radius;
+
+        this.speed = speed;
+
+        frac = value;
 
         //Trig! I looked this up on StackOverflow
 
@@ -73,7 +98,9 @@ public class TouchableNumber {
         paint.setColor(Color.argb(100, 100, 100, 100));
         paint.setTextSize(40);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(number), x, y, paint);
+
+        //For now, I changed number to frac but in the future, we need to seperate numbers and fractions
+        canvas.drawText(String.valueOf(frac), x, y, paint);
     }
 
 
@@ -100,25 +127,38 @@ public class TouchableNumber {
         return number;
     }
 
-    //bounce the number by reversing its travel angle
+
+        //bounce the number by swicthing their velocity vectors,
+        //since all bubbles are same size (mass) this is all that needs to be done in conservation
+        //of momentum inelastic collisions(collisions where things bounce off each other)!
     public void bounceWith(TouchableNumber collidingNum) {
+        //move both circles so they no longer overlap each other
+        CollisionDetector.correctCircleOverlap(this, collidingNum);
+
         float tempX = xVelocity;
         float tempY = yVelocity;
 
+        //hold onto the values being swapped, a little redundant but makes it easier to track
+        //which variables are being stored where, since there are 2 variable swaps instad of 1
+        //(one swap x velocity and one for y velocity)
         float x1velocity = tempX;
         float y1velocity = tempY;
         float x2velocity = collidingNum.getXVelocity();
         float y2velocity = collidingNum.getYVelocity();
 
+        //the x swap
         x1velocity  = x2velocity;
         x2velocity = tempX;
 
+        //the y swap
         y1velocity  = y2velocity;
         y2velocity = tempY;
 
+        //set this TouchableNumber's x velocity to the new value
         setXVelocity(x1velocity);
         setYVelocity(y1velocity);
 
+        //set the bubble this number is colliding with to its new velocity
         collidingNum.setXVelocity(x2velocity);
         collidingNum.setYVelocity(y2velocity);
     }
@@ -150,7 +190,10 @@ public class TouchableNumber {
 
     public void fixAngle()
     {
-        angle = Math.toDegrees(Math.atan2(yVelocity, xVelocity));
+
+        angle = Math.toDegrees(Math.atan2(-yVelocity, xVelocity));
+        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
     }
 
     public void setRadius(float newRad)

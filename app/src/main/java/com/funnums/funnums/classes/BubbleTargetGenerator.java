@@ -9,17 +9,17 @@ import java.util.Random;
 public class BubbleTargetGenerator {
     public static final String TAG = "BubbleTargetGenerator";
 
-    private final int SIZE = 30;        //number of targets to generate upoon intialization
-    private final int RANDOM_RANGE = 2; //generates 0:1
-    private final int INIT_TARGET = 3;  //initial target without increase added
-    private final int INIT_BASE = 0;    //initial increase base to be added to target
-    private final int RATE = 5;         //ex: the base increase rate will increase by 1 ever 5 targets
+    private final int SIZE = 30;        // number of targets to generate upon intialization
+    private int base = 0;               // nitial increase base to be added to target
+    private final int RATE = 5;         // ex: the base increase rate will increase by 1 ever 5 targets
+    private final int RANDOM_RANGE = 2; // generates between 0 and 1 less than value. 0:1 in this case
+    private int target = 3;             // initial target without increase added
+
 
     private int[] Targets = new int[SIZE];
     private int nextTargetIndex = 0;
+    private int previousTarget = 0; //used for resetting Current to the previous Target, when the target is missed
 
-    private int target = INIT_TARGET;
-    private int base = INIT_BASE;
     private Random r = new Random();
 
     public BubbleTargetGenerator() {
@@ -48,8 +48,13 @@ public class BubbleTargetGenerator {
             generateTargets();
         }
         int target = Targets[nextTargetIndex];
+        previousTarget = target;
 
         nextTargetIndex++;
         return target;
+    }
+
+    public int getPreviousTarget() {
+        return previousTarget;
     }
 }

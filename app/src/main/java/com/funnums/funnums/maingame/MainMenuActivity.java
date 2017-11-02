@@ -64,7 +64,6 @@ public class MainMenuActivity extends AppCompatActivity {
         }
 
         // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
-
         // Load fastest time
         // if not available our high score = 1000000
         long highScore = prefs.getLong("HighScore", 1000000);
@@ -74,8 +73,9 @@ public class MainMenuActivity extends AppCompatActivity {
         // Put the high score in our TextView
         textFastestTime.setText("Your High Score:" + highScore);
 
-
     }
+
+
 
     public void onPressedSelect(View v) {
         Log.d(TAG, "[SELECT GAME] pressed");
