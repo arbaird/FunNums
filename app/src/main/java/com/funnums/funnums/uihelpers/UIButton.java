@@ -5,31 +5,31 @@ import android.graphics.Rect;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-public class UIButton
-{
+
+public class UIButton {
+
     private Rect buttonRect;
     private boolean buttonDown = false;
     private Bitmap buttonImage, buttonDownImage;
 
     public UIButton(int left, int top, int right, int bottom,
-                    Bitmap buttonImage, Bitmap buttonPressedImage)
-    {
-
+                    Bitmap buttonImage, Bitmap buttonPressedImage) {
 
         buttonRect = new Rect(left, top, right, bottom);
         this.buttonImage = buttonImage;
         this.buttonDownImage = buttonPressedImage;
     }
 
-
-
-    public void setRect(int left, int top)
+    public int getWidth()
     {
+        return buttonImage.getWidth();
+    }
+
+    public void setRect(int left, int top) {
         buttonRect = new Rect(left, top, left + buttonImage.getWidth(),top + buttonImage.getHeight());
     }
 
-    public void render(Canvas g, Paint p)
-    {
+    public void render(Canvas g, Paint p) {
         Bitmap currentButtonImage = buttonDown ? buttonDownImage : buttonImage;
         g.drawBitmap(currentButtonImage, buttonRect.left, buttonRect.top, p);
     }

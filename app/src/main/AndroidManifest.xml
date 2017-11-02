@@ -16,9 +16,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name="com.funnums.funnums.maingame.GameActivity"
             android:screenOrientation = "portrait">
         </activity>
+
+        <activity android:name="com.funnums.funnums.maingame.SelectGameActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity android:name="com.funnums.funnums.maingame.LeaderboardGameActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
     </application>
 
 </manifest>

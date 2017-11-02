@@ -14,15 +14,15 @@ import java.io.InputStream;
 
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
+import com.funnums.funnums.minigames.BalloonGame;
 import com.funnums.funnums.uihelpers.*;
 
 
-public class GameView extends SurfaceView implements Runnable
-{
+public class GameView extends SurfaceView implements Runnable {
     //current minigame
     public MiniGame currentGame;
 
-    public String logTag = "Game"; //for debugging
+    public String TAG = "Game"; //for debugging
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
@@ -39,8 +39,9 @@ public class GameView extends SurfaceView implements Runnable
 
     public PauseMenu pauseScreen;
 
-    GameView(Context context)
-    {
+    public String type;
+
+    GameView(Context context, String type) {
         //set up view properly
         super(context);
 
@@ -59,13 +60,21 @@ public class GameView extends SurfaceView implements Runnable
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
         int offset = 100;
-        pauseScreen = new PauseMenu(GameActivity.screenX/4, offset, GameActivity.screenX * 3/4, GameActivity.screenY - offset, resumeButton, menuButton);
+        pauseScreen = new PauseMenu(GameActivity.screenX/4,
+                                    offset,
+                                    GameActivity.screenX * 3/4,
+                                    GameActivity.screenY - offset,
+                                    resumeButton,
+                                    menuButton);
 
+        this.type = type;
     }
 
-    public void startGame()
-    {
-        currentGame = new BubbleGame();
+    public void startGame() {
+        if(type.equals("bubble"))
+            currentGame = new BubbleGame();
+        else if(type.equals("balloon"))
+            currentGame = new BalloonGame();
         currentGame.init();
     }
 
@@ -75,14 +84,12 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
 
         //keep track of dela time, that is, how much time has passed in between each iteration of
         //the game loop
         long updateDurationMillis = 0;
-        while(playing)
-        {
+        while(playing) {
             long beforeUpdateRender = System.nanoTime();
 
             //three main functions of game loop
@@ -97,45 +104,37 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     private void control() {
-        try
-        {
+        try {
             //TODO don't hard code 17 in sleep, should be variable based on milis,
             //this acheives approximately 60FPS,
             // 17 milliseconds =  (1000(milliseconds)/60(FPS))
             gameThread.sleep(17);
         }
-        catch (InterruptedException e)
-        {
-            Log.e(logTag, "Error causing thread to sleep\n" + e.getStackTrace());
+        catch (InterruptedException e) {
+            Log.e(TAG, "Error causing thread to sleep\n" + e.getStackTrace());
         }
     }
 
     // Clean up our thread if the game is interrupted or the player quits
-    public void pause()
-    {
+    public void pause() {
         playing = false;
-        try
-        {
+        try {
             gameThread.join();
         }
-        catch (InterruptedException e)
-        {
-            Log.e(logTag, "Error joining gameThread\n" + e.getStackTrace());
+        catch (InterruptedException e) {
+            Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
     }
 
     // Make a new thread and start it
-    public void resume()
-    {
+    public void resume() {
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
-
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e)
-    {
+    public boolean onTouchEvent(MotionEvent e) {
         //first check if the pause menu should handle the touch
         if(currentGame.isPaused)
             return pauseScreen.onTouch(e);
@@ -147,14 +146,12 @@ public class GameView extends SurfaceView implements Runnable
             currentGame.pauseButton.onTouchDown(x, y);
         }
         if (e.getAction() == MotionEvent.ACTION_UP) {
-            if (currentGame.pauseButton.isPressed(x, y))
-            {
+            if (currentGame.pauseButton.isPressed(x, y)) {
                 currentGame.pauseButton.cancel();
                 currentGame.isPaused = true;
                 //setCurrentState(new PlayState());
             }
-            else
-            {
+            else {
                 currentGame.pauseButton.cancel();
             }
         }
@@ -165,8 +162,7 @@ public class GameView extends SurfaceView implements Runnable
         return true;
     }
 
-    public static Bitmap loadBitmap(String filename, boolean transparency)
-    {
+    public static Bitmap loadBitmap(String filename, boolean transparency) {
         InputStream inputStream = null;
         try {
             inputStream = GameActivity.assets.open(filename);
@@ -179,8 +175,8 @@ public class GameView extends SurfaceView implements Runnable
         } else {
             options.inPreferredConfig = Bitmap.Config.RGB_565;
         }
-        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null,
-                options);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+
         return bitmap;
     }
 }
