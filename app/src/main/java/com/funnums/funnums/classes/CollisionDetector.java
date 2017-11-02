@@ -31,7 +31,7 @@ public class CollisionDetector {
         //iteration of the game loop when checking spawn points, instead this overloaded method will
         // just take an x, y, and radius instead of a whole new object
     public static boolean isCollision(TouchableNumber num1, int x, int y, int radius) {
-        
+
         boolean collision = false;
 
         float distanceX = num1.getX() - x;

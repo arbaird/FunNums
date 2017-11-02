@@ -13,9 +13,11 @@ import android.graphics.Bitmap;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
+import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
+import com.funnums.funnums.uihelpers.GameFinishedMenu;
 
 public class BubbleGame extends MiniGame {
 
@@ -53,7 +55,7 @@ public class BubbleGame extends MiniGame {
     private int speed=7;
 
     //list of all the touchable numbers on screen
-    ArrayList<TouchableNumber> numberList = new ArrayList<>();
+    ArrayList<TouchableBubble> numberList = new ArrayList<>();
 
     // For drawing
     //private Paint paint;
@@ -73,6 +75,9 @@ public class BubbleGame extends MiniGame {
 
     //Timer object
     private GameCountdownTimer gameTimer;
+
+    //game over menu
+    private GameFinishedMenu gameFinishedMenu;
 
     public void init() {
         //initalize random generator and make the first target between 5 and 8
@@ -98,18 +103,33 @@ public class BubbleGame extends MiniGame {
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
 
+        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
+        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
+        UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
+
+        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", true);
+        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
+        UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+
+        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
+                offset,
+                screenX * 7/8,
+                screenY - offset,
+                resumeButton,
+                menuButton, sum);
+
         /**!!This will be removed is just a test*/
-        Log.d("Fraction", "Test LT or GT");
+        /*Log.d("Fraction", "Test LT or GT");
         FractionNumberGenerator lol = new FractionNumberGenerator(0);
         lol.runTest();
         /*!!*/
-        Log.d("Fraction", "Test LEQ or GEQ ");
+        /*Log.d("Fraction", "Test LEQ or GEQ ");
         lol.new_game(1);
         lol.runTest();
         /*!!*/
-        Log.d("Fraction", "Test EQ");
+        /*Log.d("Fraction", "Test EQ");
         lol.new_game(2);
-        lol.runTest();
+        lol.runTest();*/
         /****************************************************/
     }
 
@@ -142,6 +162,7 @@ public class BubbleGame extends MiniGame {
         if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen) {
             generateNumber();
             runningMilis = 0;
+
         }
 
         //process all touch events
@@ -230,7 +251,7 @@ public class BubbleGame extends MiniGame {
         //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
         //left to generate a number that is not already on the screen.
 
-        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius, speed);
+        TouchableBubble num = new TouchableBubble(x, y, angle, bRadius, speed, value);
         numberList.add(num);
     }
 
@@ -250,7 +271,7 @@ public class BubbleGame extends MiniGame {
 
     private boolean valueAlreadyOnScreen(int value) {
 
-        for(TouchableNumber num : numberList) {
+        for(TouchableBubble num : numberList) {
             if(num.getValue() == value)
                 return true;
         }
@@ -263,7 +284,7 @@ public class BubbleGame extends MiniGame {
     */
     private void checkTouchRadius(int x, int y) {
 
-        for(TouchableNumber num : numberList) {
+        for(TouchableBubble num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
@@ -280,7 +301,7 @@ public class BubbleGame extends MiniGame {
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
     */
-    private void processScore(TouchableNumber num) {
+    private void processScore(TouchableBubble num) {
 
         sum += num.getValue();
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
@@ -397,6 +418,8 @@ public class BubbleGame extends MiniGame {
             //draw pause menu, if paused
             if(isPaused)
                 com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
+            //game finished stuff
+            //gameFinishedMenu.draw(canvas, paint);
 
             ourHolder.unlockCanvasAndPost(canvas);
         }

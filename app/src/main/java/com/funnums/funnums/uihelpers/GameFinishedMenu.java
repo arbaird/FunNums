@@ -38,17 +38,26 @@ public class GameFinishedMenu
     int screenY;
 
     public GameFinishedMenu(int left, int top, int right, int bottom,
-                     UIButton resumeButton,  UIButton menuButton, String message, int score) {
+                     UIButton resumeButton,  UIButton menuButton, int score) {
         backDropRect = new Rect(left, top, right, bottom);
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
         resume = resumeButton;
         mainMenu = menuButton;
 
-        padding = 100;
+        padding = backDropRect.height()/8;//100;
 
-        resume.setRect(left + padding, top +padding);
-        mainMenu.setRect(left + padding, top + padding*2);
+        int centeredButtonX = backDropRect.centerX() - resume.getWidth()/2;
+
+
+        int buttonY = backDropRect.centerY();
+        int numButtons = 2;
+        int spaceBetweenButtons = (backDropRect.height() - backDropRect.centerY()) / numButtons;
+
+        resume.setRect(centeredButtonX, buttonY);
+        //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
+        mainMenu.setRect(centeredButtonX, buttonY + spaceBetweenButtons*1);
+
 
         gameFinishedMessage = "Great Job! Your Score is ";
 
@@ -76,7 +85,7 @@ public class GameFinishedMenu
         paint.setTextSize(45);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(gameFinishedMessage, backDropRect.centerX(), backDropRect.top + padding, paint);
-        canvas.drawText(score,  backDropRect.centerX(), backDropRect.top + padding*3, paint);
+        canvas.drawText(score,  backDropRect.centerX(), backDropRect.top + padding*2, paint);
 
         //draw the buttons
         resume.render(canvas, paint);

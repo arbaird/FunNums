@@ -39,7 +39,9 @@ public class GameView extends SurfaceView implements Runnable {
 
     public PauseMenu pauseScreen;
 
-    GameView(Context context) {
+    public String type;
+
+    GameView(Context context, String type) {
         //set up view properly
         super(context);
 
@@ -64,10 +66,15 @@ public class GameView extends SurfaceView implements Runnable {
                                     GameActivity.screenY - offset,
                                     resumeButton,
                                     menuButton);
+
+        this.type = type;
     }
 
     public void startGame() {
-        currentGame = new BalloonGame();
+        if(type.equals("bubble"))
+            currentGame = new BubbleGame();
+        else if(type.equals("balloon"))
+            currentGame = new BalloonGame();
         currentGame.init();
     }
 
