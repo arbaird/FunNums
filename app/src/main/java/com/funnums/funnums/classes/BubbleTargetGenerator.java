@@ -18,7 +18,6 @@ public class BubbleTargetGenerator {
 
     private int[] Targets = new int[SIZE];
     private int nextTargetIndex = 0;
-    private int previousTarget = 0; //used for resetting Current to the previous Target, when the target is missed
 
     private Random r = new Random();
 
@@ -48,13 +47,8 @@ public class BubbleTargetGenerator {
             generateTargets();
         }
         int target = Targets[nextTargetIndex];
-        previousTarget = target;
 
         nextTargetIndex++;
         return target;
-    }
-
-    public int getPreviousTarget() {
-        return previousTarget;
     }
 }

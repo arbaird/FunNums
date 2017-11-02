@@ -51,6 +51,7 @@ public class BubbleGame extends MiniGame {
     private int sum;
     //target player is trying to sum to
     private int target;
+    private int previousTarget = 0;
     //The target generator
     BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
     //The number generator
@@ -320,9 +321,9 @@ public class BubbleGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        int oldTarget = target;
+        previousTarget = target;
         target = targetGen.nextTarget();
-        numGen.setAbsoluteTarget(target - oldTarget); //used for scaling the numbers generated
+        numGen.setAbsoluteTarget(target - previousTarget); //used for scaling the numbers generated
     }
 
     /*
@@ -330,10 +331,12 @@ public class BubbleGame extends MiniGame {
      */
     private void resetGame() {
         //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
-        scoreAnimations.add(textAnimator);
+        TextAnimator message1 = new TextAnimator("Target missed!", screenX/2, screenY/2, 185, 44, 44, 1.25, 60);
+        TextAnimator message2 = new TextAnimator("Current reset", screenX/2, screenY/2 + 60, 185, 44, 44, 1.25, 50);
+        scoreAnimations.add(message1);
+        scoreAnimations.add(message2);
 
-        sum = targetGen.getPreviousTarget();
+        sum = previousTarget; //reset the current sum to the previous target
 
         //if we want game to stop, make playing false here
         //   playing = false;
