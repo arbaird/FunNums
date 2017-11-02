@@ -9,13 +9,27 @@ import java.util.Random;
  *  generate a new target fraction balloon, as well as fraction balloons to compare the target with.
  *
  *  When creating an object of type FractionNumberGenerator, integer argument 'n' must be passed to constructor such that:
- *      - n = 0 for game involving LT or GT
- *      - n = 1 for game involving LEQ or GEQ
- *      - n = 2 for game involving EQ
+ *      - LT_GT_game     for game involving LT or GT
+ *      - LEQ_GEQ_game   for game involving LEQ or GEQ
+ *      - EQ_game        for game involving EQ
  */
 
 public class FractionNumberGenerator {
     static final public String TAG_F = "Fraction";
+
+    //Game type parameters
+    final public int LT_GT_game = 0;
+    final public int LEQ_GEQ_game = 1;
+    final public int EQ_game = 2;
+
+    //Defines the chances that random generated number is zero for each specific case, if the random number is
+    //zero a known function will be used from Hash Table eqivFracs ( see getNewBalloon() )
+    final private int LEQ_GEQ_0_chance = 14;         //1 in 14 chance
+    final private int EQ_0_chance = 7;               //1 in 7 chance
+
+    //Choosen value 'denomRange' will generate random denominators between 2 and 'denomRange'
+    final private int denomRange = 14;
+
 
     Fraction target;                            /*Current fraction target*/
     int gType;                                  /*Current game type, must be one of the following: {0, 1, 2} */
@@ -75,12 +89,12 @@ public class FractionNumberGenerator {
     //Initializes the target for the appropriate game mode
     private void initGenerator(){
 
-        if (gType == 0){             //Condition involving equality
+        if (gType == LT_GT_game){             //Condition not involving equality
             target = getRandomFrac();
-        } else if (gType == 1 || gType == 2){
+        } else if (gType == LEQ_GEQ_game || gType == EQ_game){
             target = getKnownFrac();
         } else {
-            throw new IllegalArgumentException("Argument type must be a 0, 1 or a 2");
+            throw new IllegalArgumentException("Argument type must be LT_GT_game, LEQ_GEQ_game or EQ_game.");
         }
     }
 
@@ -103,16 +117,16 @@ public class FractionNumberGenerator {
         int chance = -1;
 
         //Current game condition involving equality
-        if (gType != 0) {
+        if (gType != LT_GT_game) {
 
             //Current game is of type LEQ or GEQ get a 1 in 10 chance to throw a known equivalent function
-            if (gType == 1){
-                chance = rd.nextInt(10);
+            if (gType == LEQ_GEQ_game){
+                chance = rd.nextInt(LEQ_GEQ_0_chance);
             }
 
             //Current game is of type EQget a 1 in 5 chance to throw a known equivalent function
-            if (gType == 2){
-                chance = rd.nextInt(5);
+            if (gType == EQ_game){
+                chance = rd.nextInt(EQ_0_chance);
             }
 
             if (chance == 0){
@@ -139,8 +153,10 @@ public class FractionNumberGenerator {
 
     //Return a new random Fraction object within the specified range
     private Fraction getRandomFrac(){
-        int denom = rd.nextInt(11)+ 2;          //Between 2 and 12
-        int nume = rd.nextInt(denom-1)+ 1;      //Between 1 and denominator - 1
+        //Denominator between 2 and chosen 'denomRange'
+        int denom = getValidDenominator();
+        //Between 1 and denominator - 1
+        int nume = rd.nextInt(denom-1)+ 1;
 
         return new Fraction(nume, denom);
     }
@@ -162,6 +178,11 @@ public class FractionNumberGenerator {
         index = rd.nextInt( fractions.size() );
 
         return fractions.get(index);
+    }
+
+    //Returns a valid denominator between 2 and chosen 'denomRange'
+    private int getValidDenominator(){
+        return rd.nextInt(denomRange-1)+ 2;
     }
 
     //Test generates 10 balloons

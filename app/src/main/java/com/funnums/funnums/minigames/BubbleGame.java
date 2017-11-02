@@ -102,7 +102,6 @@ public class BubbleGame extends MiniGame {
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
-
         Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
         Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
         UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
@@ -117,20 +116,6 @@ public class BubbleGame extends MiniGame {
                 screenY - offset,
                 resumeButton,
                 menuButton, sum);
-
-        /**!!This will be removed is just a test*/
-        /*Log.d("Fraction", "Test LT or GT");
-        FractionNumberGenerator lol = new FractionNumberGenerator(0);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test LEQ or GEQ ");
-        lol.new_game(1);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test EQ");
-        lol.new_game(2);
-        lol.runTest();*/
-        /****************************************************/
     }
 
 
