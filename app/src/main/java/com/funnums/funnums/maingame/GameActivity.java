@@ -31,8 +31,14 @@ public class GameActivity extends Activity {
         screenX = display.widthPixels;
         screenY = display.heightPixels;
 
+        Bundle extras = getIntent().getExtras();
+
+        //see if this activity was started from library activity
+        String type = extras.getString("minigame");
+
+
         // Create an instance of our Game
-        gameView = new GameView(this);
+        gameView = new GameView(this, type);
         gameView.startGame();
 
         // Make our gameView the view for the Activity, gameView will ahndle all drawing and

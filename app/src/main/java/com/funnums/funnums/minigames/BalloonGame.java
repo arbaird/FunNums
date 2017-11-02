@@ -10,7 +10,7 @@ import java.util.Random;
 import android.graphics.Bitmap;
 
 import com.funnums.funnums.classes.CollisionDetector;
-import com.funnums.funnums.classes.TouchableNumber;
+import com.funnums.funnums.classes.TouchableBalloon;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.Fraction;
@@ -53,7 +53,7 @@ public class BalloonGame extends MiniGame {
 
 
     //list of all the touchable numbers on screen
-    ArrayList<TouchableNumber> numberList = new ArrayList<>();
+    ArrayList<TouchableBalloon> numberList = new ArrayList<>();
 
     // For drawing
     //private Paint paint;
@@ -111,7 +111,7 @@ public class BalloonGame extends MiniGame {
         //detect and handle collisions
         findCollisions();
 
-        for(TouchableNumber num : numberList) {
+        for(TouchableBalloon num : numberList) {
             //update the number
             num.update();
 
@@ -183,7 +183,7 @@ public class BalloonGame extends MiniGame {
 
         Fraction value = rFrac.getNewBalloon();
 
-        TouchableNumber num = new TouchableNumber(x, y, angle, value, bRadius,speed);
+        TouchableBalloon num = new TouchableBalloon(x, y, angle, bRadius,speed, value);
         numberList.add(num);
     }
 
@@ -202,7 +202,7 @@ public class BalloonGame extends MiniGame {
     }
 
     private boolean valueAlreadyOnScreen(int value) {
-        for(TouchableNumber num : numberList)
+        for(TouchableBalloon  num : numberList)
         {
             if(num.getValue() == value)
                 return true;
@@ -215,7 +215,7 @@ public class BalloonGame extends MiniGame {
    processScore() to update the number/score/etc
     */
     private void checkTouchRadius(int x, int y) {
-        for(TouchableNumber num : numberList) {
+        for(TouchableBalloon num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
@@ -233,7 +233,7 @@ public class BalloonGame extends MiniGame {
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
     */
-    private void processScore(TouchableNumber num) {
+    private void processScore(TouchableBalloon num) {
 
         sum += num.getValue();
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
@@ -284,7 +284,7 @@ public class BalloonGame extends MiniGame {
 
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remve balloon.
     private void offScreenCheck() {
-        for(TouchableNumber num : numberList) {
+        for(TouchableBalloon num : numberList) {
             if(num.getY()<topBuffer-bRadius) {
                 processScore(num);
                 numberList.remove(num);
@@ -337,7 +337,7 @@ public class BalloonGame extends MiniGame {
             canvas.drawColor(Color.argb(255, 0, 0, 0));
 
             //draw all the numbers
-            for(TouchableNumber num : numberList)
+            for(TouchableBalloon num : numberList)
                 num.draw(canvas, paint);
             //draw all text animations
             for(TextAnimator score : scoreAnimations)

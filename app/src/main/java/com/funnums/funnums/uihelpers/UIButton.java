@@ -20,7 +20,10 @@ public class UIButton {
         this.buttonDownImage = buttonPressedImage;
     }
 
-
+    public int getWidth()
+    {
+        return buttonImage.getWidth();
+    }
 
     public void setRect(int left, int top) {
         buttonRect = new Rect(left, top, left + buttonImage.getWidth(),top + buttonImage.getHeight());

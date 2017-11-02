@@ -26,12 +26,20 @@ public class SelectGameActivity extends AppCompatActivity {
     public void onPressedBubbles(View v) {
         Log.d(TAG, "Bubble game pressed");
         Intent i = new Intent(this, GameActivity.class);
+
+        //setFlag that game we want to create is a bubble game
+        i.putExtra("minigame", "bubble");
+
         startActivity(i);
     }
 
     public void onPressedBalloons(View v) {
-        Log.d(TAG, "Bubble game pressed");
+        Log.d(TAG, "Balloon game pressed");
         Intent i = new Intent(this, GameActivity.class);
+
+        //setFlag that game we want to create is a bubble game
+        i.putExtra("minigame", "balloon");
+
         startActivity(i);
     }
 
