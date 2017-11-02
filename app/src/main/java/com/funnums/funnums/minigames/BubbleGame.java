@@ -273,6 +273,8 @@ public class BubbleGame extends MiniGame
        When a number is touched, call this function. It will update the current Sum and check it
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
+
+       Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
     */
     private void processScore(TouchableNumber num)
     {
@@ -280,11 +282,24 @@ public class BubbleGame extends MiniGame
         sum += num.getValue();
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
         scoreAnimations.add(textAnimator);
-        if(sum == target)
+        if(sum == target) {
             makeNewTarget();
-        else if(sum > target)
+            long current = gameTimer.getTime();
+            current += 5000;
+            gameTimer.cancel();
+            gameTimer = null;
+            gameTimer = new GameCountdownTimer(current, 1000);
+            gameTimer.start();
+
+        }else if(sum > target)
         {
             resetGame();
+            long current = gameTimer.getTime();
+            current -= 5000;
+            gameTimer.cancel();
+            gameTimer = null;
+            gameTimer = new GameCountdownTimer(current, 1000);
+            gameTimer.start();
         }
     }
 
