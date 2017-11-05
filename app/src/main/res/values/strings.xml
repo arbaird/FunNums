@@ -4,6 +4,15 @@
     <string name="high_score_button">View High Scores</string>
     <string name="settings_button">Settings</string>
     <string name="leaderboard">Leaderboard</string>
+
+    <string name="bubble_leaderboard">Bubble Leaderboard</string>
+    <string name="balloon_leaderboard">Balloon Leaderboard</string>
+    <string name="owl_leaderboard">Owl Leaderboard</string>
+
+    <string name="balloon_scores">Balloon</string>
+    <string name="bubble_scores">Bubble</string>
+    <string name="owl_scores">Owl</string>
+
     <string name="user_label">Username</string>
     <string name="score_label">Score</string>
     <string name="how_to_play">How to Play</string>

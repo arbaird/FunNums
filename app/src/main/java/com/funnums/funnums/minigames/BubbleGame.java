@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
+import java.util.Set;
 
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.FractionNumberGenerator;
@@ -52,7 +53,7 @@ public class BubbleGame extends MiniGame {
 
 
     //speed of the bubbles
-    private int speed=7;
+    private int speed=5;
 
     //list of all the touchable numbers on screen
     ArrayList<TouchableBubble> numberList = new ArrayList<>();
@@ -74,12 +75,14 @@ public class BubbleGame extends MiniGame {
     private int bRadius;
 
     //Timer object
-    private GameCountdownTimer gameTimer;
+    //private GameCountdownTimer gameTimer;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
     public void init() {
+        //game only finished when timer is done
+        isFinished = false;
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
         target = r.nextInt(3)+5;
@@ -92,9 +95,14 @@ public class BubbleGame extends MiniGame {
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
 
+
+
         //Initialize timer to 61 seconds, update after 1 sec interval
         gameTimer = new GameCountdownTimer(61000, 1000);
         gameTimer.start();
+
+
+
 
         //set up the pause button
         int offset = 100;
@@ -102,22 +110,7 @@ public class BubbleGame extends MiniGame {
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
-
-        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
-        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
-        UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
-
-        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", true);
-        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
-        UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
-
-        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
-                offset,
-                screenX * 7/8,
-                screenY - offset,
-                resumeButton,
-                menuButton, sum);
-
+        Log.d(VIEW_LOG_TAG, "init pauseButton: " + pauseButton);
         /**!!This will be removed is just a test*/
         /*Log.d("Fraction", "Test LT or GT");
         FractionNumberGenerator lol = new FractionNumberGenerator(0);
@@ -304,11 +297,16 @@ public class BubbleGame extends MiniGame {
     private void processScore(TouchableBubble num) {
 
         sum += num.getValue();
+        score = sum;
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
         scoreAnimations.add(textAnimator);
 
         if (sum == target) {
             makeNewTarget();
+
+            //long newTime = 5000;
+            //com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
+
         }else if (sum > target) {
             resetGame();
         }
@@ -335,7 +333,7 @@ public class BubbleGame extends MiniGame {
 
         target = r.nextInt(3)+5;
         sum = 0;
-
+        score = 0;
         //if we want game to stop, make playing false here
         //   playing = false;
     }
@@ -414,12 +412,15 @@ public class BubbleGame extends MiniGame {
             canvas.drawText("Timer", screenX * 1/2, offset, paint);
             canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
             //Draw pause button
-            pauseButton.render(canvas, paint);
+            if(pauseButton != null)
+                pauseButton.render(canvas, paint);
+
             //draw pause menu, if paused
             if(isPaused)
                 com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
             //game finished stuff
-            //gameFinishedMenu.draw(canvas, paint);
+            if(isFinished)
+                com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
 
             ourHolder.unlockCanvasAndPost(canvas);
         }

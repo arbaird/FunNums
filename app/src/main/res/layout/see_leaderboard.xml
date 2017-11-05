@@ -11,7 +11,7 @@ tools:layout_editor_absoluteX="0dp">
         android:id="@+id/textLeaderboard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/leaderboard"
+        android:text="@string/bubble_leaderboard"
         android:textSize="35sp"
         android:layout_centerHorizontal="true"
         app:layout_constraintTop_toTopOf="parent"
@@ -46,7 +46,53 @@ tools:layout_editor_absoluteX="0dp">
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_below="@+id/textUserLabel" />
+        android:layout_below="@+id/textUserLabel"
+        android:layout_above="@+id/buttonBubbleScores"
+        />
+
+    <TextView
+        android:id="@+id/centerScreen"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="60dp"
+        />
+
+    <Button
+        android:id="@+id/buttonBubbleScores"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_below="@id/centerScreen"
+        android:layout_marginTop="60dp"
+        android:layout_centerHorizontal="true"
+        android:onClick="chooseGameScores"
+        android:text="@string/bubble_scores" />
+
+    <Button
+        android:id="@+id/buttonBalloonScores"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_alignBaseline="@+id/buttonBubbleScores"
+        android:layout_toRightOf="@+id/buttonBubbleScores"
+        android:layout_marginTop="60dp"
+        android:layout_marginLeft="30dp"
+        android:onClick="chooseGameScores"
+        android:text="@string/balloon_scores" />
+
+    <Button
+        android:id="@+id/buttonOwlScores"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_alignBaseline="@+id/buttonBubbleScores"
+        android:layout_toLeftOf="@+id/buttonBubbleScores"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="30dp"
+        android:onClick="chooseGameScores"
+        android:text="@string/owl_scores" />
 
 
 </RelativeLayout>

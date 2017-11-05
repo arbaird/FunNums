@@ -41,6 +41,8 @@ public class GameActivity extends Activity {
         gameView = new GameView(this, type);
         gameView.startGame();
 
+
+
         // Make our gameView the view for the Activity, gameView will ahndle all drawing and
         //respond to touch since it implements runnable and SurfaceView.
         setContentView(gameView);
@@ -59,4 +61,5 @@ public class GameActivity extends Activity {
         super.onResume();
         gameView.resume();
     }
+
 }

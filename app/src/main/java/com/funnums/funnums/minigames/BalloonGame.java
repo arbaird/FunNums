@@ -74,11 +74,10 @@ public class BalloonGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
-    //Timer object
-    private GameCountdownTimer gameTimer;
 
     public void init() {
-
+        //game only finished when timer is done
+        isFinished = false;
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
         target = r.nextInt(3)+5;
@@ -363,6 +362,8 @@ public class BalloonGame extends MiniGame {
             //draw pause menu, if paused
             if(isPaused)
                 com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
+            if(isFinished)
+                com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
 
             ourHolder.unlockCanvasAndPost(canvas);
         }

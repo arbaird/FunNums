@@ -14,14 +14,14 @@ import android.view.MotionEvent;
 
 public class GameFinishedMenu
 {
-    public String VIEW_LOG_TAG = "pause";
+    public String VIEW_LOG_TAG = "gameFinished";
 
     //will use when we have a cooler background for pause menu
     private Bitmap backdrop;
 
     private Rect fade;
 
-    private UIButton resume, mainMenu;
+    private UIButton playAgain, mainMenu;
 
     private Rect backDropRect;
 
@@ -42,19 +42,19 @@ public class GameFinishedMenu
         backDropRect = new Rect(left, top, right, bottom);
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
-        resume = resumeButton;
+        playAgain = resumeButton;
         mainMenu = menuButton;
 
         padding = backDropRect.height()/8;//100;
 
-        int centeredButtonX = backDropRect.centerX() - resume.getWidth()/2;
+        int centeredButtonX = backDropRect.centerX() - playAgain.getWidth()/2;
 
 
         int buttonY = backDropRect.centerY();
         int numButtons = 2;
         int spaceBetweenButtons = (backDropRect.height() - backDropRect.centerY()) / numButtons;
 
-        resume.setRect(centeredButtonX, buttonY);
+        playAgain.setRect(centeredButtonX, buttonY);
         //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
         mainMenu.setRect(centeredButtonX, buttonY + spaceBetweenButtons*1);
 
@@ -65,6 +65,11 @@ public class GameFinishedMenu
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+    }
+
+    public void setScore(int score)
+    {
+        this.score = String.valueOf(score);
     }
 
     public void draw(Canvas canvas, Paint paint)
@@ -88,7 +93,7 @@ public class GameFinishedMenu
         canvas.drawText(score,  backDropRect.centerX(), backDropRect.top + padding*2, paint);
 
         //draw the buttons
-        resume.render(canvas, paint);
+        playAgain.render(canvas, paint);
         mainMenu.render(canvas, paint);
     }
 
@@ -99,15 +104,15 @@ public class GameFinishedMenu
         int y = (int)e.getY();
         if (e.getAction() == MotionEvent.ACTION_DOWN)
         {
-            resume.onTouchDown(x, y);
+            playAgain.onTouchDown(x, y);
             mainMenu.onTouchDown(x, y);
         }
         if (e.getAction() == MotionEvent.ACTION_UP)
         {
-            if (resume.isPressed(x, y))
+            if (playAgain.isPressed(x, y))
             {
-                resume.cancel();
-                com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isPaused = false;
+                playAgain.cancel();
+                com.funnums.funnums.maingame.GameActivity.gameView.startGame();
             }
             else if(mainMenu.isPressed(x, y))
             {
@@ -119,7 +124,7 @@ public class GameFinishedMenu
             }
             else
             {
-                resume.cancel();
+                playAgain.cancel();
                 mainMenu.cancel();
             }
         }

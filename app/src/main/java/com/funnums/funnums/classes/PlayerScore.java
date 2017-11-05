@@ -10,15 +10,15 @@ import java.io.Serializable;
 
 public class PlayerScore implements Serializable {
     public String name;
-    public int hiScore;
+    public long hiScore;
 
     public String scoreID;
 
-    PlayerScore() {
+    public PlayerScore() {
         this.name = "";
     }
 
-    PlayerScore(String name, int hiScore) {
+    public PlayerScore(String name, long hiScore) {
         this.name = name;
         this.hiScore = hiScore;
     }

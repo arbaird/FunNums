@@ -11,28 +11,43 @@ package com.funnums.funnums.classes;
 
 import java.util.concurrent.TimeUnit;
 import android.os.CountDownTimer;
+import android.content.SharedPreferences;
 
 public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
 
+    private long millisLeft;
+
+    public boolean isPaused;
+
     //Constructor
     public GameCountdownTimer(long millisInFuture, long countDownInterval) {
         super(millisInFuture, countDownInterval);
+        isPaused = false;
     }
 
     //Updates displayTime after every  "tick" accordingly
     @Override
     public void onTick(long millisUntilFinished) {
-        long millis = millisUntilFinished;
+        millisLeft = millisUntilFinished;
         displayTime = String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
-                TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+                TimeUnit.MILLISECONDS.toMinutes(millisLeft) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisLeft)),
+                TimeUnit.MILLISECONDS.toSeconds(millisLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisLeft)));
     }
 
     @Override
     public void onFinish() {
-        /*Empty for now*/
+        com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
+        int score = com.funnums.funnums.maingame.GameActivity.gameView.currentGame.score;
+        com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);
+
+        com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
+    }
+
+    public long getMillisLeft()
+    {
+        return millisLeft;
     }
 
     //String representation of countdown

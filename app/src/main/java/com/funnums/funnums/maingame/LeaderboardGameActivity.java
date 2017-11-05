@@ -1,17 +1,26 @@
 package com.funnums.funnums.maingame;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ListView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.PlayerScore;
 import com.funnums.funnums.uihelpers.ScoreListAdapter;
 import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import android.app.ProgressDialog;
 
 import java.util.ArrayList;
 
@@ -23,10 +32,10 @@ public class LeaderboardGameActivity extends AppCompatActivity {
     static final public String TAG = "See Leaderboard";
 
     //reference to firebase database
-    private DatabaseReference mDatabase;
+    public static DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
 
     //reference to the playerScore table in our database
-    private DatabaseReference playerScoreCloudEndPoint;
+    public static DatabaseReference playerScoreCloudEndPoint = mDatabase.child("playerScores");
 
     private ArrayList<PlayerScore> playerScoreList;
     private ScoreListAdapter playerScoreAdapter;
@@ -40,9 +49,9 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
          /*FireBase stuff*/
         //get reference to database
-        mDatabase =  FirebaseDatabase.getInstance().getReference();
+        //mDatabase =  FirebaseDatabase.getInstance().getReference();
         //get reference to the playerScores in our database
-        playerScoreCloudEndPoint = mDatabase.child("playerScores");
+        //playerScoreCloudEndPoint = mDatabase.child("playerScores");
 
         //initalize the leader board list view and adapter
         initLeaderBoardListView();
@@ -50,7 +59,10 @@ public class LeaderboardGameActivity extends AppCompatActivity {
         /*following function call will display the listview with 10 highets scores, left commented
         out for now so we can add it to a button click later
          */
-        getHighScores();
+        getHighScores("bubble");
+
+        PlayerScore myScore = new PlayerScore("hector", 55);
+        playerScoreCloudEndPoint.child("hector").setValue(myScore);
     }
 
     public void initLeaderBoardListView() {
@@ -69,9 +81,12 @@ public class LeaderboardGameActivity extends AppCompatActivity {
     /*
         Gets the top ten high scores from Firebase and displays them on screen
      */
-    public void getHighScores() {
+    public void getHighScores(String game) {
         //empty the arraylist so we don't keep adding ten scores to it everytime we call this function
         playerScoreList.clear();
+        playerScoreAdapter.notifyDataSetChanged();
+
+        playerScoreCloudEndPoint = mDatabase.child(game + "Scores");
         //order scores by the ten highest scores
         playerScoreCloudEndPoint.orderByChild("hiScore").limitToLast(10).addChildEventListener(new ChildEventListener() {
             @Override
@@ -104,6 +119,90 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
         });
 
+    }
+
+    public static void storeHighScore(long score) {
+
+
+
+
+        SharedPreferences prefs = MainMenuActivity.prefs;
+        //get the editor so we can update stored data, if needed
+        final SharedPreferences.Editor editor = prefs.edit();
+
+        long currentHighScore = prefs.getLong("HighScore", 0);
+
+        if(currentHighScore > score)
+            return;
+        else{
+            editor.putLong("HighScore", score);
+            editor.apply();
+        }
+        //if database hasn't been initialized yet, initialize it!
+        if(mDatabase == null)
+        {
+            mDatabase =  FirebaseDatabase.getInstance().getReference();
+            playerScoreCloudEndPoint = mDatabase.child("playerScores");
+        }
+
+        String currentMiniGame = com.funnums.funnums.maingame.GameActivity.gameView.type;
+        playerScoreCloudEndPoint = mDatabase.child(currentMiniGame + "Scores");
+
+
+
+        String userName = prefs.getString("user_name", null);
+        //if user still hasn;t entered their username, no score to store
+        if(userName == null)
+            return;
+
+        PlayerScore myScore = new PlayerScore(userName, score);
+        playerScoreCloudEndPoint.child(userName).setValue(myScore);
+
+    }
+
+    public void chooseGameScores(View v){
+        int clickedButtonId = v.getId(); //get the adnroid id of the clicked button
+
+
+        String game = "";
+        int titleStringId = 0;
+
+        //find the actual button number(i.e1-3) from the android id
+        switch (clickedButtonId)
+        {
+            case(R.id.buttonBubbleScores) :
+                game = "bubble";
+                titleStringId = R.string.bubble_leaderboard;
+                break;
+            case(R.id.buttonBalloonScores) :
+                game = "balloon";
+                titleStringId = R.string.balloon_leaderboard;
+                break;
+            case(R.id.buttonOwlScores) :
+                game = "owl";
+                titleStringId = R.string.owl_leaderboard;
+                break;
+
+        }
+
+        getHighScores(game);
+
+        int[] buttonIds = {R.id.buttonBubbleScores, R.id.buttonBalloonScores, R.id.buttonOwlScores};
+        for(int i = 0; i < buttonIds.length; i++) {
+            Button button= (Button) findViewById(buttonIds[i]);
+            if(buttonIds[i] == clickedButtonId)
+                button.setEnabled(false);
+            else
+                button.setEnabled(true);
+        }
+
+        TextView title = (TextView) findViewById(R.id.textLeaderboard);
+        title.setText(titleStringId);
+
+    }
+
+    public static void setEndpointToPlayerNames(){
+        playerScoreCloudEndPoint = mDatabase.child("playerScores");
     }
 
 }
