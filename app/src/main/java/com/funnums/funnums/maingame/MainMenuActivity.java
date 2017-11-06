@@ -23,7 +23,7 @@ import android.content.Context;
 import 	android.os.Message;
 
 
-import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.classes.PlayerScore;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -55,8 +55,8 @@ public class MainMenuActivity extends AppCompatActivity {
         //get the editor so we can update stored data, if needed
         final SharedPreferences.Editor editor = prefs.edit();
 
-        editor.putString("user_name", null);
-        editor.commit();
+        /*editor.putString("user_name", null);
+        editor.commit();*/
 
         final String userName = prefs.getString("user_name", null);
 
@@ -127,6 +127,11 @@ public class MainMenuActivity extends AppCompatActivity {
                     Log.d(TAG, userName + " does not already exists");
                     editor.putString("user_name", userName);
                     editor.commit();
+                    LeaderboardGameActivity.setEndpointToPlayerNames();
+
+                    PlayerScore newPlayer = new PlayerScore(userName, 0);
+                    LeaderboardGameActivity.playerScoreCloudEndPoint.child(userName).setValue(newPlayer);
+
                     progress.dismiss();
                 }
             }

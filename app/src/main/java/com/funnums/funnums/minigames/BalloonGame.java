@@ -43,10 +43,8 @@ public class BalloonGame extends MiniGame {
 
     private int maxNumsOnScreen = 10;
 
-    //player's current sum
-    private int sum;
     //target player is trying to sum to
-    private int target;
+    private Fraction target;
 
     //speed of the balloons
     private int speed=10;
@@ -80,7 +78,7 @@ public class BalloonGame extends MiniGame {
         isFinished = false;
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
-        target = r.nextInt(3)+5;
+        target = new Fraction(1,2);
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -200,15 +198,6 @@ public class BalloonGame extends MiniGame {
         events.clear();
     }
 
-    private boolean valueAlreadyOnScreen(int value) {
-        for(TouchableBalloon  num : numberList)
-        {
-            if(num.getValue() == value)
-                return true;
-        }
-        return false;
-    }
-
     /*
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
@@ -227,20 +216,43 @@ public class BalloonGame extends MiniGame {
 
     }
 
+
+
     /*
        When a number is touched, call this function. It will update the current Sum and check it
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
     */
     private void processScore(TouchableBalloon num) {
+        if (rFrac.gType == rFrac.GEQ_game) {
+            scoreGEQ(num);
+        }
+        else if(rFrac.gType == rFrac.LEQ_game){
+            scoreLEQ(num);
+        }
+        else if(rFrac.gType == rFrac.GT_game){
+            scoreGT(num);
+        }
+        else if(rFrac.gType == rFrac.LT_game){
+            scoreLT(num);
+        }
+        else if(rFrac.gType == rFrac.EQ_game){
+            scoreEQ(num);
+        }
+    }
 
-        sum += num.getValue();
-        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
+
+    //When a number is leaves the screen, call this function.
+    private void processScoreOffScreen(TouchableBalloon num) {
+        TextAnimator textAnimator;
+        if (rFrac.gType == rFrac.LEQ_game || rFrac.gType == rFrac.GEQ_game) {
+            if (num.getValue().get_key() <= target.get_key()) {
+                textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+            }
+         else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
         scoreAnimations.add(textAnimator);
-        if(sum == target)
-            makeNewTarget();
-        else if(sum > target) {
-            resetGame();
         }
     }
 
@@ -252,7 +264,6 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target += r.nextInt(3)+5;
     }
 
     /*
@@ -263,8 +274,6 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target = r.nextInt(3)+5;
-        sum = 0;
 
         //if we want game to stop, make playing false here
         //   playing = false;
@@ -285,7 +294,7 @@ public class BalloonGame extends MiniGame {
     private void offScreenCheck() {
         for(TouchableBalloon num : numberList) {
             if(num.getY()<topBuffer-bRadius) {
-                processScore(num);
+                processScoreOffScreen(num);
                 numberList.remove(num);
                 break;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
@@ -350,7 +359,7 @@ public class BalloonGame extends MiniGame {
             paint.setTextSize(45);
             paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
+            canvas.drawText("Invalid right now",  screenX * 1/4, topBuffer, paint);
             //Draw Target
             canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
             canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
@@ -382,6 +391,55 @@ public class BalloonGame extends MiniGame {
         events.add(e);
         return true;
     }
+
+    //inequality functions
+    private void scoreGEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() >= target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreLEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() <= target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreGT(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() > target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreLT(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() < target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() == target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+
+
 
 
 }

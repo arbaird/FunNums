@@ -11,6 +11,8 @@ import java.util.Random;
 import android.graphics.Bitmap;
 import java.util.Set;
 
+import com.funnums.funnums.classes.BubbleTargetGenerator;
+import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
@@ -44,12 +46,17 @@ public class BubbleGame extends MiniGame {
     private long runningMilis = 0;
 
 
-    private int maxNumsOnScreen = 6;
+    private int maxNumsOnScreen = 7;
 
     //player's current sum
     private int sum;
     //target player is trying to sum to
     private int target;
+    private int previousTarget = 0;
+    //The target generator
+    BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
+    //The number generator
+    BubbleNumberGenerator numGen = new BubbleNumberGenerator();
 
 
     //speed of the bubbles
@@ -81,11 +88,14 @@ public class BubbleGame extends MiniGame {
     private GameFinishedMenu gameFinishedMenu;
 
     public void init() {
+
         //game only finished when timer is done
         isFinished = false;
-        //initalize random generator and make the first target between 5 and 8
+
+        //initalize random generator
         r = new Random();
-        target = r.nextInt(3)+5;
+        //get a target from the target generator
+        target = targetGen.nextTarget();
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -110,6 +120,7 @@ public class BubbleGame extends MiniGame {
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
+
         Log.d(VIEW_LOG_TAG, "init pauseButton: " + pauseButton);
         /**!!This will be removed is just a test*/
         /*Log.d("Fraction", "Test LT or GT");
@@ -124,6 +135,21 @@ public class BubbleGame extends MiniGame {
         lol.new_game(2);
         lol.runTest();*/
         /****************************************************/
+
+        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
+        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
+        UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
+
+        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", true);
+        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
+        UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+
+        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
+                offset,
+                screenX * 7/8,
+                screenY - offset,
+                resumeButton,
+                menuButton, sum);
     }
 
 
@@ -234,17 +260,8 @@ public class BubbleGame extends MiniGame {
 
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
-        int value;
-        int iterations = 0;
-        do {
-            value = r.nextInt(maxVal) + 1;
-            iterations++;
-        }while(valueAlreadyOnScreen(value) && iterations < maxVal * 2);
-        //get a random number until we find one thats not already on the screen.
-        //iterations < maxVal * 2 lets us break out of this loop if there are not enough unique numbers
-        //left to generate a number that is not already on the screen.
-
-        TouchableBubble num = new TouchableBubble(x, y, angle, bRadius, speed, value);
+        int newNumber = numGen.nextNum(); // get generated number from our num gen
+        TouchableBubble num = new TouchableBubble(x, y, angle, bRadius, speed, newNumber);
         numberList.add(num);
     }
 
@@ -320,7 +337,9 @@ public class BubbleGame extends MiniGame {
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
-        target += r.nextInt(3)+5;
+        previousTarget = target;
+        target = targetGen.nextTarget();
+        numGen.setAbsoluteTarget(target - previousTarget); //used for scaling the numbers generated
     }
 
     /*
@@ -328,12 +347,18 @@ public class BubbleGame extends MiniGame {
      */
     private void resetGame() {
         //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
-        scoreAnimations.add(textAnimator);
+        TextAnimator message1 = new TextAnimator("Target missed!", screenX/2, screenY/2, 185, 44, 44, 1.25, 60);
+        TextAnimator message2 = new TextAnimator("Current reset", screenX/2, screenY/2 + 60, 185, 44, 44, 1.25, 50);
+        scoreAnimations.add(message1);
+        scoreAnimations.add(message2);
 
-        target = r.nextInt(3)+5;
+        /*target = r.nextInt(3)+5;
         sum = 0;
-        score = 0;
+        score = 0;*/
+
+        sum = previousTarget; //reset the current sum to the previous target
+
+
         //if we want game to stop, make playing false here
         //   playing = false;
     }

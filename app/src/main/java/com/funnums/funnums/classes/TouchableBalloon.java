@@ -26,7 +26,7 @@ public class TouchableBalloon extends TouchableNumber {
         canvas.drawCircle(x, y, radius, paint);
 
         //draw the value of the number in the center of the circle(bubble)
-        paint.setColor(Color.argb(100, 100, 100, 100));
+        paint.setColor(Color.argb(255, 50, 50, 50));
         paint.setTextSize(40);
         paint.setTextAlign(Paint.Align.CENTER);
 
@@ -35,8 +35,8 @@ public class TouchableBalloon extends TouchableNumber {
     }
 
     //change this to return a fraction!
-    public int getValue() {
-        return 0;
+    public Fraction getValue() {
+        return frac;
     }
 
 }
