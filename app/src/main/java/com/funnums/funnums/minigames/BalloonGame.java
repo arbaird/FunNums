@@ -217,31 +217,44 @@ public class BalloonGame extends MiniGame {
 
     }
 
+
+
     /*
        When a number is touched, call this function. It will update the current Sum and check it
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
     */
     private void processScore(TouchableBalloon num) {
-        TextAnimator textAnimator;
-        if(num.getValue().get_key()>target.get_key()) {
-            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        if (rFrac.gType == rFrac.GEQ_game) {
+            scoreGEQ(num);
         }
-        else {
-            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        else if(rFrac.gType == rFrac.LEQ_game){
+            scoreLEQ(num);
         }
-        scoreAnimations.add(textAnimator);
+        else if(rFrac.gType == rFrac.GT_game){
+            scoreGT(num);
+        }
+        else if(rFrac.gType == rFrac.LT_game){
+            scoreLT(num);
+        }
+        else if(rFrac.gType == rFrac.EQ_game){
+            scoreEQ(num);
+        }
     }
+
+
     //When a number is leaves the screen, call this function.
-    private void processScoreOffScreen(TouchableBalloon num){
+    private void processScoreOffScreen(TouchableBalloon num) {
         TextAnimator textAnimator;
-        if(num.getValue().get_key()<=target.get_key()) {
-            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
-        }
-        else {
+        if (rFrac.gType == rFrac.LEQ_game || rFrac.gType == rFrac.GEQ_game) {
+            if (num.getValue().get_key() <= target.get_key()) {
+                textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+            }
+         else {
             textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
         }
         scoreAnimations.add(textAnimator);
+        }
     }
 
     /*
@@ -377,6 +390,55 @@ public class BalloonGame extends MiniGame {
         events.add(e);
         return true;
     }
+
+    //inequality functions
+    private void scoreGEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() >= target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreLEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() <= target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreGT(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() > target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreLT(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() < target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreEQ(TouchableBalloon num){
+        TextAnimator textAnimator;
+        if (num.getValue().get_key() == target.get_key()) {
+            textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+
+
 
 
 }

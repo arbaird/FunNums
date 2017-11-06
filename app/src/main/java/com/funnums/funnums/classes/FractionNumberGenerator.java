@@ -18,9 +18,11 @@ public class FractionNumberGenerator {
     static final public String TAG_F = "Fraction";
 
     //Game type parameters
-    final public int LT_GT_game = 0;
-    final public int LEQ_GEQ_game = 1;
-    final public int EQ_game = 2;
+    final public int LT_game = 0;
+    final public int GT_game = 1;
+    final public int LEQ_game = 2;
+    final public int GEQ_game = 3;
+    final public int EQ_game = 4;
 
     //Defines the chances that random generated number is zero for each specific case, if the random number is
     //zero a known function will be used from Hash Table eqivFracs ( see getNewBalloon() )
@@ -32,7 +34,7 @@ public class FractionNumberGenerator {
 
 
     Fraction target;                            /*Current fraction target*/
-    int gType;                                  /*Current game type, must be one of the following: {0, 1, 2} */
+    public int gType;                                  /*Current game type, must be one of the following: {0, 1, 2} */
     Random rd;                                  /*Random Object*/
 
     //Hash table containing ArrayLists with pre defined equivalent fractions, decimal value of fraction used as hash key
@@ -89,9 +91,9 @@ public class FractionNumberGenerator {
     //Initializes the target for the appropriate game mode
     private void initGenerator(){
 
-        if (gType == LT_GT_game){             //Condition not involving equality
+        if (gType == LT_game || gType == GT_game){             //Condition not involving equality
             target = getRandomFrac();
-        } else if (gType == LEQ_GEQ_game || gType == EQ_game){
+        } else if (gType == GEQ_game || gType == EQ_game || gType == LEQ_game){
             target = getKnownFrac();
         } else {
             throw new IllegalArgumentException("Argument type must be LT_GT_game, LEQ_GEQ_game or EQ_game.");
@@ -117,10 +119,10 @@ public class FractionNumberGenerator {
         int chance = -1;
 
         //Current game condition involving equality
-        if (gType != LT_GT_game) {
+        if (gType != LT_game && gType != GT_game) {
 
             //Current game is of type LEQ or GEQ get a 1 in 10 chance to throw a known equivalent function
-            if (gType == LEQ_GEQ_game){
+            if (gType == LEQ_game || gType == GEQ_game){
                 chance = rd.nextInt(LEQ_GEQ_0_chance);
             }
 
