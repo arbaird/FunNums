@@ -61,8 +61,10 @@ public class LeaderboardGameActivity extends AppCompatActivity {
          */
         getHighScores("bubble");
 
-        PlayerScore myScore = new PlayerScore("hector", 55);
-        playerScoreCloudEndPoint.child("hector").setValue(myScore);
+        Button bubbleButton= (Button) findViewById(R.id.buttonBubbleScores);
+        bubbleButton.setEnabled(false);
+        /*PlayerScore myScore = new PlayerScore("hector", 55);
+        playerScoreCloudEndPoint.child("hector").setValue(myScore);*/
     }
 
     public void initLeaderBoardListView() {

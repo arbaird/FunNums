@@ -3,6 +3,8 @@ package com.funnums.funnums.maingame;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,28 +15,29 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.IOException;
 import android.content.Context;
 
+import 	android.os.Message;
 
+
+import com.funnums.funnums.classes.GameCountdownTimer;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DatabaseReference;
 
-interface OnGetDataListener {
-    //this is for callbacks
-    void onSuccess(DataSnapshot dataSnapshot);
-    void onStart();
-    void onFailure();
-}
+
 
 public class MainMenuActivity extends AppCompatActivity {
     private static final String TAG = "Main Menu";
 
     String logTag = "MainMenu";
 
-    private boolean waiting = true;
+    private boolean firstConnect = true;
 
     int connections = 0;
 
@@ -57,64 +60,35 @@ public class MainMenuActivity extends AppCompatActivity {
 
         final String userName = prefs.getString("user_name", null);
 
-        final ProgressDialog progress = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
-        /*final OnGetDataListener listener = new OnGetDataListener() {
-            @Override
-            public void onSuccess(DataSnapshot dataSnapshot) {
-
-                //got data from database....now you can use the retrieved data
-                Log.d(TAG, userName + " already exists");
-                waiting = false;
-
-                makeAlert(this, userName + " already exists\nplease enter another username");
-
-            }
-            @Override
-            public void onStart() {
-
-                progress.setTitle("Loading");
-                progress.setMessage("Checking username...");
-
-                //disable dismiss by tapping outside of the dialog
-                progress.setCancelable(false);
-                progress.show();
-                Log.d("ONSTART", "Started");
-            }
-
-            @Override
-            public void onFailure() {
-                waiting = false;
-                Log.d(TAG, userName + " does not already exists");
-            }
-        };*/
-
-        if(!isNetworkAvailable(this)) {
-            AlertDialog dialog = new AlertDialog.Builder(this).setTitle("No network connection...\n Relaunch the app with network connection to enter a username so you can compete globally!")
-                    .setPositiveButton("Ok",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog,
-                                                    int which) {
-
-                                }
-
-
-                            })
-                    .setCancelable(false)
-                    .create();
-            dialog.show();
-        }
-
         //if there is no username, prompt player to enter one
-        else if (userName == null) {
-            makeAlert("Enter your username!");
+        /*if (userName == null) {
+            Thread t = new Thread(new Runnable() {
 
+
+                public void run() {
+                    makeAlert("Enter your username!");
+                }
+
+
+            });
+            t.run();
+            try {
+                t.join();
+            }
+            catch(Exception e) {
+            }
+
+        }*/
+           // makeAlert("Enter your username!");
+
+        if (userName == null){
+            makeAlertWithConfirmedConnection("Enter your username!");
         }
 
-        // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
+            // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
         // Load fastest time
         // if not available our high score = 1000000
-        long highScore = prefs.getLong("HighScore", 1000000);
+        long highScore = prefs.getLong("HighScore", 0);
 
         // Get a refference to the TextView in our layout
         final TextView textFastestTime = (TextView)findViewById(com.funnums.funnums.R.id.textHiScore);
@@ -132,6 +106,8 @@ public class MainMenuActivity extends AppCompatActivity {
         //disable dismiss by tapping outside of the dialog
         progress.setCancelable(false);
         progress.show();
+
+
         Log.d("ONSTART", "Started");
         final SharedPreferences.Editor editor = prefs.edit();
         LeaderboardGameActivity.setEndpointToPlayerNames();
@@ -141,7 +117,7 @@ public class MainMenuActivity extends AppCompatActivity {
                 if (snapshot.exists()) {
                     // TODO: handle the case where the data already exists
                     //listener.onSuccess(snapshot);
-                    makeAlert(userName + " already exists\nplease enter another username");
+                    makeAlertWithConfirmedConnection(userName + " already exists\nplease enter another username");
                     progress.dismiss();
 
                 }
@@ -189,19 +165,14 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
 
-    public static boolean isNetworkAvailable(Context con) {
-        try {
-            ConnectivityManager cm = (ConnectivityManager) con.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-
-            if (networkInfo != null && networkInfo.isConnected()) {
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null;
     }
+
+
 
     public void makeAlert(/*final OnGetDataListener listener,*/ String message) {
         //edit text is the text field that the user will enter their name into
@@ -211,7 +182,7 @@ public class MainMenuActivity extends AppCompatActivity {
         //alert dialog is popup that asks for username, needs the following boiler plate code
         //to store username when it is entered
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(input).setTitle(message)
+                .setView(input).setTitle("FunNums").setMessage(message)
                 .setPositiveButton("Ok",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -221,6 +192,9 @@ public class MainMenuActivity extends AppCompatActivity {
                                         .findViewById(1000);
                                 String enteredText = theInput.getText()
                                         .toString();
+                                /*if(!hasInternet())
+                                    makeNoInternetAlert();*/
+
                                 //if the player entered a name, store it so we don't ask again later
                                 if (!enteredText.trim().equals("")) {
                                     checkIfUserExists(/*listener,*/ enteredText);
@@ -229,7 +203,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                     editor.commit();*/
                                 }
                                 else{
-                                    makeAlert("Please enter a username");
+                                    makeAlertWithConfirmedConnection("Please enter a username");
                                 }
                             }
 
@@ -239,5 +213,45 @@ public class MainMenuActivity extends AppCompatActivity {
                 .create();
         dialog.show();
     }
+
+    public void makeNoInternetAlert(){
+        AlertDialog dialog = new AlertDialog.Builder(this).setMessage("No network connection...\n Relaunch the app with network connection to enter a username so you can compete globally!")
+                .setPositiveButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+
+                            }
+
+                        })
+                .setCancelable(false)
+                .create();
+        dialog.show();
+    }
+
+
+    public void makeAlertWithConfirmedConnection(final String message) {
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    makeAlert(message);
+                } else {
+                    System.out.println("not connected");
+                    //makeNoInternetAlert();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                System.err.println("Listener was cancelled");
+            }
+        });
+    }
+
+
 
 }
