@@ -6,6 +6,7 @@ import android.view.SurfaceHolder;
 import android.view.MotionEvent;
 
 import com.funnums.funnums.uihelpers.UIButton;
+import com.funnums.funnums.classes.GameCountdownTimer;
 
 
 /**
@@ -18,6 +19,7 @@ public abstract class MiniGame
 
     public UIButton pauseButton;
 
+    public GameCountdownTimer gameTimer;
 
     public void setCurrentMiniGame(MiniGame newGame)
     {
