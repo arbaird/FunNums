@@ -18,11 +18,11 @@ public class FractionNumberGenerator {
     static final public String TAG_F = "Fraction";
 
     //Game type parameters
-    final public int LT_game = 0;
-    final public int GT_game = 1;
-    final public int LEQ_game = 2;
-    final public int GEQ_game = 3;
-    final public int EQ_game = 4;
+    final static public int LT_game = 0;
+    final static public int GT_game = 1;
+    final static public int LEQ_game = 2;
+    final static public int GEQ_game = 3;
+    final static public int EQ_game = 4;
 
     //Defines the chances that random generated number is zero for each specific case, if the random number is
     //zero a known function will be used from Hash Table eqivFracs ( see getNewBalloon() )

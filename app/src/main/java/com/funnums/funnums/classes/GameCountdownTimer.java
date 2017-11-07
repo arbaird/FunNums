@@ -17,7 +17,7 @@ public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
 
-    private long millisLeft;
+    private long timeLeft;
 
     public boolean isPaused;
 
@@ -30,10 +30,10 @@ public class GameCountdownTimer extends CountDownTimer {
     //Updates displayTime after every  "tick" accordingly
     @Override
     public void onTick(long millisUntilFinished) {
-        millisLeft = millisUntilFinished;
+        timeLeft = millisUntilFinished;
         displayTime = String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(millisLeft) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisLeft)),
-                TimeUnit.MILLISECONDS.toSeconds(millisLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisLeft)));
+                TimeUnit.MILLISECONDS.toMinutes(timeLeft) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeLeft)),
+                TimeUnit.MILLISECONDS.toSeconds(timeLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft)));
     }
 
     @Override
@@ -45,9 +45,8 @@ public class GameCountdownTimer extends CountDownTimer {
         com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
     }
 
-    public long getMillisLeft()
-    {
-        return millisLeft;
+    public long getTime() {
+        return timeLeft;
     }
 
     //String representation of countdown
