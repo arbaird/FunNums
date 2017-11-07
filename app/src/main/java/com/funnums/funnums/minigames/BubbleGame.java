@@ -18,6 +18,7 @@ import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -81,8 +82,6 @@ public class BubbleGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
-    //Timer object
-    //private GameCountdownTimer gameTimer;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
@@ -310,6 +309,8 @@ public class BubbleGame extends MiniGame {
        When a number is touched, call this function. It will update the current Sum and check it
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
+
+       Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
     */
     private void processScore(TouchableBubble num) {
 
@@ -317,15 +318,16 @@ public class BubbleGame extends MiniGame {
         score = sum;
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
         scoreAnimations.add(textAnimator);
-
         if (sum == target) {
             makeNewTarget();
+            long newTime = 5000;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
 
-            //long newTime = 5000;
-            //com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
-
-        }else if (sum > target) {
+        } else if (sum > target) {
             resetGame();
+
+            long newTime = -5000;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
         }
     }
 

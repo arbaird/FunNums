@@ -16,6 +16,8 @@ import android.content.SharedPreferences;
 public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
+    //GameCountdownTimer gameTimer;
+
 
     private long timeLeft;
 
@@ -36,6 +38,10 @@ public class GameCountdownTimer extends CountDownTimer {
                 TimeUnit.MILLISECONDS.toSeconds(timeLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft)));
     }
 
+    /*
+        OnFinish, set flag to display game finished menu and set the score to be displayed. Also
+        update high score, if applicable
+     */
     @Override
     public void onFinish() {
         com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
@@ -48,6 +54,7 @@ public class GameCountdownTimer extends CountDownTimer {
     public long getTime() {
         return timeLeft;
     }
+
 
     //String representation of countdown
     @Override

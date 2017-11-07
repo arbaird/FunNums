@@ -12,12 +12,16 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 import java.io.InputStream;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.minigames.BalloonGame;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.*;
+import com.funnums.funnums.classes.GameCountdownTimer;
+
 
 import android.os.Handler;
 import android.os.Looper;
@@ -46,14 +50,13 @@ public class GameView extends SurfaceView implements Runnable {
 
     public GameFinishedMenu gameFinishedMenu;
 
-    public String type;
+    public String gameType;
 
     private long timeLeft;
 
-    private final static int MAX_FPS = 50;
-        // maximum number of frames to be skipped
-    private final static int MAX_FRAME_SKIPS = 3;
-        // the frame period
+    //Max FPS,used to control frame rate
+    private final static int MAX_FPS = 50;;
+    // the frame period
     private final static int FRAME_PERIOD = 1000 / MAX_FPS;
 
     //minimum sleep time between frames, used if the updates are occuring so fast that sleep time is negative
@@ -63,11 +66,15 @@ public class GameView extends SurfaceView implements Runnable {
         //set up view properly
         super(context);
 
+        //store which minigame type player selected
+        this.gameType = type;
+
         // Initialize our drawing objects
         ourHolder = getHolder();
         paint = new Paint();
         canvas = new Canvas();
 
+        //set up buttons for game finished menu and pause screen
         Bitmap resumeDown = loadBitmap("button_resume_down.png", true);
         Bitmap resume = loadBitmap("button_resume.png", true);
         UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
@@ -85,22 +92,21 @@ public class GameView extends SurfaceView implements Runnable {
                                     resumeButton,
                                     menuButton);
 
-        this.type = type;
-
         gameFinishedMenu = new GameFinishedMenu(GameActivity.screenX * 1/8,
                 offset,
                 GameActivity.screenX * 7/8,
                 GameActivity.screenY - offset,
                 resumeButton,
                 menuButton, 0);
-
-
     }
 
+    /*
+        Start a minigame type based on intent to Game Activity from Select Game Activity
+     */
     public void startGame() {
-        if(type.equals("bubble"))
+        if(gameType.equals("bubble"))
             currentGame = new BubbleGame();
-        else if(type.equals("balloon"))
+        else if(gameType.equals("balloon"))
             currentGame = new BalloonGame();
         currentGame.init();
 
@@ -124,25 +130,18 @@ public class GameView extends SurfaceView implements Runnable {
             if(!currentGame.isPaused)
                 currentGame.update(updateDurationNanos);
             currentGame.draw(ourHolder, canvas, paint);
-
-
             control(updateDurationNanos);
-            //sleep(17);
-            //update delta time
+
             updateDurationNanos = (System.nanoTime() - beforeUpdateRender);
-
-
-
-
         }
     }
 
     private void control(long updateDurationNanos) {
 
-        double updateDurationMillis = updateDurationNanos /  1000000L; //0.000001;
+        double updateDurationMillis = updateDurationNanos /  1000000L;
 
-        int framesSkipped = 0;  // number of frames being skipped
         int sleepTime = (int)(FRAME_PERIOD - updateDurationMillis); // ms to sleep (<0 if we're behind)
+        //make the thread sleep if sleep Time is positive, else, make it sleep minimum sleep time (2milis)
         if (sleepTime > 0  )
             sleep(sleepTime);
         else
@@ -153,9 +152,6 @@ public class GameView extends SurfaceView implements Runnable {
     private void sleep(int sleepTime)
     {
         try {
-            //TODO don't hard code 17 in sleep, should be variable based on milis,
-            //this acheives approximately 60FPS,
-            // 17 milliseconds =  (1000(milliseconds)/60(FPS))
             gameThread.sleep(sleepTime);
         }
         catch (InterruptedException e) {
@@ -172,14 +168,13 @@ public class GameView extends SurfaceView implements Runnable {
         catch (InterruptedException e) {
             Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
-        Log.d(VIEW_LOG_TAG, "pause GameView!");
         //if there is a running game timer, paused it
-        Log.d(VIEW_LOG_TAG, "currentGame.gameTimer: " + currentGame.gameTimer);
         if(currentGame.gameTimer != null && !currentGame.gameTimer.isPaused) {
             pauseGameTimer();
         }
     }
 
+    //resume the timer using the stored time left
     public void resumeGameTimer() {
         currentGame.gameTimer.cancel();
         currentGame.gameTimer = null;
@@ -187,10 +182,11 @@ public class GameView extends SurfaceView implements Runnable {
         currentGame.gameTimer.start();
     }
 
+    //cancel timer and store timer left so we can reset it properly
     public void pauseGameTimer() {
         currentGame.gameTimer.cancel();
         currentGame.gameTimer.isPaused = true;
-        timeLeft = currentGame.gameTimer.getMillisLeft();
+        timeLeft = currentGame.gameTimer.getTime();
     }
 
     // Make a new thread and start it
@@ -238,6 +234,9 @@ public class GameView extends SurfaceView implements Runnable {
         return true;
     }
 
+    /*
+        Load a bitmap from the assets folder
+     */
     public static Bitmap loadBitmap(String filename, boolean transparency) {
         InputStream inputStream = null;
         try {
@@ -256,14 +255,21 @@ public class GameView extends SurfaceView implements Runnable {
         return bitmap;
     }
 
-    public void updateGameTimer(final long newTime)
+
+    /*
+        Add a given amount of time to the current game timer
+     */
+    public void updateGameTimer(final long timeToAdd)
     {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                long newTime = currentGame.gameTimer.getTime() + timeToAdd;
+
                 currentGame.gameTimer.cancel();
                 currentGame.gameTimer = null;
-                currentGame.gameTimer = new GameCountdownTimer(newTime,1000);
+
+                currentGame.gameTimer = new GameCountdownTimer(newTime, 1000);
                 currentGame.gameTimer.start();
             }
         });

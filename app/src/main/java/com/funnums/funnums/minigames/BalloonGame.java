@@ -2,6 +2,7 @@ package com.funnums.funnums.minigames;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -33,6 +34,8 @@ public class BalloonGame extends MiniGame {
     private int screenX;
     private int screenY;
 
+    String TAG = "ballonGame";
+
     //TODO make this vary based on phone size
     //this is the amount of space at the top of the screen used for the current sum, target, timer, and pause button
     private int topBuffer = 200;
@@ -42,6 +45,8 @@ public class BalloonGame extends MiniGame {
 
 
     private int maxNumsOnScreen = 4;
+
+    private int exactType = 0;
 
     //target player is trying to sum to
     private Fraction target;
@@ -62,7 +67,7 @@ public class BalloonGame extends MiniGame {
     private Random r;
 
     //generates random fractions for us
-    private FractionNumberGenerator rFrac= new FractionNumberGenerator(0);
+    private FractionNumberGenerator rFrac;
 
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
@@ -72,11 +77,14 @@ public class BalloonGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
+
     private int balloonsProcessed;
 
-    private int balloonsTilNewInequality = 5;
+    private int balloonsTilBuffer = 3;
 
     private String inequality;
+
+    private boolean inBalloonGenBuffer;
 
 
     public void init() {
@@ -84,15 +92,20 @@ public class BalloonGame extends MiniGame {
         isFinished = false;
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
-        target = new Fraction(1,2);
+        int mode = r.nextInt(5);
+        rFrac= new FractionNumberGenerator(mode);
+
+        setInequalityString(mode);
+
+        target = rFrac.getTarget();
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
         bRadius = (int) (screenX * .15);
 
-        for(int i = 0; i < maxNumsOnScreen; i++)
-            generateNumber();
+
+        generateNumber();
 
         //Initialize timer to 61 seconds, update after 1 sec interval
         gameTimer = new GameCountdownTimer(61000, 1000);
@@ -105,6 +118,7 @@ public class BalloonGame extends MiniGame {
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
         balloonsProcessed = 0;
+        inBalloonGenBuffer = false;
     }
 
 
@@ -120,17 +134,25 @@ public class BalloonGame extends MiniGame {
             //update the number
             num.update();
 
-
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
                 num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
         }
 
         runningMilis += delta;
-        //generate a new number every 1/2 second if there are less than the max amount of numbers on the screen
-        if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen) {
-            generateNumber();
+        //generate a new balloon every 1 1/2 second if there are less than the max amount of numbers on the screen
+        if (runningMilis > 1.5 * NANOS_TO_SECONDS) {
             runningMilis = 0;
+            //if there is room on screen and we are not in buffer zone, generate a new balloon
+            if(numberList.size() < maxNumsOnScreen && !inBalloonGenBuffer)
+                generateNumber();
+            //else, if we are in buffer zone and player has cleared all balloons on screen, exit buffer zone
+            //and create new target
+            else if(inBalloonGenBuffer && numberList.size() == 0){
+                inBalloonGenBuffer = false;
+                makeNewTarget();
+                balloonsProcessed = 0;
+            }
         }
 
         //Remove and checks the balloons when they left the screen
@@ -151,7 +173,6 @@ public class BalloonGame extends MiniGame {
 
         for(TextAnimator faded : scoresToRemove)
             scoreAnimations.remove(faded);
-
     }
 
 
@@ -164,7 +185,7 @@ public class BalloonGame extends MiniGame {
         do {
             //Setting coordinates x and y
             x = r.nextInt(screenX);
-            y = screenY+r.nextInt(3*screenY/4);
+            y = screenY;
         }
         while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -228,13 +249,10 @@ public class BalloonGame extends MiniGame {
 
 
     /*
-       When a number is touched, call this function. It will update the current Sum and check it
-       player has reached the target, in which case we make a new target. Else, if the target is
-       exceeded, for now we tell the player they exceeded the target and reset the game
+       When a balloon is touched, call this function. It rewards the player a given amount of points
+       if the balloon popped satisfies the given inequality, and deducts points otherwise
     */
     private void processScore(TouchableBalloon num, int value) {
-
-        //the value to add to score if correct, or subtract if incorrect
         if (rFrac.gType == rFrac.GEQ_game) {
             scoreGEQ(num, value);
         }
@@ -250,43 +268,56 @@ public class BalloonGame extends MiniGame {
         else if(rFrac.gType == rFrac.EQ_game){
             scoreEQ(num, value);
         }
-        balloonsProcessed++;
-        if(balloonsProcessed > balloonsTilNewInequality){
-            makeNewInequality();
-            balloonsProcessed = 0;
-        }
+        //check if it is time to enter buffer zone where we wait before making new target
+        checkBalloonCount();
+
     }
 
 
-    //When a number is leaves the screen, call this function.
-    private void processScoreOffScreen(TouchableBalloon num) {
-        //the value to add to score if correct, or subtract if incorrect
-        int value = 1;
+    //When a number is leaves the screen, call this function. We check if the opposite is true
+    //since users only pop balloons satisfying inequality, then they are rewarded if unpopped
+    //balloond do NOT satisfy inequality
+    private void processScoreOffScreen(TouchableBalloon num, int value) {
+        //score player on opposite of inequality truth value
         if (rFrac.gType == rFrac.GEQ_game) {
-            scoreGEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.LEQ_game){
-            scoreLEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.GT_game){
-            scoreGT(num, value);
-        }
-        else if(rFrac.gType == rFrac.LT_game){
             scoreLT(num, value);
         }
-        else if(rFrac.gType == rFrac.EQ_game){
-            scoreEQ(num, value);
+        else if(rFrac.gType == rFrac.LEQ_game){
+            scoreGT(num, value);
         }
-        balloonsProcessed++;
+        else if(rFrac.gType == rFrac.GT_game){
+            scoreLEQ(num, value);
+        }
+        else if(rFrac.gType == rFrac.LT_game){
+            scoreGEQ(num, value);
+        }
+        else if(rFrac.gType == rFrac.EQ_game){
+            scoreNEQ(num, value);
+        }
+        checkBalloonCount();
     }
 
-    private void makeNewInequality(){
-        //there are 5 different inequalities in the game, 0 indexed, so we get a random int between 0-4, inclusive
-        rFrac.gType = r.nextInt(5);
-        switch(rFrac.gType){
+    /*
+        checks if game should enter buffer zone before changing target in which no additional
+        balloons are generated, to avoid changing inequality right before player is about to touch
+        a balloon
+     */
+    private void checkBalloonCount(){
+        balloonsProcessed++;
+        if(!inBalloonGenBuffer && balloonsProcessed >= balloonsTilBuffer){
+            inBalloonGenBuffer = true;
+        }
+    }
+
+    /*
+        Sets the string displayed for current inequality based on the int value for inequality types
+        defined in FractionNumberGenerator
+     */
+    private void setInequalityString(int type){
+        switch(type){
             case(FractionNumberGenerator.GEQ_game):
-                    inequality = ">=";
-                    break;
+                inequality = ">=";
+                break;
             case(FractionNumberGenerator.LEQ_game):
                 inequality = "<=";
                 break;
@@ -304,44 +335,28 @@ public class BalloonGame extends MiniGame {
     }
 
     /*
-       Create a new target
-    */
-    private void makeNewTarget() {
-        //text, x, y, r, g, b, interval, size
+        create a new fraction target using FractionNumberGenerator and changes current inequality
+     */
+    private void makeNewTarget(){
+        //there are 5 different inequalities in the game, 0 indexed, so we get a random int between 0-4, inclusive
+        int inequalityType = r.nextInt(5);
+        //set new game to re initialize fraction generator
+        rFrac.new_game(inequalityType);
+        //reset current inequality being displayed
+        setInequalityString(inequalityType);
+        //reset current fraction we are comparing to
+        target=rFrac.getTarget();
+
+        //add text animation
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
-
     }
 
-    /*
-        For now, tell player they missed the target and reset the target and current sum
-     */
-    private void resetGame() {
-        //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("Target Missed\nResetting...!", screenX/2, screenY/2, 185, 44, 44, 1.25, 50);
-        scoreAnimations.add(textAnimator);
-
-
-        //if we want game to stop, make playing false here
-        //   playing = false;
-    }
-
-    /*
-    Used to round a number to min if it is less than the cutoff or to max if it is greater than the
-    cutoff
-     */
-    private int bin(int cutoff, int max, int min, int num) {
-        if (num > cutoff)
-            return max;
-        else
-            return min;
-    }
-
-    //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remve balloon.
+    //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remove balloon.
     private void offScreenCheck() {
         for(TouchableBalloon num : numberList) {
-            if(num.getY()<topBuffer-bRadius) {
-                processScore(num, 1);
+            if(num.getY()<topBuffer+bRadius) {
+                processScoreOffScreen(num, 5);
                 numberList.remove(num);
                 break;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
@@ -351,7 +366,7 @@ public class BalloonGame extends MiniGame {
     }
 
     /*
-        Detect collisions for all our numbers on screen and bouce numbers that have collided
+        Detect collisions for all our numbers on screen and bounce numbers that have collided
      */
     private void findCollisions() {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
@@ -398,15 +413,17 @@ public class BalloonGame extends MiniGame {
             for(TextAnimator score : scoreAnimations)
                 score.render(canvas, paint);
 
-            // Draw the Current Sum and Target Score at top of screen
+            // Get offset to space out HUD
             int offset = 50;
 
-            //Draw Current
+            //Draw Inequality
             paint.setColor(Color.argb(255, 0, 0, 255));
             paint.setTextSize(45);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            canvas.drawText("Invalid right now",  screenX * 1/4, topBuffer, paint);
+            canvas.drawText("Inequality", screenX * 1/4, topBuffer - offset, paint);
+            canvas.drawText(inequality, screenX * 1 / 4, topBuffer, paint);
+
+
             //Draw Target
             canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
             canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
@@ -414,10 +431,12 @@ public class BalloonGame extends MiniGame {
             canvas.drawText("Timer", screenX * 1/2, offset, paint);
             canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
             //Draw pause button
-            pauseButton.render(canvas, paint);
+            if(pauseButton != null)
+                pauseButton.render(canvas, paint);
             //draw pause menu, if paused
             if(isPaused)
                 com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
+            //draw game finished screen, if game is finished
             if(isFinished)
                 com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
 
@@ -440,7 +459,11 @@ public class BalloonGame extends MiniGame {
         return true;
     }
 
-    //inequality functions
+    /*************inequality functions************/
+    //all of these reward the player a given amount if the balloon passed as an argument satisfies
+    //the current inequality, and deducts the given amount if the balloon does not satisfy the
+    //given inequality
+
     private void scoreGEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
         if (num.getValue().get_key() >= target.get_key()) {
@@ -479,7 +502,16 @@ public class BalloonGame extends MiniGame {
     }
     private void scoreEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
-        if (num.getValue().get_key() == target.get_key()) {
+        if (num.getValue().get_key().equals(target.get_key())) {
+            textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+        }
+        scoreAnimations.add(textAnimator);
+    }
+    private void scoreNEQ(TouchableBalloon num, int value){
+        TextAnimator textAnimator;
+        if (!num.getValue().get_key().equals(target.get_key())) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);

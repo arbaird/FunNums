@@ -26,8 +26,8 @@ public class FractionNumberGenerator {
 
     //Defines the chances that random generated number is zero for each specific case, if the random number is
     //zero a known function will be used from Hash Table eqivFracs ( see getNewBalloon() )
-    final private int LEQ_GEQ_0_chance = 14;         //1 in 14 chance
-    final private int EQ_0_chance = 7;               //1 in 7 chance
+    final private int LEQ_GEQ_0_chance = 6;         //1 in 6 chance
+    final private int EQ_0_chance = 3;               //1 in 3 chance
 
     //Choosen value 'denomRange' will generate random denominators between 2 and 'denomRange'
     final private int denomRange = 14;
@@ -134,22 +134,25 @@ public class FractionNumberGenerator {
             if (chance == 0){
 
                 //Get a reference to list of equivalent fractions
-                //Log.d(TEST_LOG_TAG, "Target key: " + String.valueOf(target.get_key()));
                 ArrayList<Fraction> fractions = eqivFracs.get(target.get_key());
-
                 //Get a different equivalent fraction than that of the target
                 do {
+
                     //Get a random equivalent Fraction
                     balloon = fractions.get( rd.nextInt(fractions.size()) ) ;
 
                 } while ( balloon.get_denom() == target.get_denom() );
-
             }
 
         }
 
         return balloon;
     }
+
+    public int get_gtype(){
+        return gType;
+    }
+
 
     //*********************************PRIVATE METHODS****************
 

@@ -37,10 +37,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
     String logTag = "MainMenu";
 
-    private boolean firstConnect = true;
-
-    int connections = 0;
-
+    //shared prefrences for our app, basically stored data that persists after app is closed
     static SharedPreferences prefs;
     // This is the entry point to our game
     @Override
@@ -55,50 +52,24 @@ public class MainMenuActivity extends AppCompatActivity {
         //get the editor so we can update stored data, if needed
         final SharedPreferences.Editor editor = prefs.edit();
 
+        //uncomment to test adding new usernames
         /*editor.putString("user_name", null);
         editor.commit();*/
 
-        final String userName = prefs.getString("user_name", null);
+        String userName = prefs.getString("user_name", null);
 
-        //if there is no username, prompt player to enter one
-        /*if (userName == null) {
-            Thread t = new Thread(new Runnable() {
-
-
-                public void run() {
-                    makeAlert("Enter your username!");
-                }
-
-
-            });
-            t.run();
-            try {
-                t.join();
-            }
-            catch(Exception e) {
-            }
-
-        }*/
-           // makeAlert("Enter your username!");
-
+        //if there is no username, prompt user to create one
         if (userName == null){
             makeAlertWithConfirmedConnection("Enter your username!");
         }
-
-            // Prepare to highest Score. We don't need this yet, we can keep it for later when we implement scoring
-        // Load fastest time
-        // if not available our high score = 1000000
-        long highScore = prefs.getLong("HighScore", 0);
-
-        // Get a refference to the TextView in our layout
-        final TextView textFastestTime = (TextView)findViewById(com.funnums.funnums.R.id.textHiScore);
-        // Put the high score in our TextView
-        textFastestTime.setText("Your High Score:" + highScore);
-
     }
 
-    public void checkIfUserExists(/*final OnGetDataListener listener,*/ final String userName)
+    /*
+        Check if a username has already been claimed
+     */
+    public void checkIfUserExists(final String userName)
     {
+        //prepare loading bar
         final ProgressDialog progress = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
         progress.setTitle("Loading");
         progress.setMessage("Checking username...");
@@ -107,43 +78,40 @@ public class MainMenuActivity extends AppCompatActivity {
         progress.setCancelable(false);
         progress.show();
 
-
-        Log.d("ONSTART", "Started");
+        //get reference to editor so we can store the username in our app so we don't ask for
+        //username everytime player opens funnums
         final SharedPreferences.Editor editor = prefs.edit();
+        //set table to playerNames so we can search if chosen username already exists
         LeaderboardGameActivity.setEndpointToPlayerNames();
+        //listen for response from firebase
         LeaderboardGameActivity.playerScoreCloudEndPoint.child(userName).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    // TODO: handle the case where the data already exists
-                    //listener.onSuccess(snapshot);
+                    //if given key already exists, reprompt user for new name
                     makeAlertWithConfirmedConnection(userName + " already exists\nplease enter another username");
+                    //dismiss progress bar
                     progress.dismiss();
-
                 }
                 else {
-                    // TODO: handle empty strings
-                    //listener.onFailure();
-                    Log.d(TAG, userName + " does not already exists");
+                    //store unique user name on app
                     editor.putString("user_name", userName);
                     editor.commit();
+                    //store username in Firebase
                     LeaderboardGameActivity.setEndpointToPlayerNames();
-
                     PlayerScore newPlayer = new PlayerScore(userName, 0);
                     LeaderboardGameActivity.playerScoreCloudEndPoint.child(userName).setValue(newPlayer);
-
+                    //dismiss progress bar
                     progress.dismiss();
                 }
             }
-
+            //boilerplate
             @Override
             public void onCancelled(DatabaseError firebaseError) {
                 Log.d(TAG, "no connection");
             }
 
         });
-
-        //while(waiting){}
     }
 
 
@@ -170,16 +138,11 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null;
-    }
-
-
-
-    public void makeAlert(/*final OnGetDataListener listener,*/ String message) {
+    /*
+        Make alert prompting user for username. Can be given different strings for message, so we can inform
+        user if name already exists, or just ask for username on first alert
+     */
+    public void makeAlert(String message) {
         //edit text is the text field that the user will enter their name into
         final SharedPreferences.Editor editor = prefs.edit();
         EditText input = new EditText(this);
@@ -197,16 +160,11 @@ public class MainMenuActivity extends AppCompatActivity {
                                         .findViewById(1000);
                                 String enteredText = theInput.getText()
                                         .toString();
-                                /*if(!hasInternet())
-                                    makeNoInternetAlert();*/
-
-                                //if the player entered a name, store it so we don't ask again later
+                                //if the player entered a name, check if name already exists in database
                                 if (!enteredText.trim().equals("")) {
-                                    checkIfUserExists(/*listener,*/ enteredText);
-                                    /*editor.putString("user_name",
-                                            enteredText);
-                                    editor.commit();*/
+                                    checkIfUserExists(enteredText);
                                 }
+                                //if user entered nothing, remprompt for username
                                 else{
                                     makeAlertWithConfirmedConnection("Please enter a username");
                                 }
@@ -219,37 +177,32 @@ public class MainMenuActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void makeNoInternetAlert(){
-        AlertDialog dialog = new AlertDialog.Builder(this).setMessage("No network connection...\n Relaunch the app with network connection to enter a username so you can compete globally!")
-                .setPositiveButton("Ok",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-
-                            }
-
-                        })
-                .setCancelable(false)
-                .create();
-        dialog.show();
-    }
-
-
+    /*
+        Creates an alert to enter username once connection to firebase has been established so we can check
+        if a username is already taken
+     */
     public void makeAlertWithConfirmedConnection(final String message) {
+
+        //get reference to database to check connection
         DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
         connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 boolean connected = snapshot.getValue(Boolean.class);
-                if (connected) {
+                //check if user entered username yet, since we might reconnect while entering name
+                final String userName = prefs.getString("user_name", null);
+                //if connected and still no username, prompt user for username
+                if (connected && userName == null) {
                     makeAlert(message);
-                } else {
-                    System.out.println("not connected");
-                    //makeNoInternetAlert();
+                }
+                //else, do not prompt for name, since we cannot check if it is unique
+                else {
+                    System.out.println("not connected to firebase");
+
                 }
             }
 
+            //boilerplate
             @Override
             public void onCancelled(DatabaseError error) {
                 System.err.println("Listener was cancelled");

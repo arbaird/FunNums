@@ -42,29 +42,18 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "Beginning of onCreate");
         super.onCreate(savedInstanceState);
         setContentView(com.funnums.funnums.R.layout.see_leaderboard);
-        Log.d(TAG, "End of onCreate");
-
-         /*FireBase stuff*/
-        //get reference to database
-        //mDatabase =  FirebaseDatabase.getInstance().getReference();
-        //get reference to the playerScores in our database
-        //playerScoreCloudEndPoint = mDatabase.child("playerScores");
 
         //initalize the leader board list view and adapter
         initLeaderBoardListView();
 
-        /*following function call will display the listview with 10 highets scores, left commented
-        out for now so we can add it to a button click later
-         */
+        //following function call will display the listview with 10 highest scores
         getHighScores("bubble");
 
+        //start out displaying bubble game leaderboard
         Button bubbleButton= (Button) findViewById(R.id.buttonBubbleScores);
         bubbleButton.setEnabled(false);
-        /*PlayerScore myScore = new PlayerScore("hector", 55);
-        playerScoreCloudEndPoint.child("hector").setValue(myScore);*/
     }
 
     public void initLeaderBoardListView() {
@@ -123,21 +112,23 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
     }
 
+    /*
+        store given high score, if it is higher than current high score
+     */
     public static void storeHighScore(long score) {
-
-
-
-
         SharedPreferences prefs = MainMenuActivity.prefs;
         //get the editor so we can update stored data, if needed
         final SharedPreferences.Editor editor = prefs.edit();
 
-        long currentHighScore = prefs.getLong("HighScore", 0);
+        //get current minigame to store score for
+        String currentMiniGame = com.funnums.funnums.maingame.GameActivity.gameView.gameType;
+
+        long currentHighScore = prefs.getLong(currentMiniGame+ "HighScore", 0);
 
         if(currentHighScore > score)
             return;
         else{
-            editor.putLong("HighScore", score);
+            editor.putLong(currentMiniGame + "HighScore", score);
             editor.apply();
         }
         //if database hasn't been initialized yet, initialize it!
@@ -147,29 +138,31 @@ public class LeaderboardGameActivity extends AppCompatActivity {
             playerScoreCloudEndPoint = mDatabase.child("playerScores");
         }
 
-        String currentMiniGame = com.funnums.funnums.maingame.GameActivity.gameView.type;
+        //get reference to table for current minigame scores
         playerScoreCloudEndPoint = mDatabase.child(currentMiniGame + "Scores");
 
-
-
         String userName = prefs.getString("user_name", null);
-        //if user still hasn;t entered their username, no score to store
+        //if user still hasn't entered their username, no score to store
         if(userName == null)
             return;
 
+        //store new high score in database
         PlayerScore myScore = new PlayerScore(userName, score);
         playerScoreCloudEndPoint.child(userName).setValue(myScore);
 
     }
 
+    /*
+        Method called when a button is clicked ot display keaderboard for the given game
+     */
     public void chooseGameScores(View v){
-        int clickedButtonId = v.getId(); //get the adnroid id of the clicked button
-
+        int clickedButtonId = v.getId(); //get the android id of the clicked button
 
         String game = "";
+        //id of button
         int titleStringId = 0;
 
-        //find the actual button number(i.e1-3) from the android id
+        //find the actual button number from the android id
         switch (clickedButtonId)
         {
             case(R.id.buttonBubbleScores) :
@@ -186,9 +179,10 @@ public class LeaderboardGameActivity extends AppCompatActivity {
                 break;
 
         }
-
+        //display high scores for selected game
         getHighScores(game);
 
+        //set current game button as unselectable, and all others as selectable
         int[] buttonIds = {R.id.buttonBubbleScores, R.id.buttonBalloonScores, R.id.buttonOwlScores};
         for(int i = 0; i < buttonIds.length; i++) {
             Button button= (Button) findViewById(buttonIds[i]);
@@ -198,6 +192,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
                 button.setEnabled(true);
         }
 
+        //update textview to show current mini game name
         TextView title = (TextView) findViewById(R.id.textLeaderboard);
         title.setText(titleStringId);
 
