@@ -15,7 +15,8 @@ import android.os.CountDownTimer;
 public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
-    GameCountdownTimer gameTimer;
+    //GameCountdownTimer gameTimer;
+    private long timeLeft;
 
     //Constructor
     public GameCountdownTimer(long millisInFuture, long countDownInterval) {
@@ -25,6 +26,7 @@ public class GameCountdownTimer extends CountDownTimer {
     //Updates displayTime after every  "tick" accordingly
     @Override
     public void onTick(long millisUntilFinished) {
+        timeLeft = millisUntilFinished;
         long millis = millisUntilFinished;
         displayTime = String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
@@ -37,19 +39,8 @@ public class GameCountdownTimer extends CountDownTimer {
     }
 
     public long getTime(){
-        long current;
-        String min;
-        String sec;
-        String full = this.toString();
-        min = full.substring(0, 1);
-        sec = full.substring(3,4);
-        current = Long.parseLong(min);
-        current = current * 60;
-        current += Long.parseLong(sec);
-        current = current * 1000;
-        return current;
 
-
+        return timeLeft;
 
     }
 

@@ -43,11 +43,14 @@ public class BalloonGame extends MiniGame {
 
     private int maxNumsOnScreen = 10;
 
+    private int balloonCounter = 0;
+    private int exactType = 0;
+
     //target player is trying to sum to
     private Fraction target;
 
     //speed of the balloons
-    private int speed=10;
+    private int speed=5;
 
 
     //list of all the touchable numbers on screen
@@ -73,13 +76,12 @@ public class BalloonGame extends MiniGame {
     private int bRadius;
 
     //Timer object
-    private GameCountdownTimer gameTimer;
 
     public void init() {
 
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
-        target = new Fraction(1,2);
+        target = rFrac.getTarget();
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -221,16 +223,37 @@ public class BalloonGame extends MiniGame {
        When a number is touched, call this function. It will update the current Sum and check it
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
+
+       Set a counter to determine when to change the target and the specific inequality it will
+       have.
     */
     private void processScore(TouchableBalloon num) {
         TextAnimator textAnimator;
         if(num.getValue().get_key()>target.get_key()) {
             textAnimator = new TextAnimator("+5", num.getX(), num.getY(), 0, 255, 0);
+
+            boolean add = true;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(add);
         }
         else {
             textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
+
+            boolean add = false;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(add);
         }
+
+        balloonCounter += 1;
         scoreAnimations.add(textAnimator);
+
+        if(balloonCounter >= 10){
+            makeNewTarget();
+            if(exactType == 0){
+                exactType = 1;
+            }else{
+                exactType = 0;
+            }
+            balloonCounter = 0;
+        }
     }
     //When a number is leaves the screen, call this function.
     private void processScoreOffScreen(TouchableBalloon num){
@@ -241,17 +264,29 @@ public class BalloonGame extends MiniGame {
         else {
             textAnimator = new TextAnimator("-5", num.getX(), num.getY(), 0, 255, 0);
         }
+
+        balloonCounter += 1;
         scoreAnimations.add(textAnimator);
     }
 
     /*
        Create a new target
+
     */
     private void makeNewTarget() {
         //text, x, y, r, g, b, interval, size
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
+        int type = rFrac.get_gtype();
+        if(type == 0) {
+            rFrac.new_game(1);
+        }else if(type == 1){
+            rFrac.new_game(2);
+        }else{
+            rFrac.new_game(0);
+        }
+        target=rFrac.getTarget();
     }
 
     /*
@@ -341,13 +376,30 @@ public class BalloonGame extends MiniGame {
 
             // Draw the Current Sum and Target Score at top of screen
             int offset = 50;
+            int type = rFrac.get_gtype();
 
             //Draw Current
             paint.setColor(Color.argb(255, 0, 0, 255));
             paint.setTextSize(45);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            canvas.drawText("Invalid right now",  screenX * 1/4, topBuffer, paint);
+            canvas.drawText("Inequality", screenX * 1/4, topBuffer - offset, paint);
+            if(type == 0) {
+                if(exactType == 0) {
+                    canvas.drawText(">", screenX * 1 / 4, topBuffer, paint);
+                }else{
+                    canvas.drawText("<", screenX * 1 / 4, topBuffer, paint);
+                }
+            }else if(type == 1){
+                if(exactType == 0) {
+                    canvas.drawText(">=", screenX * 1 / 4, topBuffer, paint);
+                }else{
+                    canvas.drawText("<=", screenX * 1 / 4, topBuffer, paint);
+                }
+            }else{
+                canvas.drawText("=", screenX * 1 / 4, topBuffer, paint);
+
+            }
+
             //Draw Target
             canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
             canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);

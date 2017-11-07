@@ -149,6 +149,11 @@ public class FractionNumberGenerator {
         return balloon;
     }
 
+    public int get_gtype(){
+        return gType;
+    }
+
+
     //*********************************PRIVATE METHODS****************
 
     //Return a new random Fraction object within the specified range

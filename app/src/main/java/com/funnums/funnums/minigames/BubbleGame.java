@@ -17,6 +17,7 @@ import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -80,8 +81,6 @@ public class BubbleGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
-    //Timer object
-    private GameCountdownTimer gameTimer;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
@@ -295,8 +294,14 @@ public class BubbleGame extends MiniGame {
         if (sum == target) {
             makeNewTarget();
 
+            boolean add = true;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(add);
+
         } else if (sum > target) {
             resetGame();
+
+            boolean add = false;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(add);
         }
     }
 

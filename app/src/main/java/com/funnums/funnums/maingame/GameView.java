@@ -11,11 +11,15 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 import java.io.InputStream;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.minigames.BalloonGame;
 import com.funnums.funnums.uihelpers.*;
+import com.funnums.funnums.classes.GameCountdownTimer;
+
 
 
 public class GameView extends SurfaceView implements Runnable {
@@ -178,6 +182,26 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
 
         return bitmap;
+    }
+
+    public void updateGameTimer(final boolean add){
+
+        new Handler(Looper.getMainLooper()).post(new Runnable(){
+            @Override
+            public void run(){
+                long newTime;
+                newTime = currentGame.gameTimer.getTime();
+                if(add){
+                    newTime += 5000;
+                }else{
+                    newTime -= 5000;
+                }
+                currentGame.gameTimer.cancel();
+                currentGame.gameTimer = null;
+                currentGame.gameTimer = new GameCountdownTimer(newTime, 1000);
+                currentGame.gameTimer.start();
+            }
+        });
     }
 }
 
