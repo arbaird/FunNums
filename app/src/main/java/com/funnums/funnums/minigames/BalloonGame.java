@@ -430,6 +430,9 @@ public class BalloonGame extends MiniGame {
             //draw timer
             canvas.drawText("Timer", screenX * 1/2, offset, paint);
             canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
+            //draw score
+            canvas.drawText("Score", screenX * 1/4, offset, paint);
+            canvas.drawText(String.valueOf(score),  screenX *  1/4, offset*2, paint);
             //Draw pause button
             if(pauseButton != null)
                 pauseButton.render(canvas, paint);
@@ -466,12 +469,15 @@ public class BalloonGame extends MiniGame {
 
     private void scoreGEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
+        boolean correct;
         if (num.getValue().get_key() >= target.get_key()) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
     private void scoreLEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -479,8 +485,10 @@ public class BalloonGame extends MiniGame {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
     private void scoreGT(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -488,8 +496,10 @@ public class BalloonGame extends MiniGame {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
     private void scoreLT(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -497,8 +507,10 @@ public class BalloonGame extends MiniGame {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
     private void scoreEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -506,8 +518,10 @@ public class BalloonGame extends MiniGame {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
     private void scoreNEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -515,8 +529,10 @@ public class BalloonGame extends MiniGame {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            value = -value;
         }
         scoreAnimations.add(textAnimator);
+        score += value;
     }
 
 

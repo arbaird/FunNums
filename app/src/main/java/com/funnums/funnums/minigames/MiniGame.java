@@ -22,7 +22,7 @@ public abstract class MiniGame
     public UIButton pauseButton;
 
 
-    public int score;
+    public int score = 0;
 
     public static GameCountdownTimer gameTimer;
 

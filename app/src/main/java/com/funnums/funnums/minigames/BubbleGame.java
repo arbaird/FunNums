@@ -320,13 +320,13 @@ public class BubbleGame extends MiniGame {
         scoreAnimations.add(textAnimator);
         if (sum == target) {
             makeNewTarget();
-            long newTime = 5000;
+            long newTime = 1000;
             com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
 
         } else if (sum > target) {
             resetGame();
 
-            long newTime = -5000;
+            long newTime = -1000;
             com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
         }
     }
