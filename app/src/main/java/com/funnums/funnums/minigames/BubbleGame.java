@@ -9,7 +9,7 @@ import android.view.SurfaceHolder;
 import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
-import java.util.Set;
+
 
 import com.funnums.funnums.classes.BubbleTargetGenerator;
 import com.funnums.funnums.classes.BubbleNumberGenerator;
@@ -160,9 +160,9 @@ public class BubbleGame extends MiniGame {
         //detect and handle collisions
         findCollisions();
 
-        for(TouchableNumber num : numberList) {
+        for(TouchableBubble num : numberList) {
             //update the number
-            num.update();
+            num.update(delta);
 
 
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
@@ -198,6 +198,7 @@ public class BubbleGame extends MiniGame {
         for(TextAnimator faded : scoresToRemove) {
             scoreAnimations.remove(faded);
         }
+
     }
 
 
@@ -269,13 +270,17 @@ public class BubbleGame extends MiniGame {
      */
     private void processEvents() {
 
+        boolean removedNum = false;
         for(MotionEvent e : events) {
             int x = (int) e.getX();
             int y = (int) e.getY();
 
-            checkTouchRadius(x, y);
+            if(checkTouchRadius(x, y))
+                removedNum = true;
         }
         events.clear();
+        if(removedNum)
+            System.gc();
     }
 
     private boolean valueAlreadyOnScreen(int value) {
@@ -291,18 +296,19 @@ public class BubbleGame extends MiniGame {
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
     */
-    private void checkTouchRadius(int x, int y) {
+    private boolean checkTouchRadius(int x, int y) {
 
         for(TouchableBubble num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
                 numberList.remove(num);
-                break;
+                return true;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
             }
         }
+        return false;
     }
 
     /*
@@ -438,6 +444,8 @@ public class BubbleGame extends MiniGame {
             //draw timer
             canvas.drawText("Timer", screenX * 1/2, offset, paint);
             canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
+
+
             //Draw pause button
             if(pauseButton != null)
                 pauseButton.render(canvas, paint);
