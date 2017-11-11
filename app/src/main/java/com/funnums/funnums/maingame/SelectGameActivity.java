@@ -43,5 +43,15 @@ public class SelectGameActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void onPressedOwl(View v) {
+        Log.d(TAG, "Owl game pressed");
+        Intent i = new Intent(this, GameActivity.class);
+
+        //setFlag that game we want to create is a bubble game
+        i.putExtra("minigame", "owl");
+
+        startActivity(i);
+    }
+
 
 }
