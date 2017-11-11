@@ -7,6 +7,12 @@ import android.util.Log;
 
 /* This class takes as input an expression as a space seperated string of numbers and operators
    evaluates it. Currently only +, -, *, /, % are supported. The unary negative operator is not supported.
+
+   Whenever a player adds or removes a 'tile" from the expression, insert() and delete() need to be
+   called to maintain ActiveSlots. For the index in insert(), pass in the index where the player
+   inserted the num or op: E.g _ _ _ + _ _ _ -> pass in 3 for index. Use isExpr() whenever the player
+   adds or removes a tile to automatically check if the expression is legal-- and if it is, use
+   evalExpr() to evaluate the expression.
  */
 public class ExpressionEvaluator {
 
@@ -20,13 +26,13 @@ public class ExpressionEvaluator {
          * -1 : an operator
          * We intialize the type array with values of 0 so that none of them are active
         */
-        public final int MAX_EXPR_SIZE = 7;
+        private final int MAX_EXPR_SIZE = 7;
 
-        public int activeIndexes = 0; //The number of active indexes in the exprArr
-        public String[] exprArr = new String[MAX_EXPR_SIZE];
-        public int[]    typeArr = new int   [MAX_EXPR_SIZE];
+        private int activeIndexes = 0; //The number of active indexes in the exprArr
+        private String[] exprArr = new String[MAX_EXPR_SIZE];
+        private int[]    typeArr = new int   [MAX_EXPR_SIZE];
 
-        public ActiveSlots() {
+        private ActiveSlots() {
             Arrays.fill(typeArr, 0);
         }
 
