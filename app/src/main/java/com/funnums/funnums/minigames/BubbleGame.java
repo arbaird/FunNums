@@ -260,10 +260,6 @@ public class BubbleGame extends MiniGame {
         int newNumber = numGen.nextNum(); // get generated number from our num gen
         TouchableBubble num = new TouchableBubble(x, y, angle, bRadius, speed, newNumber);
         numberList.add(num);
-
-        // Todo remove this after done testing 
-        ExpressionEvaluator solutionTest = new ExpressionEvaluator();
-        Log.d(TAG, Integer.toString(solutionTest.evalExpr("1 + 4 * 3 / 2 - 3")));
     }
 
     /*

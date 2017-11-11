@@ -1,18 +1,88 @@
 package com.funnums.funnums.classes;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Stack;
-import java.util.NoSuchElementException;
 import android.util.Log;
 
 /* This class takes as input an expression as a space seperated string of numbers and operators
    evaluates it. Currently only +, -, *, /, % are supported. The unary negative operator is not supported.
  */
 public class ExpressionEvaluator {
+
+    public class ActiveSlots {
+        /* exprArr represents the expression, where the val in each index is a num or op
+         * typeArr represents the what type of val is at the index of the exprArr
+
+         * The numbers below indicate that at this index in exprArr, the value is:
+         *  0 : not active(either deleted or the index has not been used yet)
+         *  1 : a number
+         * -1 : an operator
+         * We intialize the type array with values of 0 so that none of them are active
+        */
+        public final int MAX_EXPR_SIZE = 7;
+
+        public int activeIndexes = 0; //The number of active indexes in the exprArr
+        public String[] exprArr = new String[MAX_EXPR_SIZE];
+        public int[]    typeArr = new int   [MAX_EXPR_SIZE];
+
+        public ActiveSlots() {
+            Arrays.fill(typeArr, 0);
+        }
+
+        /* insert() and delete() are used to maintain which indexes in our expression array are active
+         * The type of the value at the index is determined in the try/catch block.
+         * If we can parse the value to an int, then it's an int, otherwise it's an op
+         */
+        public void insert(String token, int index) {
+            exprArr[index] = token;
+            activeIndexes++;
+            try {
+                Integer.parseInt(token);
+                typeArr[index] = 1;
+            }catch(NumberFormatException e) {
+                typeArr[index] = -1;
+            }
+        }
+
+        public void delete(int index) {
+            typeArr[index] = 0;
+            activeIndexes--;
+        }
+    }
+
     private static final String TAG = "ExpressionEvaluator";
 
     private Stack<Integer> numSt = new Stack<>(); //the number stack
     private Stack<String>  opSt  = new Stack<>(); //the operator stack
+
+    public ActiveSlots slots = new ActiveSlots();
+
+    /* Scans through the expression array to test if the values in it represent an expression.
+     * If it's not an expression "false" is returned, else the space-seperated expression is returned.
+     * -If the expr is length 1 or and even length, then return "false"
+     * -If the the scanned index doesn't equal the next type, then return "false"
+     * The nextType is multiplied by -1 each time because the check has to flip between op and num
+     */
+    public String isExpr() {
+        String expr  = "";
+        int size     = slots.activeIndexes;
+        int maxSize  = slots.MAX_EXPR_SIZE;
+        int nextType = 1; //The first thing encountered has to be a number
+
+        if (size == 1 || (size % 2 == 0)) {
+            return "false";
+        }
+        for (int i=0, count=0; i<maxSize && count<size; i++) {
+            if (slots.typeArr[i] == 0)        continue;
+            if (slots.typeArr[i] != nextType) return "false";
+
+            expr = expr + slots.exprArr[i] + " ";
+            count++;
+            nextType *= -1;
+        }
+        return expr;
+    }
 
     /* Evaluates the expression given as a string and returns it.
      * Loops through the tokens.
@@ -27,8 +97,9 @@ public class ExpressionEvaluator {
      * then we execute the entire op-stack, fully evaluating the expr.
      */
     public int evalExpr(String expr) {
-        Scanner sc = new Scanner(expr);
+        if (expr.equals("false")) return -9999;
 
+        Scanner sc = new Scanner(expr);
         while(sc.hasNext()) {
             String token = sc.next();
             try {
@@ -51,7 +122,7 @@ public class ExpressionEvaluator {
         while(!opSt.empty()) {
             executeOp(opSt, numSt);
         }
-        Log.d(TAG, expr + "=" + numSt.peek());
+        Log.d(TAG, expr + "= " + numSt.peek());
         return numSt.pop();
     }
 
@@ -102,6 +173,4 @@ public class ExpressionEvaluator {
                 break;
         }
     }
-
-
 }
