@@ -36,19 +36,19 @@ public class TouchableBubble extends TouchableNumber {
      */
     private void initAnim(){
         //get each image for animation
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim1.png", true);
-        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim2.png", true);
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleTestmdpi.png", true);
+        /*Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim2.png", true);
         Bitmap run3 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim3.png", true);
         Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim4.png", true);
-        Bitmap run5 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim5.png", true);
+        Bitmap run5 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim5.png", true);*/
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
-        Frame f2 = new Frame(run2, .1f);
+        /*Frame f2 = new Frame(run2, .1f);
         Frame f3 = new Frame(run3, .1f);
         Frame f4 = new Frame(run4, .1f);
-        Frame f5 = new Frame(run5, .1f);
+        Frame f5 = new Frame(run5, .1f);*/
         //create animation object
-        anim = new Animation(f1, f2, f3, f4, f5, f3, f2);
+        anim = new Animation(f1);
     }
 
     public int getValue() {
@@ -69,6 +69,9 @@ public class TouchableBubble extends TouchableNumber {
         collidingNum.animateCollision();
     }
 
+    /*
+        play collision, or restart it if it is already playing
+     */
     private void animateCollision(){
         if(anim.playing)
             anim.restart();
@@ -80,17 +83,24 @@ public class TouchableBubble extends TouchableNumber {
     public void draw(Canvas canvas, Paint paint) {
         //draw the circle(bubble)
         paint.setColor(Color.argb(255, 255, 255, 255));
-        canvas.drawCircle(x, y, radius, paint);
+        //canvas.drawCircle(x, y, radius, paint);
+
+
+        //convert to coords that are positioned correctly when drawn.
+        int drawX = (int)x -(int)radius;
+        int drawY = (int)y -(int)radius;
+        //scale the image to be the length and width of the diameter of the bubble
+        int diameter = (int)radius*2;
+
+        //takes x, y coords, then the length and width to scale the image to
+        anim.render(canvas, paint, drawX, drawY, diameter, diameter);
 
         //draw the value of the number in the center of the circle(bubble)
-        paint.setColor(Color.argb(100, 100, 100, 100));
         paint.setTextSize(40);
         paint.setTextAlign(Paint.Align.CENTER);
 
-        //For now, I changed number to frac but in the future, we need to seperate numbers and fractions
-        canvas.drawText(String.valueOf(value), x, y, paint);
 
-        anim.render(canvas, (int)x -(int)radius/2, (int)y -(int)radius/2, paint);
+        canvas.drawText(String.valueOf(value), x, y, paint);
     }
 
 

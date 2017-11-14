@@ -62,7 +62,7 @@ public class BubbleGame extends MiniGame {
     private int speed=5;
 
     //list of all the touchable numbers on screen
-    ArrayList<TouchableBubble> numberList = new ArrayList<>();
+    ArrayList<TouchableBubble> numberList;
 
     // For drawing
     //private Paint paint;
@@ -86,6 +86,10 @@ public class BubbleGame extends MiniGame {
 
     public void init() {
 
+
+        numberList = new ArrayList<>();
+
+
         //game only finished when timer is done
         isFinished = false;
 
@@ -104,9 +108,10 @@ public class BubbleGame extends MiniGame {
 
 
 
-        //Initialize timer to 61 seconds, update after 1 sec interval
-        gameTimer = new GameCountdownTimer(61000, 1000);
-        gameTimer.start();
+        //Initialize timer to 60 seconds, update after 1 sec interval
+        initTimer(60000);
+
+
 
 
 
@@ -139,7 +144,7 @@ public class BubbleGame extends MiniGame {
 
 
 
-    public void update(long delta) {
+    public synchronized void update(long delta) {
         if(isPaused)
             return;
 
@@ -192,7 +197,7 @@ public class BubbleGame extends MiniGame {
     /*
     Generates a touchable number on screen
      */
-    private void generateNumber() {
+    private synchronized void generateNumber() {
         int x, y;
         int radius = bRadius;
         do {
@@ -254,7 +259,7 @@ public class BubbleGame extends MiniGame {
     /*
     Process the touch events
      */
-    private void processEvents() {
+    private synchronized void processEvents() {
 
         boolean removedNum = false;
         for(MotionEvent e : events) {
@@ -282,7 +287,7 @@ public class BubbleGame extends MiniGame {
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
     */
-    private boolean checkTouchRadius(int x, int y) {
+    private synchronized boolean checkTouchRadius(int x, int y) {
 
         for(TouchableBubble num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
@@ -304,7 +309,7 @@ public class BubbleGame extends MiniGame {
 
        Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
     */
-    private void processScore(TouchableBubble num) {
+    private synchronized void processScore(TouchableBubble num) {
 
         sum += num.getValue();
         score = sum;
@@ -372,7 +377,7 @@ public class BubbleGame extends MiniGame {
     /*
         Detect collisions for all our numbers on screen and bouce numbers that have collided
      */
-    private void findCollisions() {
+    private synchronized void findCollisions() {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
         for(int i = 0; i < numberList.size(); i++)
@@ -386,7 +391,7 @@ public class BubbleGame extends MiniGame {
         Overloaded to take an x and y coordinate as arguments.
         Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
      */
-    private boolean findCollisions(int x, int y) {
+    private synchronized boolean findCollisions(int x, int y) {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
 
@@ -399,7 +404,7 @@ public class BubbleGame extends MiniGame {
         return false;
     }
 
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
+    public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
 
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
@@ -450,7 +455,7 @@ public class BubbleGame extends MiniGame {
     }
 
 
-    public boolean onTouch(MotionEvent e) {
+    public synchronized boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes

@@ -1,5 +1,6 @@
 package com.funnums.funnums.minigames;
 
+import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,8 +14,9 @@ import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
+import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.classes.Owl;
 
-import java.util.ArrayList;
 
 public class OwlGame extends MiniGame {
     public String TAG = "Owl Game"; //for debugging
@@ -102,7 +104,9 @@ public class OwlGame extends MiniGame {
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
-    //Initializer
+    //Owl Initializer
+    Owl owl;
+
     public void init() {
 
         //Game only finished when owl has died :P
@@ -147,6 +151,15 @@ public class OwlGame extends MiniGame {
         //Generate tiles
         generateTiles();
 
+        //place owl at top of screen, we can change the spawn point in the future
+        owl = new Owl(100, 100);
+
+        //we don't use a gametimer in this game, make sure that any left over timer from another game
+        //isn't used for this one
+        if(gameTimer != null)
+            gameTimer.cancel();
+        gameTimer = null;
+
         /**Even tough pause button is not being used it has to be declared,
          * because minigame class forces you to have one :P
          */
@@ -172,11 +185,22 @@ public class OwlGame extends MiniGame {
         if (isPaused)
             return;
 
+        owl.update(delta);
+        //if the owl reached the bottom of the screen, the game is over
+        if(owl.getY() > screenY - owl.getSize()){
+            GameCountdownTimer.completeGame();
+        }
+        //if owl is at top of screen, make sure it won't go off the screen
+        else if(owl.getY() < owl.getSize()){
+            owl.yVelocity = 0;
+        }
+
         processEvents();
     }
 
     //Draw method
     public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
+
 
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
@@ -184,6 +208,9 @@ public class OwlGame extends MiniGame {
 
             // Rub out the last frame
             canvas.drawColor(Color.argb(255, 0, 0, 0));
+
+            //draw the owl
+            owl.draw(canvas, paint);
 
             //draw tile buffer
             paint.setColor(Color.argb(255, 100, 150, 155));
@@ -199,7 +226,7 @@ public class OwlGame extends MiniGame {
             for(DraggableTile num : tileList)
                 num.draw(canvas, paint);
 
-            /*
+            //Draw pause button
             if(pauseButton != null)
                 pauseButton.render(canvas, paint);
 
@@ -209,7 +236,7 @@ public class OwlGame extends MiniGame {
             //game finished stuff
             if(isFinished)
                 com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
-            */
+
 
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -240,7 +267,11 @@ public class OwlGame extends MiniGame {
         //is pretty standard I believe.
         events.add(e);
         Log.d(TAG, "Touch event added");
+
+        if(!(owl.getY() < owl.getSize()))
+            owl.increaseAltitude();
         return true;
+
     }
 
     //TODO

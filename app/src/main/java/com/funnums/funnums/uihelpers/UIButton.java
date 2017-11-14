@@ -49,13 +49,15 @@ public class UIButton {
         canvas.drawBitmap(currentButtonImage, srcRect, dstRect, p);
     }
 
-    //Responds when user touches button
-    public void onTouchDown(int touchX, int touchY) {
+
+    //repsond when user touches button
+    public boolean onTouchDown(int touchX, int touchY) {
         if (buttonRect.contains(touchX, touchY)) {
             buttonDown = true;
         } else {
             buttonDown = false;
         }
+        return buttonDown;
     }
 
     //user lifted finger from button

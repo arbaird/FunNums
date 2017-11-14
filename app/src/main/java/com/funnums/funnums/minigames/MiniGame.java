@@ -39,4 +39,14 @@ public abstract class MiniGame
     public abstract void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint);
 
     public abstract boolean onTouch(MotionEvent e);
+
+    public synchronized void initTimer(int time){
+        if(gameTimer != null) {
+            gameTimer.cancel();
+            gameTimer = null;
+        }
+        gameTimer = new GameCountdownTimer(time + 1000, 1000);
+        gameTimer.context = com.funnums.funnums.maingame.GameActivity.gameView.context;
+        gameTimer.start();
+    }
 }
