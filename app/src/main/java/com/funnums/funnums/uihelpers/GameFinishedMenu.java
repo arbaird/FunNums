@@ -112,7 +112,7 @@ public class GameFinishedMenu
             if (playAgain.isPressed(x, y))
             {
                 playAgain.cancel();
-                com.funnums.funnums.maingame.GameActivity.gameView.startGame();
+                com.funnums.funnums.maingame.GameActivity.gameView.restart();
             }
             else if(mainMenu.isPressed(x, y))
             {

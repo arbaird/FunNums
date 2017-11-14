@@ -11,7 +11,7 @@ package com.funnums.funnums.classes;
 
 import java.util.concurrent.TimeUnit;
 import android.os.CountDownTimer;
-import android.content.SharedPreferences;
+import android.content.Context;
 
 public class GameCountdownTimer extends CountDownTimer {
 
@@ -23,10 +23,14 @@ public class GameCountdownTimer extends CountDownTimer {
 
     public boolean isPaused;
 
+    public Context context;
+
     //Constructor
     public GameCountdownTimer(long millisInFuture, long countDownInterval) {
         super(millisInFuture, countDownInterval);
         isPaused = false;
+
+        onTick(millisInFuture);
     }
 
     //Updates displayTime after every  "tick" accordingly
@@ -44,6 +48,13 @@ public class GameCountdownTimer extends CountDownTimer {
      */
     @Override
     public void onFinish() {
+        completeGame();
+
+        timeLeft = 0;
+        displayTime = "00:00";
+    }
+
+    public static void completeGame(){
         com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
         int score = com.funnums.funnums.maingame.GameActivity.gameView.currentGame.score;
         com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);

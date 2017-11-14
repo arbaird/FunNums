@@ -50,12 +50,13 @@ public class UIButton {
     }
 
     //repsond when user touches button
-    public void onTouchDown(int touchX, int touchY) {
+    public boolean onTouchDown(int touchX, int touchY) {
         if (buttonRect.contains(touchX, touchY)) {
             buttonDown = true;
         } else {
             buttonDown = false;
         }
+        return buttonDown;
     }
 
     //user lifted finger from button

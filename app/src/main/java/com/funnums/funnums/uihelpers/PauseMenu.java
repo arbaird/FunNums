@@ -77,7 +77,8 @@ public class PauseMenu {
             if (resume.isPressed(x, y)) {
                 resume.cancel();
                 com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isPaused = false;
-                com.funnums.funnums.maingame.GameActivity.gameView.resumeGameTimer();
+                if(com.funnums.funnums.maingame.GameActivity.gameView.currentGame.gameTimer != null)
+                    com.funnums.funnums.maingame.GameActivity.gameView.resumeGameTimer();
             }
             else if(mainMenu.isPressed(x, y)) {
                 mainMenu.cancel();
