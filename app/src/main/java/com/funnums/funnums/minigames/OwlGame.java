@@ -23,15 +23,6 @@ import java.util.Random;
 public class OwlGame extends MiniGame {
 
 
-    class Coordinate{
-        int x;
-        int y;
-
-        Coordinate(int x, int y){
-            this.x = x;
-            this.y = y;
-        }
-    }
 
     class TilePlaceHolder{
         int x;
@@ -42,6 +33,18 @@ public class OwlGame extends MiniGame {
             this.x = x;
             this.y = y;
             t = null;
+        }
+
+        boolean isOccupied(){
+            return (t != null);
+        }
+
+        DraggableTile getTile(){
+            return t;
+        }
+
+        void setTile(DraggableTile t){
+            this.t = t;
         }
     }
 
@@ -56,10 +59,12 @@ public class OwlGame extends MiniGame {
     double T_BUFFER_RATIO = .20;
     double E_BUFFER_RATIO = .15;
 
+
+
     //Tile coordinates
-    private ArrayList<Coordinate> tileCoordinates = new ArrayList<>();
+    private ArrayList<TilePlaceHolder> tileSpaces = new ArrayList<>();
     //Expression coordinates
-    private ArrayList<Coordinate> exprCoordinates = new ArrayList<>();
+    private ArrayList<TilePlaceHolder> exprSpaces = new ArrayList<>();
 
     //Boolean array specifies if there is an element in said coordinate
     private boolean [] isTileCoordinateUsed;
@@ -74,7 +79,7 @@ public class OwlGame extends MiniGame {
     //we keep events in a separate list to be processed in the game loop
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-    //dimensions of the sc
+    //dimensions of the screen
     private int screenX;
     private int screenY;
 
@@ -120,9 +125,13 @@ public class OwlGame extends MiniGame {
     //Optimal tile length/width radius
     private int tLength;
 
-    //Counter of tiles in use
+    //Counter of tiles
     int numberOfTiles;
-    int numberOfExpr;
+    int numberOfExprSpaces;
+
+    //Counter or tspaces in use
+    int numberOfTileSpacesUsed;
+    int numberofExprSpacesUsed;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
@@ -141,7 +150,11 @@ public class OwlGame extends MiniGame {
 
         //TODO set values according to the target generated
         numberOfTiles = 10;
-        numberOfExpr = 7;
+        numberOfExprSpaces = 7;
+
+        //
+        numberofExprSpacesUsed = 0;
+        numberOfTileSpacesUsed = 0;
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -152,8 +165,13 @@ public class OwlGame extends MiniGame {
         exprBuffer = (int) (screenY * E_BUFFER_RATIO);
 
         //Generate tile coordinates
-        generateTileCoordinates();
-        generateExprCoordinates();
+        //generateTileCoordinates();
+        //generateExprCoordinates();
+
+        //Generate tile coordinates
+        generateTileSpaceHolders();
+        generateExprSpaceHolders();
+
 
         //Generate tiles
         generateTiles();
@@ -190,61 +208,61 @@ public class OwlGame extends MiniGame {
 
     }
 
-    private void generateTileCoordinates(){
+    private void generateTileSpaceHolders(){
         int x, y;
-        Coordinate coord;
+        TilePlaceHolder space;
 
         //for now we pretend that we always use 10 tiles we can change it later
         y = screenY - tileBuffer - exprBuffer + (int)(.15 * tileBuffer);
         x = (int) (.05 * screenX);
 
-        coord = new Coordinate (x, y);
-        tileCoordinates.add(coord);
+        space = new TilePlaceHolder (x, y);
+        tileSpaces.add(space);
 
         for(int i = 1; i < 5; i++){
 
             x += (int) (.1 * screenX) + tLength;
 
-            coord = new Coordinate (x, y);
-            tileCoordinates.add(coord);
+            space = new TilePlaceHolder (x, y);
+            tileSpaces.add(space);
         }
 
         y +=  (int)(.45 * tileBuffer);
         x = (int) (.05 * screenX);
 
-        coord = new Coordinate (x, y);
-        tileCoordinates.add(coord);
+        space = new TilePlaceHolder (x, y);
+        tileSpaces.add(space);
 
         for(int i = 6; i < 10; i++){
             x += (int) (.1 * screenX) + tLength;
 
-            coord = new Coordinate (x, y);
-            tileCoordinates.add(coord);
+            space = new TilePlaceHolder (x, y);
+            tileSpaces.add(space);
         }
 
-        isTileCoordinateUsed = new boolean [numberOfTiles];
+        //isTileCoordinateUsed = new boolean [numberOfTiles];
     }
 
-    private void generateExprCoordinates(){
+    private void generateExprSpaceHolders(){
         int x, y;
-        Coordinate coord;
+        TilePlaceHolder space;
 
         //for now we pretend that we always use 10 tiles we can change it later
         y = screenY - exprBuffer + (int)(.20 * exprBuffer);
         x = (int) (.05 * screenX);
 
-        coord = new Coordinate (x, y);
-        exprCoordinates.add(coord);
+        space = new TilePlaceHolder (x, y);
+        exprSpaces.add(space);
 
         for(int i = 1; i < 10; i++){
 
             x += tLength;
 
-            coord = new Coordinate (x, y);
-            exprCoordinates.add(coord);
+            space = new TilePlaceHolder (x, y);
+            exprSpaces.add(space);
         }
 
-        isExprCoordinateUsed = new boolean [numberOfExpr];
+        //isExprCoordinateUsed = new boolean [numberOfExpr];
 
     }
 
@@ -257,7 +275,7 @@ public class OwlGame extends MiniGame {
 
         for (DraggableTile tile : tileList) {
             //update the number
-            tile.update();
+            //tile.update();
 
             /*Checkif location is inside fixed spot, if so fix it, use boolean to know if it has been dropped*/
             /*if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
@@ -290,13 +308,13 @@ public class OwlGame extends MiniGame {
 
         int x, y;
         String value;
-        Coordinate coord;
+        TilePlaceHolder space;
         DraggableTile til;
 
         for (int i = 0; i < numberOfTiles; i++){
-            coord = tileCoordinates.get(i);
-            x = coord.x;
-            y = coord.y;
+            space = tileSpaces.get(i);
+            x = space.x;
+            y = space.y;
 
             //TODO change from dummy to actual new expression
             value = dummy[i];
@@ -304,8 +322,11 @@ public class OwlGame extends MiniGame {
             til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
 
-            isTileCoordinateUsed[i] = true;
+            space.setTile(til);
         }
+
+        //TODO make sure is based on generator
+        numberOfTileSpacesUsed = numberOfTiles;
 
         //} while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
@@ -353,7 +374,6 @@ public class OwlGame extends MiniGame {
 
 
     //Process the touch events
-
    private void processEvents() {
 
        for(MotionEvent e : events) {
@@ -365,139 +385,8 @@ public class OwlGame extends MiniGame {
 
        events.clear();
 
-        /*DraggableTile touchedTile;
-        int xTouch;
-        int yTouch;
-        int pointerId;
-        int actionIndex;
-
-        for(MotionEvent e : events) {
-
-            actionIndex = e.getActionIndex();
-
-            switch (e.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    // it's the first pointer, so clear all existing pointers data
-                    mTilePointer.clear();
-
-                    xTouch = (int) e.getX(0);
-                    yTouch = (int) e.getY(0);
-
-                    // check if we've touched inside some circle
-                    touchedTile = checkTouchedTile(xTouch, yTouch);
-                    //touchedCircle.centerX = xTouch;
-                    //touchedCircle.centerY = yTouch;
-                    if (touchedTile != null) {
-                        mTilePointer.put(e.getPointerId(0), touchedTile);
-                    }
-
-                    //invalidate();
-                   // handled = true;
-                    break;
-
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    Log.w(TAG, "Pointer down");
-                    // It secondary pointers, so obtain their ids and check circles
-                    pointerId = e.getPointerId(actionIndex);
-
-                    xTouch = (int) e.getX(actionIndex);
-                    yTouch = (int) e.getY(actionIndex);
-
-                    // check if we've touched inside some circle
-                    touchedTile = checkTouchedTile(xTouch, yTouch);
-
-                    if (touchedTile != null) {
-                        mTilePointer.put(e.getPointerId(0), touchedTile);
-                    }
-                    //touchedCircle.centerX = xTouch;
-                    //touchedCircle.centerY = yTouch;
-                    //invalidate();
-                    //handled = true;
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    final int pointerCount = e.getPointerCount();
-
-                    Log.w(TAG, "Move");
-
-                    for (actionIndex = 0; actionIndex < pointerCount; actionIndex++) {
-                        // Some pointer has moved, search it by pointer id
-                        pointerId = e.getPointerId(actionIndex);
-
-                        xTouch = (int) e.getX(actionIndex);
-                        yTouch = (int) e.getY(actionIndex);
-
-                        touchedTile = mTilePointer.get(pointerId);
-
-                        if (null != touchedTile) {
-                            //touchedCircle.centerX = xTouch;
-                            //touchedCircle.centerY = yTouch;
-                        }
-                    }
-                    //invalidate();
-                    //handled = true;
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                    mTilePointer.clear();
-                    //invalidate();
-                    //handled = true;
-                    break;
-
-                case MotionEvent.ACTION_POINTER_UP:
-                    // not general pointer was up
-                    pointerId = e.getPointerId(actionIndex);
-
-                    mTilePointer.remove(pointerId);
-                    //invalidate();
-                    //handled = true;
-                    break;
-
-                case MotionEvent.ACTION_CANCEL:
-                    //handled = true;
-                    break;
-
-                default:
-                    // do nothing
-                    break;
-            }
-
-
-            //checkTouchArea(x, y);
-        }
-        events.clear();
-
-            //public boolean onTouchEvent(final MotionEvent event) {
-            //boolean handled = false;
-
-
-
-            // get touch event coordinates and make transparent circle from it
-
-
-            //return super.onTouchEvent(event) || handled;*/
     }
 
-
-
-   //Check if where the player touched the screen is on a touchable tile, if so return it,otherwise null
-
-    /*private DraggableTile getTouchedTile(int x, int y) {
-
-        for (DraggableTile t : tileList) {
-
-            if (x >= t.getX() && x <= (t.getX() + tLength)) {
-                if (y >= t.getY() && y <= (t.getY() + tLength)) {
-                    return t;
-                }
-            }
-        }
-
-        return null;
-
-    }
-
-    */
 
     private void checkTouchedTile(int x, int y) {
 
@@ -505,7 +394,7 @@ public class OwlGame extends MiniGame {
 
             //TODO fix touch sensitivity
             if (x >= t.getX() && x <= (t.getX() + tLength)) {
-                if (y >= (t.getY()+60) && y <= (t.getY() + tLength+60)) {
+                if (y >= (t.getY()+60) && y <= (t.getY() + tLength)+60) {
 
                     if (t.isUsed()){
                         moveToTiles(t);
@@ -519,83 +408,79 @@ public class OwlGame extends MiniGame {
 
     }
 
-   private void moveToExpr(DraggableTile tile) {
-       int x, y;
-       Coordinate coord;
+    private void moveToExpr(DraggableTile tile) {
+        int x, y;
 
-       int currentCoordIndex = 0;
+        //Make sure tile is not being used
+        //TODO remove
+        assert (tile.isUsed() == false);
 
-       //Find your own current cordinate index
-       for (int index = 0; index < numberOfTiles; index++) {
-           coord = tileCoordinates.get(index);
+        if (numberofExprSpacesUsed < numberOfExprSpaces){
 
-           if (coord.x == tile.getX() && coord.y == tile.getY()){
-               currentCoordIndex = index;
-               break;
-           }
+            for (TilePlaceHolder p : tileSpaces) {
 
-       }
+                if (p.getTile() == tile) {
+                    p.setTile(null);
+                    break;
+                }
 
+            }
 
-       //Find an open coordinate
-       for (int index = 0; index < numberOfExpr; index++) {
+            for (TilePlaceHolder p : exprSpaces) {
 
-           if (!isExprCoordinateUsed[index]) {
-               coord = exprCoordinates.get(index);
+                if (p.getTile() == null ){
+                    x = p.x;
+                    y = p.y;
+                    tile.setXY(x, y);
 
-               x = coord.x;
-               y = coord.y;
+                    tile.setUsed(true);
+                    p.setTile(tile);
 
-               tile.setXY(x, y);
-               tile.setUsed(true);
-               isExprCoordinateUsed[index] = true;
-               isTileCoordinateUsed[currentCoordIndex] = false;
+                    break;
+                }
 
-               break;
-           }
+            }
 
-       }
+            numberofExprSpacesUsed++;
+            numberOfTileSpacesUsed--;
 
+        }
 
-
-
-   }
+    }
 
 
     private void moveToTiles(DraggableTile tile){
         int x, y;
-        Coordinate coord;
 
-        int currentCoordIndex = 0;
+        //Make sure tile is not being used
+        assert (tile.isUsed() == true);
 
-        //Find your own current cordinate index
-        for (int index = 0; index < numberOfExpr; index++) {
-            coord = exprCoordinates.get(index);
+        for (TilePlaceHolder p : exprSpaces) {
 
-            if (coord.x == tile.getX() && coord.y == tile.getY()){
-                currentCoordIndex = index;
+            if (p.getTile() == tile) {
+                p.setTile(null);
                 break;
             }
 
         }
 
-        //Find an open coordinate
-        for (int index = 0; index < numberOfTiles; index++) {
+        for (TilePlaceHolder p : tileSpaces) {
 
-            if (!isTileCoordinateUsed[index]) {
-                coord = tileCoordinates.get(index);
-
-                x = coord.x;
-                y = coord.y;
-
+            if (p.getTile() == null ){
+                x = p.x;
+                y = p.y;
                 tile.setXY(x, y);
+
                 tile.setUsed(false);
-                isTileCoordinateUsed[index] = true;
-                isExprCoordinateUsed[currentCoordIndex] = false;
+                p.setTile(tile);
+
                 break;
             }
 
         }
+
+        numberofExprSpacesUsed--;
+        numberOfTileSpacesUsed++;
 
     }
 
@@ -770,6 +655,7 @@ public class OwlGame extends MiniGame {
     }
 
 
+
     public boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
@@ -781,7 +667,6 @@ public class OwlGame extends MiniGame {
         Log.d(TAG, "Touch event added");
         return true;
     }
-
 
 
 }
