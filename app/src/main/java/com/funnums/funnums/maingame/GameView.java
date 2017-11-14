@@ -18,6 +18,7 @@ import android.os.Looper;
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.minigames.BalloonGame;
+import com.funnums.funnums.minigames.OwlGame;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.*;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -108,6 +109,8 @@ public class GameView extends SurfaceView implements Runnable {
             currentGame = new BubbleGame();
         else if(gameType.equals("balloon"))
             currentGame = new BalloonGame();
+        else if(gameType.equals("owl"))
+            currentGame = new OwlGame();
         currentGame.init();
 
     }

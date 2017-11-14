@@ -25,7 +25,7 @@ public class Animation {
         //initially animatins are static, unchanging
         playing = false;
         frameEndTimes = new double[frames.length];
-        //get a recode of frame end times so we know when to change frames
+        //get a record of frame end times so we know when to change frames
         for (int i = 0; i < frames.length; i++) {
             Frame f = frames[i];
             totalDuration += f.getDuration();

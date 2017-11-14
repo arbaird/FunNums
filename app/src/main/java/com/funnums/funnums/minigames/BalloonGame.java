@@ -72,8 +72,6 @@ public class BalloonGame extends MiniGame {
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
-    private int maxVal = 4; //one less than the maximum value to appear on a bubble
-
     //Optimal bubble radius
     private int bRadius;
 

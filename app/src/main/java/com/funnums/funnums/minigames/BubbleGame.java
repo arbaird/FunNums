@@ -10,22 +10,21 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
 
-
+import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.BubbleTargetGenerator;
 import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
-import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
-import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 
+
 public class BubbleGame extends MiniGame {
 
-    public String VIEW_LOG_TAG = "Game"; //for debugging
+    public String TAG = "Game"; //for debugging
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
@@ -58,7 +57,6 @@ public class BubbleGame extends MiniGame {
     BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
     //The number generator
     BubbleNumberGenerator numGen = new BubbleNumberGenerator();
-
 
     //speed of the bubbles
     private int speed=5;
@@ -120,7 +118,7 @@ public class BubbleGame extends MiniGame {
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
 
-        Log.d(VIEW_LOG_TAG, "init pauseButton: " + pauseButton);
+        Log.d(TAG, "init pauseButton: " + pauseButton);
         /**!!This will be removed is just a test*/
         /*Log.d("Fraction", "Test LT or GT");
         FractionNumberGenerator lol = new FractionNumberGenerator(0);
