@@ -6,30 +6,29 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
-import com.funnums.funnums.classes.TileCollisionDetector;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 
 import java.util.ArrayList;
-import java.util.Random;
-
 
 public class OwlGame extends MiniGame {
+    public String TAG = "Owl Game"; //for debugging
 
-
-
+    /**
+     * Private TitlePlaceHolder class holds the coordinates for a tile to be placed
+     * and a reference to the tile that holds that position
+     * */
     class TilePlaceHolder{
-        int x;
-        int y;
+        float x;
+        float y;
         DraggableTile t;
 
-        TilePlaceHolder(int x, int y){
+        TilePlaceHolder(float x, float y){
             this.x = x;
             this.y = y;
             t = null;
@@ -48,141 +47,109 @@ public class OwlGame extends MiniGame {
         }
     }
 
-
-    public String TAG = "Owl Game"; //for debugging
-
-    int TILE_LIMIT = 10;
-    int EXPR_LIMIT = 7;
+    final int TILE_LIMIT = 10;
+    final int EXPR_LIMIT = 7;
 
     //Ratios based on screen size
-    double TILE_LENGTH_RATIO = .10;
-    double T_BUFFER_RATIO = .20;
-    double E_BUFFER_RATIO = .15;
+    double TILE_LENGTH_RATIO = .10;     /*10% of the screen width*/
+    double T_BUFFER_RATIO = .20;        /*20% of the screen length*/
+    double E_BUFFER_RATIO = .15;        /*15% of the screen length*/
 
+    //Dimensions of the screen
+    private int screenX;
+    private int screenY;
 
+    //This is the amount of space at the top of the screen used for the tiles
+    private float tileBuffer;
+    private float exprBuffer;
 
     //Tile coordinates
     private ArrayList<TilePlaceHolder> tileSpaces = new ArrayList<>();
     //Expression coordinates
     private ArrayList<TilePlaceHolder> exprSpaces = new ArrayList<>();
 
-    //Boolean array specifies if there is an element in said coordinate
-    private boolean [] isTileCoordinateUsed;
-    private boolean [] isExprCoordinateUsed;
-
-
-    public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
-
+    // List of all the touchable tiles on screen
+    private ArrayList<DraggableTile> tileList;
 
     // Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent access
     // not likely that these threads would interact, but if they do the game will crash!! which is why
     //we keep events in a separate list to be processed in the game loop
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-    //dimensions of the screen
-    private int screenX;
-    private int screenY;
-
-    //this is the amount of space at the top of the screen used for the tiles
-    private int tileBuffer;
-    private int exprBuffer;
-
-    //running time, used to generate new numbers every few seconds
-    //private long runningMilis = 0;
-
-    //player's current sum
-    private int sum;
-    //target player is trying to sum to
-    private int target;
-
-    //TODO initialize target generator
-    //The target generator
+    //TODO initialize Derek's target generator
+    // The target generator
     // ExpressionGenerator expGenerator = new ExpressionGenerator();
-
     //For now we use dummy espression
     String [] dummy = {"1", "+", "2", "*", "3", "4", "-", "10", "+", "8"};
 
-    //Evaluates state of current solution
-    ExpressionEvaluator expEvaluator = new ExpressionEvaluator();
+    // The Target evaluator
+    ExpressionEvaluator evaluator;
 
-    //list of all the touchable tiles on screen
-    ArrayList<DraggableTile> tileList = new ArrayList<>();
-
-    //!!Pointer used by event listener switch to init later on
-    //SparseArray<DraggableTile> mTilePointer = new SparseArray<>(TILE_LIMIT);
-
-    // For drawing
-    //private Paint paint;
-    //private Canvas canvas;
-    //private SurfaceHolder ourHolder;
-
-    //!!generates random positions for us
-    private Random r;
-
-    //used to animate text, i.e show +3 when a 3 is touched
-    //ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
+    // Target player is trying to sum to
+    private int target;
 
     //Optimal tile length/width radius
-    private int tLength;
+    private float tLength;
 
     //Counter of tiles
     int numberOfTiles;
     int numberOfExprSpaces;
 
-    //Counter or tspaces in use
+    //Counter or tile spaces in use
     int numberOfTileSpacesUsed;
-    int numberofExprSpacesUsed;
+    int numberOfExprSpacesUsed;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
+    //Initializer
     public void init() {
 
-        //game only finished when owl has died :P
+        //Game only finished when owl has died :P
         isFinished = false;
 
-        //initialize random generator
-        r = new Random();
+        //Initialize ArrayList of Tiles
+        tileList = new ArrayList<>();
+
+        //TODO Initialize Derek's generator
+        //Initialize Expression generator Object
+        //expGenerator = new ExpressionGenerator();
+
+        //Initialize Expression Evaluator Object
+        evaluator = new ExpressionEvaluator();
 
         //TODO get a target from the target generator
         //target = targetGen.nextTarget();
-        //!!For now refer to dummy
+        //!!For now refer use dummy
+        target = 10;
 
         //TODO set values according to the target generated
-        numberOfTiles = 10;
-        numberOfExprSpaces = 7;
+        numberOfTiles = TILE_LIMIT;
+        numberOfExprSpaces = EXPR_LIMIT;
 
-        //
-        numberofExprSpacesUsed = 0;
+        //No tiles are present currently
+        numberOfExprSpacesUsed = 0;
         numberOfTileSpacesUsed = 0;
 
+        //Get x and Y values of the Screen
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
         //Set appropriate sizes based on screen
-        tLength = (int) (screenX * TILE_LENGTH_RATIO);
-        tileBuffer = (int) (screenY * T_BUFFER_RATIO);
-        exprBuffer = (int) (screenY * E_BUFFER_RATIO);
-
-        //Generate tile coordinates
-        //generateTileCoordinates();
-        //generateExprCoordinates();
+        tLength = (float) (screenX * TILE_LENGTH_RATIO);
+        tileBuffer = (float) (screenY * T_BUFFER_RATIO);
+        exprBuffer = (float) (screenY * E_BUFFER_RATIO);
 
         //Generate tile coordinates
         generateTileSpaceHolders();
         generateExprSpaceHolders();
 
-
         //Generate tiles
         generateTiles();
 
-        //Timer can still be used to determine how much longer can the owl stay afloat
-        //Initialize timer to 61 seconds, update after 1 sec interval
-        //gameTimer = new GameCountdownTimer(61000, 1000);
-        //gameTimer.start();
-
-
-        //set up the pause button
+        /**Even tough pause button is not being used it has to be declared,
+         * because minigame class forces you to have one :P
+         */
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
@@ -198,58 +165,147 @@ public class OwlGame extends MiniGame {
         Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
-        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
-                offset,
-                screenX * 7/8,
-                screenY - offset,
-                resumeButton,
-                menuButton, sum);
+    }
+
+    //Update method to be called by game loop
+    public void update(long delta) {
+        if (isPaused)
+            return;
+
+        processEvents();
+    }
+
+    //Draw method
+    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
+
+        if (ourHolder.getSurface().isValid()) {
+            //First we lock the area of memory we will be drawing to
+            canvas = ourHolder.lockCanvas();
+
+            // Rub out the last frame
+            canvas.drawColor(Color.argb(255, 0, 0, 0));
+
+            //draw tile buffer
+            paint.setColor(Color.argb(255, 100, 150, 155));
+            canvas.drawRect( (float)0, (float)(screenY-tileBuffer - exprBuffer), (float)screenX,
+                    (float)screenY - exprBuffer, paint);
+
+            //draw expr buffer
+            paint.setColor(Color.argb(255, 150, 150, 155));
+            canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
+                    (float)screenY, paint);
+
+            //Draw all the tiles
+            for(DraggableTile num : tileList)
+                num.draw(canvas, paint);
+
+            /*
+            if(pauseButton != null)
+                pauseButton.render(canvas, paint);
+
+            //draw pause menu, if paused
+            if(isPaused)
+                com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
+            //game finished stuff
+            if(isFinished)
+                com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
+            */
+
+            ourHolder.unlockCanvasAndPost(canvas);
+        }
 
 
     }
 
+    //Process the touch events
+    private void processEvents() {
+
+        for(MotionEvent e : events) {
+            float  x = e.getX();
+            float  y = e.getY();
+
+            checkTouchedTile(x, y);
+        }
+
+        events.clear();
+
+    }
+
+    //Touch handler
+    public synchronized boolean onTouch(MotionEvent e) {
+        //add touch event to eventsQueue rather than processing it immediately. This is because
+        //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
+        //in this touch UI thread while our game thread is accessing that same number, the game crashes
+        //because two threads are accessing same memory being removed. We could do mutex but this setup
+        //is pretty standard I believe.
+        events.add(e);
+        Log.d(TAG, "Touch event added");
+        return true;
+    }
+
+    //TODO
+    private void makeNewTarget() {}
+
+    //TODO
+    private void resetGame() { }
+
+    // Generates TileSpaceHolders to be used by the tiles, initially no actual tiles
+    // are being held inside the place holders
     private void generateTileSpaceHolders(){
-        int x, y;
+        double SPACING_TOP_PERCENTAGE = .15;
+        double SPACING_LEFT_PERCENTAGE = .05;
+        double SPACING_MIDDLE_PERCENTAGE = .45;
+        double SPACING_BETWEEN_PERCENTAGE = .1;
+
+
+        float x, y;
         TilePlaceHolder space;
 
-        //for now we pretend that we always use 10 tiles we can change it later
-        y = screenY - tileBuffer - exprBuffer + (int)(.15 * tileBuffer);
-        x = (int) (.05 * screenX);
+        //Y value starts at the top of the tileBuffer + 15% of the overall length of tileBuffer
+        y = screenY - tileBuffer - exprBuffer + (int)(SPACING_TOP_PERCENTAGE * tileBuffer);
+        //X leaves 5% spacing
+        x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
         space = new TilePlaceHolder (x, y);
         tileSpaces.add(space);
 
         for(int i = 1; i < 5; i++){
 
-            x += (int) (.1 * screenX) + tLength;
+            x += (int) (SPACING_BETWEEN_PERCENTAGE * screenX) + tLength;
 
             space = new TilePlaceHolder (x, y);
             tileSpaces.add(space);
         }
 
-        y +=  (int)(.45 * tileBuffer);
-        x = (int) (.05 * screenX);
+        //Create second row
+
+        //Y now adds 30% for the tile space and 15% for extra space
+        y +=  (int)(SPACING_MIDDLE_PERCENTAGE * tileBuffer);
+        //Reset X
+        x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
         space = new TilePlaceHolder (x, y);
         tileSpaces.add(space);
 
         for(int i = 6; i < 10; i++){
-            x += (int) (.1 * screenX) + tLength;
+            x += (int) (SPACING_BETWEEN_PERCENTAGE * screenX) + tLength;
 
             space = new TilePlaceHolder (x, y);
             tileSpaces.add(space);
         }
-
-        //isTileCoordinateUsed = new boolean [numberOfTiles];
     }
 
+    // Generates TileSpaceHolders to be used by the tiles in an expression
     private void generateExprSpaceHolders(){
-        int x, y;
+        double SPACING_TOP_PERCENTAGE = .25;
+        double SPACING_LEFT_PERCENTAGE = .05;
+
+        float x, y;
         TilePlaceHolder space;
 
-        //for now we pretend that we always use 10 tiles we can change it later
-        y = screenY - exprBuffer + (int)(.20 * exprBuffer);
-        x = (int) (.05 * screenX);
+        //Y starts at top of exprBuffer + 20% spacing
+        y = screenY - exprBuffer + (int)(SPACING_TOP_PERCENTAGE * exprBuffer);
+        x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
         space = new TilePlaceHolder (x, y);
         exprSpaces.add(space);
@@ -262,51 +318,13 @@ public class OwlGame extends MiniGame {
             exprSpaces.add(space);
         }
 
-        //isExprCoordinateUsed = new boolean [numberOfExpr];
 
     }
 
-    public void update(long delta) {
-        if (isPaused)
-            return;
-
-        //detect and handle collisions
-        //findCollisions();
-
-        for (DraggableTile tile : tileList) {
-            //update the number
-            //tile.update();
-
-            /*Checkif location is inside fixed spot, if so fix it, use boolean to know if it has been dropped*/
-            /*if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
-                    || (num.getX() < 0 && num.getXVelocity() < 0) )
-                num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
-
-            if ((num.getY() > screenY - num.getRadius() && num.getYVelocity() > 0)
-                    || (num.getY() < topBuffer + num.getRadius() && num.getYVelocity() < 0))
-                num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge*/
-
-        }
-
-        /*runningMilis += delta;
-        //generate a new number every 1/2 second if there are less than the max amount of numbers on the screen
-        if (runningMilis > 0.5 * NANOS_TO_SECONDS && numberList.size() < maxNumsOnScreen) {
-            generateNumber();
-            runningMilis = 0;
-
-        }*/
-
-        //process all touch events
-        processEvents();
-
-    }
-
-    /*
-    Generates a draggable tile on screen
-     */
+    // Generates a draggable tiles on screen
     private void generateTiles() {
 
-        int x, y;
+        float x, y;
         String value;
         TilePlaceHolder space;
         DraggableTile til;
@@ -328,73 +346,24 @@ public class OwlGame extends MiniGame {
         //TODO make sure is based on generator
         numberOfTileSpacesUsed = numberOfTiles;
 
-        //} while(findCollisions(x,y));
-        //while this new coordinate causes collisions, keep generating a new coordinates until
-        //it finds coordinates in a place without collisions
-
-        //angle is direction number travels, max and min are the max and min angles for a number
-        //determined by which quadrant the number spawns in. i.e if it spawns in bottom right corner,
-        //we want it to travel up and to the left (min = 90 max = 180)
-        //int angle, max, min;
-
-        //determine the quadrant the number will spawn in to plan the angle
-        /*if (x >= screenX/2) {
-            if (y >= screenY / 2) {
-                //lower right quadrant
-                max = 180;
-                min = 91;
-            }
-            else {
-                //upper right quadrant
-                max = 270;
-                min = 181;
-            }
-        }
-        else {
-            if (y >= screenY / 2) {
-                //lower left quadrant
-                max = 90;
-                min = 1;
-            }
-            else {
-                //upper left quadrant
-                max = 360;
-                min = 270;
-            }
-        }
-
-        //make angles more diagonal
-        max -= 25;
-        min += 25;
-
-        angle = r.nextInt(max - min) + min; //get random angle between max and min angles
-*/
-
     }
 
+    //Check if there is a tile in the touch coordinates, and if so,
+    //move tile to corresponding space
+    private void checkTouchedTile(float x, float y) {
+        //TODO find out the source of the mysterious power that this number holds
+        int HOLY_MAGIC_NUMBER = 60;
 
-    //Process the touch events
-   private void processEvents() {
-
-       for(MotionEvent e : events) {
-           int x = (int) e.getX();
-           int y = (int) e.getY();
-
-           checkTouchedTile(x, y);
-       }
-
-       events.clear();
-
-    }
-
-
-    private void checkTouchedTile(int x, int y) {
+        boolean touchInXRange, touchInYRange;
 
         for (DraggableTile t : tileList) {
-
             //TODO fix touch sensitivity
-            if (x >= t.getX() && x <= (t.getX() + tLength)) {
-                if (y >= (t.getY()+60) && y <= (t.getY() + tLength)+60) {
+            //Boolean check of touch
+            touchInXRange = ( x >= t.getX() && x <= (t.getX() + tLength) );
+            touchInYRange = ( y >= (t.getY()+HOLY_MAGIC_NUMBER) && y <= (t.getY() + tLength)+HOLY_MAGIC_NUMBER);
+
+            // If there is a hit
+            if (touchInXRange && touchInYRange) {
 
                     if (t.isUsed()){
                         moveToTiles(t);
@@ -402,21 +371,23 @@ public class OwlGame extends MiniGame {
                         moveToExpr(t);
                     }
                     break;
-                }
             }
         }
 
     }
-
+    
+    //If there is a slot available in the expression
+    // 1) Free your current spot
+    // 2) Find the next open available space in the expression
     private void moveToExpr(DraggableTile tile) {
-        int x, y;
+        float x, y;
+        int index = 0;
 
-        //Make sure tile is not being used
-        //TODO remove
-        assert (tile.isUsed() == false);
+        //If there is space in the expression
+        if (numberOfExprSpacesUsed < numberOfExprSpaces){
 
-        if (numberofExprSpacesUsed < numberOfExprSpaces){
 
+            //Free your spot
             for (TilePlaceHolder p : tileSpaces) {
 
                 if (p.getTile() == tile) {
@@ -426,6 +397,7 @@ public class OwlGame extends MiniGame {
 
             }
 
+            //Find an open spot in the expression
             for (TilePlaceHolder p : exprSpaces) {
 
                 if (p.getTile() == null ){
@@ -436,34 +408,45 @@ public class OwlGame extends MiniGame {
                     tile.setUsed(true);
                     p.setTile(tile);
 
+                    //Insert token to evaluate
+                    insertTokenToEval(tile.getValue(), index);
+
                     break;
                 }
 
+                index++;
             }
 
-            numberofExprSpacesUsed++;
+            //Update values accordingly
+            numberOfExprSpacesUsed++;
             numberOfTileSpacesUsed--;
-
         }
 
     }
 
 
+    // 1) Free your current spot in the expression
+    // 2) Find the next open available space in the overall tile space
     private void moveToTiles(DraggableTile tile){
-        int x, y;
+        float x, y;
+        int index = 0;
 
-        //Make sure tile is not being used
-        assert (tile.isUsed() == true);
-
+        //Free your spot in the expression
         for (TilePlaceHolder p : exprSpaces) {
 
             if (p.getTile() == tile) {
                 p.setTile(null);
+
+                //Insert token in evaluator
+                deleteTokenToEval(index);
                 break;
             }
 
+            index++;
+
         }
 
+        //Find an open spot in the overall tile space
         for (TilePlaceHolder p : tileSpaces) {
 
             if (p.getTile() == null ){
@@ -479,194 +462,19 @@ public class OwlGame extends MiniGame {
 
         }
 
-        numberofExprSpacesUsed--;
+        //Update values accordingly
+        numberOfExprSpacesUsed--;
         numberOfTileSpacesUsed++;
 
     }
 
-
-
-
-    /*
-       When a number is touched, call this function. It will update the current Sum and check it
-       player has reached the target, in which case we make a new target. Else, if the target is
-       exceeded, for now we tell the player they exceeded the target and reset the game
-
-       Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
-
-    private void processScore(TouchableBubble num) {
-
-        sum += num.getValue();
-        score = sum;
-        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
-        scoreAnimations.add(textAnimator);
-        if (sum == target) {
-            makeNewTarget();
-            long newTime = 1000;
-            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
-
-        } else if (sum > target) {
-            resetGame();
-
-            long newTime = -1000;
-            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
-        }
-    }
-*/
-
-
-    /*
-       Create a new target
-
-    private void makeNewTarget() {
-        //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
-        scoreAnimations.add(textAnimator);
-
-        previousTarget = target;
-        target = targetGen.nextTarget();
-        numGen.setAbsoluteTarget(target - previousTarget); //used for scaling the numbers generated
-    }
-*/
-
-
-    /*
-        For now, tell player they missed the target and reset the target and current sum
-
-    private void resetGame() {
-        //text, x, y, r, g, b, interval, size
-        TextAnimator message1 = new TextAnimator("Target missed!", screenX/2, screenY/2, 185, 44, 44, 1.25, 60);
-        TextAnimator message2 = new TextAnimator("Current reset", screenX/2, screenY/2 + 60, 185, 44, 44, 1.25, 50);
-        scoreAnimations.add(message1);
-        scoreAnimations.add(message2);
-
-        //target = r.nextInt(3)+5;
-        //sum = 0;
-        //score = 0;
-
-        sum = previousTarget; //reset the current sum to the previous target
-
-
-        //if we want game to stop, make playing false here
-        //   playing = false;
-    }
-*/
-    /*
-
-
-    /*
-        Detect collisions for all our tiles on screen move them somewhere else
-
-    private void findTileCollisions() {
-        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
-        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-        for(int i = 0; i < tileList.size(); i++)
-            for(int j = i+1; j < tileList.size(); j++)
-                if(TileCollisionDetector.isCollision(tileList.get(i), tileList.get(j))) {
-                    //tileList.get(i).bounceWith(numberList.get(j));
-                    //reject the move******
-                }
-    }*/
-
-    /*
-        Overloaded to take an x and y coordinate as arguments.
-        Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
-     *//*
-    private boolean findCollisions(int x, int y) {
-        //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
-        //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
-
-        //allow a little extra space for new appearing numbers
-        int buffer = bRadius / 2;
-        for(int i = 0; i < numberList.size(); i++)
-            if(CollisionDetector.isCollision(numberList.get(i), x, y, bRadius + buffer))
-                return true;
-
-        return false;
-    }
-*/
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
-
-        if (ourHolder.getSurface().isValid()) {
-            //First we lock the area of memory we will be drawing to
-            canvas = ourHolder.lockCanvas();
-
-            // Rub out the last frame
-            canvas.drawColor(Color.argb(255, 0, 0, 0));
-
-            //draw tile buffer
-            paint.setColor(Color.argb(255, 100, 150, 155));
-            canvas.drawRect( (float)0, (float)(screenY-tileBuffer - exprBuffer), (float)screenX,
-                    (float)screenY - exprBuffer, paint);
-
-            //draw expr buffer
-            paint.setColor(Color.argb(255, 150, 150, 155));
-            canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
-                    (float)screenY, paint);
-
-            //draw all the numbers
-            for(DraggableTile num : tileList)
-                num.draw(canvas, paint);
-
-            //Draw pause button
-            /*if(pauseButton != null)
-                pauseButton.render(canvas, paint);
-
-            //draw pause menu, if paused
-            if(isPaused)
-                com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
-            //game finished stuff
-            if(isFinished)
-                com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);*/
-
-
-
-            //draw all text animations
-            //for(TextAnimator score : scoreAnimations)
-             //   score.render(canvas, paint);
-
-            //Draw Current
-            /*paint.setColor(Color.argb(255, 0, 0, 255));
-            paint.setTextSize(45);
-            paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
-            //Draw Target
-            canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
-            canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
-            //draw timer
-            canvas.drawText("Timer", screenX * 1/2, offset, paint);
-            canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
-            //Draw pause button
-            if(pauseButton != null)
-                pauseButton.render(canvas, paint);
-
-            //draw pause menu, if paused
-            if(isPaused)
-                com.funnums.funnums.maingame.GameActivity.gameView.pauseScreen.draw(canvas, paint);
-            //game finished stuff
-            if(isFinished)
-                com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.draw(canvas, paint);
-*/
-            ourHolder.unlockCanvasAndPost(canvas);
-        }
-
-
+    //Inserts a new token to be evaluated by ExpressionEvaluator object
+    public void insertTokenToEval(String t, int index){
+        evaluator.slots.insert(t, index);
     }
 
-
-
-    public boolean onTouch(MotionEvent e) {
-        //add touch event to eventsQueue rather than processing it immediately. This is because
-        //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
-        //in this touch UI thread while our game thread is accessing that same number, the game crashes
-        //because two threads are accessing same memory being removed. We could do mutex but this setup
-        //is pretty standard I believe.
-
-        events.add(e);
-        Log.d(TAG, "Touch event added");
-        return true;
+    //Delete a token from the ExpressionEvaluator object
+    public void deleteTokenToEval(int index){
+        evaluator.slots.delete(index);
     }
-
-
 }

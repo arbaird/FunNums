@@ -20,7 +20,7 @@ public abstract class DraggableObject {
     public float x, y, length;
 
     // Constructor
-    public DraggableObject(float screenX, float screenY, int length) {
+    public DraggableObject(float screenX, float screenY, float length) {
         x = screenX;
         y = screenY;
         this.length = length;
@@ -36,7 +36,7 @@ public abstract class DraggableObject {
     public float getLength(){ return length; }
 
     //Position setter
-    public void setXY(int x, int y){
+    public void setXY(float x, float y){
         this.x = x;
         this.y = y;
     }

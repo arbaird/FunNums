@@ -23,7 +23,7 @@ public class DraggableTile extends DraggableObject{
     float left, top, right, bottom;
 
     // Constructor:
-    public DraggableTile(int x, int y, int tileLength,  String value) {
+    public DraggableTile(float x, float y, float tileLength,  String value) {
 
         super(x, y, tileLength);
         this.value = value;
@@ -61,7 +61,7 @@ public class DraggableTile extends DraggableObject{
 
     //Abstract overloaded methods
     @Override
-    public void setXY(int x, int y) {
+    public void setXY(float x, float y) {
         super.setXY(x, y);
 
         //distance of the left side of rectangular from left side of canvas.
