@@ -55,6 +55,10 @@ public class ExpressionEvaluator {
             typeArr[index] = 0;
             activeIndexes--;
         }
+
+        public void clearSlots() {
+            Arrays.fill(typeArr, 0);
+        }
     }
 
     private static final String TAG = "ExpressionEvaluator";
@@ -128,7 +132,7 @@ public class ExpressionEvaluator {
         while(!opSt.empty()) {
             executeOp(opSt, numSt);
         }
-        Log.d(TAG, expr + "= " + numSt.peek());
+        //Log.d(TAG, "User expr: " +expr + "    = " + numSt.peek());
         return numSt.pop();
     }
 

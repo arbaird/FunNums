@@ -1,11 +1,8 @@
 package com.funnums.funnums.classes;
 
-import android.nfc.Tag;
 import android.util.Log;
-
 import java.util.Arrays;
 import java.util.Random;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Collections;
 
@@ -16,7 +13,6 @@ public class ExpressionGenerator {
     private final int MAX_NUMBER_OF_TILE_CHOICES = 10;
 
     private Random rand = new Random();
-    private Hashtable<Integer, Integer> dividends = new Hashtable<>();
     private DividendTable divTable = new DividendTable();
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
 
@@ -36,10 +32,12 @@ public class ExpressionGenerator {
      * and shuffle the array so that the expression is out of order and has unnecessary numbers.
      */
     public String[] getNewExpr(int numOps) {
-        String[] ops  = generateOps(numOps);
-        String[] expr = generateExpr(ops);
+        String[] ops          = generateOps(numOps);
+        String[] expr         = generateExpr(ops);
+        String   exprAsString = toString(expr);
 
-        currentTarget = evaluator.evalExpr(expr.toString());
+        currentTarget = evaluator.evalExpr(exprAsString);
+        Log.d(TAG, "Generated Expr: " + exprAsString + "   Target: " + currentTarget);
         setExprDifficulty(ops);
 
         int exprLength = 2 * ops.length + 1;
@@ -54,9 +52,10 @@ public class ExpressionGenerator {
      */
     public String[] getNewExpr(String[] ops) {
         String[] expr = generateExpr(ops);
-        Log.d(TAG, "to stringed:" + toString(expr));
+        String   exprAsString = toString(expr);
+
         currentTarget = evaluator.evalExpr(toString(expr));
-        Log.d(TAG, "target set to:" + Integer.toString(currentTarget));
+        Log.d(TAG, "Generated Expr: " + exprAsString + "   Target: " + currentTarget);
         setExprDifficulty(ops);
 
         int exprLength = 2 * ops.length + 1;

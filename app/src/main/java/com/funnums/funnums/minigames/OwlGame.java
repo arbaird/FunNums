@@ -82,8 +82,7 @@ public class OwlGame extends MiniGame {
     //TODO initialize Derek's target generator
     // The target generator
     // ExpressionGenerator expGenerator = new ExpressionGenerator();
-    //For now we use dummy espression
-    String [] dummy = {"1", "+", "2", "*", "3", "4", "-", "69", "+", "8"};
+    String [] expr;
 
     // The Target evaluator
     ExpressionEvaluator evaluator;
@@ -119,17 +118,10 @@ public class OwlGame extends MiniGame {
         //Initialize ArrayList of Tiles
         tileList = new ArrayList<>();
 
-        //TODO Initialize Derek's generator
-        //Initialize Expression generator Object
-        //expGenerator = new ExpressionGenerator();
-
         //Initialize Expression Evaluator Object
         evaluator = new ExpressionEvaluator();
 
-        //TODO get a target from the target generator
-        //target = targetGen.nextTarget();
-        //!!For now refer use dummy
-        makeNewTarget();
+        makeNewTargetAndExpr();
 
         //TODO set values according to the target generated
         numberOfTiles = TILE_LIMIT;
@@ -279,11 +271,39 @@ public class OwlGame extends MiniGame {
     }
 
     /* Generates a new shuffled expression and sets a new target
-     * A proper target can only be retrieved after getNewExpr() is called
+     * A proper target can only be retrieved after getNewExpr() is called inside
+     * getShuffledExpression
      */
-    private void makeNewTarget() {
-        dummy = getShuffledExpression();
+    private void makeNewTargetAndExpr() {
+        expr = getShuffledExpression();
         target = generator.getTarget();
+    }
+
+    /* Removes all references of current tiles from the exprHolder ArrayList
+     * and from the tileList ArrayList.
+     * Then new tiles are generated and stored in the the tileHolder Arraylist
+     */
+    private void setupNewTiles() {
+        evaluator.slots.clearSlots();
+        numberOfTileSpacesUsed = 0;
+        numberOfExprSpacesUsed = 0;
+        clearTilesInExprHolder();
+        clearTilesInTopHolder();
+        tileList.clear();           //old tiles need to be cleared
+        generateTiles();
+    }
+
+    // Removes the reference to the tile from each holder in TopHolder
+    private void clearTilesInTopHolder() {
+        for (TilePlaceHolder placeHolder: tileSpaces) {
+            placeHolder.setTile(null);
+        }
+    }
+    // Removes the reference to the tile from each holder in ExprHolder
+    private void clearTilesInExprHolder() {
+        for (TilePlaceHolder placeHolder: exprSpaces) {
+            placeHolder.setTile(null);
+        }
     }
 
     /* Can be modified depending on balance. The first 13 targets are computed from a expression
@@ -388,8 +408,8 @@ public class OwlGame extends MiniGame {
             x = space.x;
             y = space.y;
 
-            //TODO change from dummy to actual new expression
-            value = dummy[i];
+            //TODO change from expr to actual new expression
+            value = expr[i];
 
             til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
@@ -481,7 +501,6 @@ public class OwlGame extends MiniGame {
 
     }
 
-
     // 1) Free your current spot in the expression
     // 2) Find the next open available space in the overall tile space
     private void moveToTiles(DraggableTile tile){
@@ -542,10 +561,13 @@ public class OwlGame extends MiniGame {
             return;
         }
         int userNumber = evaluator.evalExpr(expr);
+        Log.d(TAG, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
         if (userNumber != target) {
             return;
         }
         score += getPoints();
+        makeNewTargetAndExpr();
+        setupNewTiles();
     }
 
     public int getPoints() {
