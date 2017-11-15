@@ -29,7 +29,7 @@ public class FractionNumberGenerator {
     final private int LEQ_GEQ_0_chance = 6;         //1 in 6 chance
     final private int EQ_0_chance = 3;               //1 in 3 chance
 
-    //Choosen value 'denomRange' will generate random denominators between 2 and 'denomRange'
+    //Chosen value 'denomRange' will generate random denominators between 2 and 'denomRange'
     final private int denomRange = 14;
 
 

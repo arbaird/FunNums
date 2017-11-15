@@ -23,6 +23,8 @@ import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.*;
 import com.funnums.funnums.classes.GameCountdownTimer;
 
+import android.media.MediaPlayer;
+
 
 import android.os.Handler;
 import android.os.Looper;
@@ -63,10 +65,12 @@ public class GameView extends SurfaceView implements Runnable {
     //minimum sleep time between frames, used if the updates are occuring so fast that sleep time is negative
     private final static int MIN_SLEEP_TIME = 1000 / (MAX_FPS*10);
 
+    public Context context;
+
     GameView(Context context, String type) {
         //set up view properly
         super(context);
-
+        this.context = context;
         //store which minigame type player selected
         this.gameType = type;
 
@@ -115,6 +119,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
+
     public void setCurrentMiniGame(MiniGame newGame)
     {
         currentGame = newGame;
@@ -137,6 +142,21 @@ public class GameView extends SurfaceView implements Runnable {
 
             updateDurationNanos = (System.nanoTime() - beforeUpdateRender);
         }
+    }
+
+    public void restart(){
+        playing = false;
+        try {
+            gameThread.join();
+        }
+        catch (InterruptedException e) {
+            Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
+        }
+        playing = true;
+        gameThread = new Thread(this);
+        gameThread.start();
+        startGame();
+
     }
 
     private void control(long updateDurationNanos) {
@@ -216,7 +236,9 @@ public class GameView extends SurfaceView implements Runnable {
         int x = (int)e.getX();
         int y = (int)e.getY();
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
-            currentGame.pauseButton.onTouchDown(x, y);
+            if(currentGame.pauseButton.onTouchDown(x, y))
+                return true;
+
         }
         if (e.getAction() == MotionEvent.ACTION_UP) {
             if (currentGame.pauseButton.isPressed(x, y)) {
@@ -225,6 +247,7 @@ public class GameView extends SurfaceView implements Runnable {
 
                 if(currentGame.gameTimer != null)
                     pauseGameTimer();
+                return true;
             }
             else {
                 currentGame.pauseButton.cancel();
@@ -267,7 +290,9 @@ public class GameView extends SurfaceView implements Runnable {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                long newTime = currentGame.gameTimer.getTime() + timeToAdd;
+                long newTime = Math.max(0, currentGame.gameTimer.getTime() + timeToAdd);
+
+
 
                 currentGame.gameTimer.cancel();
                 currentGame.gameTimer = null;
@@ -277,5 +302,6 @@ public class GameView extends SurfaceView implements Runnable {
             }
         });
     }
+
 }
 

@@ -1,6 +1,7 @@
 package com.funnums.funnums.maingame;
 
 import android.content.SharedPreferences;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -23,6 +24,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import android.app.ProgressDialog;
 
 import java.util.ArrayList;
+
+import static com.funnums.funnums.maingame.MainMenuActivity.*;
 
 /**
  * Activity defined to display Leaderboard. Austin's previously defined functions from MainMenuActivity (Involving Firebase) were transferred to this file.
@@ -116,7 +119,14 @@ public class LeaderboardGameActivity extends AppCompatActivity {
         store given high score, if it is higher than current high score
      */
     public static void storeHighScore(long score) {
+
         SharedPreferences prefs = MainMenuActivity.prefs;
+
+        if(prefs == null){
+            Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
+            prefs = context.getSharedPreferences("HighScore", MODE_PRIVATE);
+        }
+
         //get the editor so we can update stored data, if needed
         final SharedPreferences.Editor editor = prefs.edit();
 

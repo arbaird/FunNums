@@ -105,9 +105,8 @@ public class BalloonGame extends MiniGame {
 
         generateNumber();
 
-        //Initialize timer to 61 seconds, update after 1 sec interval
-        gameTimer = new GameCountdownTimer(61000, 1000);
-        gameTimer.start();
+        //Initialize timer to 60 seconds, update after 1 sec interval
+        initTimer(60000);
 
         //set up the pause button
         int offset = 100;
@@ -121,7 +120,7 @@ public class BalloonGame extends MiniGame {
 
 
 
-    public void update(long delta){
+    public synchronized void update(long delta){
         if(isPaused)
             return;
 
@@ -178,7 +177,7 @@ public class BalloonGame extends MiniGame {
     /*
     Generates a touchable number on screen
      */
-    private void generateNumber() {
+    private synchronized void generateNumber() {
         int x, y;
         do {
             //Setting coordinates x and y
@@ -214,7 +213,7 @@ public class BalloonGame extends MiniGame {
     /*
     Process the touch events
      */
-    private void processEvents() {
+    private synchronized void processEvents() {
         for(MotionEvent e : events)
         {
             int x = (int) e.getX();
@@ -229,7 +228,7 @@ public class BalloonGame extends MiniGame {
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
     */
-    private void checkTouchRadius(int x, int y) {
+    private synchronized void checkTouchRadius(int x, int y) {
         for(TouchableBalloon num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
@@ -250,7 +249,7 @@ public class BalloonGame extends MiniGame {
        When a balloon is touched, call this function. It rewards the player a given amount of points
        if the balloon popped satisfies the given inequality, and deducts points otherwise
     */
-    private void processScore(TouchableBalloon num, int value) {
+    private synchronized void processScore(TouchableBalloon num, int value) {
         if (rFrac.gType == rFrac.GEQ_game) {
             scoreGEQ(num, value);
         }
@@ -275,7 +274,7 @@ public class BalloonGame extends MiniGame {
     //When a number is leaves the screen, call this function. We check if the opposite is true
     //since users only pop balloons satisfying inequality, then they are rewarded if unpopped
     //balloond do NOT satisfy inequality
-    private void processScoreOffScreen(TouchableBalloon num, int value) {
+    private synchronized void processScoreOffScreen(TouchableBalloon num, int value) {
         //score player on opposite of inequality truth value
         if (rFrac.gType == rFrac.GEQ_game) {
             scoreLT(num, value);
@@ -351,7 +350,7 @@ public class BalloonGame extends MiniGame {
     }
 
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remove balloon.
-    private void offScreenCheck() {
+    private synchronized  void offScreenCheck() {
         for(TouchableBalloon num : numberList) {
             if(num.getY()<topBuffer+bRadius) {
                 processScoreOffScreen(num, 5);
@@ -366,7 +365,7 @@ public class BalloonGame extends MiniGame {
     /*
         Detect collisions for all our numbers on screen and bounce numbers that have collided
      */
-    private void findCollisions() {
+    private synchronized  void findCollisions() {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
         for(int i = 0; i < numberList.size(); i++)
@@ -382,7 +381,7 @@ public class BalloonGame extends MiniGame {
         Overloaded to take an x and y coordinate as arguments.
         Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
      */
-    private boolean findCollisions(int x, int y) {
+    private synchronized boolean findCollisions(int x, int y) {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
 
@@ -395,7 +394,7 @@ public class BalloonGame extends MiniGame {
         return false;
     }
 
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
+    public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
 
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
@@ -449,7 +448,7 @@ public class BalloonGame extends MiniGame {
 
 
 
-    public boolean onTouch(MotionEvent e) {
+    public synchronized boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes
