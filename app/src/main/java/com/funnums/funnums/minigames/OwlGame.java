@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
+import com.funnums.funnums.classes.ExpressionGenerator;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -82,13 +83,16 @@ public class OwlGame extends MiniGame {
     // The target generator
     // ExpressionGenerator expGenerator = new ExpressionGenerator();
     //For now we use dummy espression
-    String [] dummy = {"1", "+", "2", "*", "3", "4", "-", "10", "+", "8"};
+    String [] dummy = {"1", "+", "2", "*", "3", "4", "-", "69", "+", "8"};
 
     // The Target evaluator
     ExpressionEvaluator evaluator;
+    ExpressionGenerator generator = new ExpressionGenerator();
 
     // Target player is trying to sum to
     private int target;
+    // The current number of targets that the player has reached
+    private int targetsReached = 0;
 
     //Optimal tile length/width radius
     private float tLength;
@@ -125,7 +129,7 @@ public class OwlGame extends MiniGame {
         //TODO get a target from the target generator
         //target = targetGen.nextTarget();
         //!!For now refer use dummy
-        target = 10;
+        makeNewTarget();
 
         //TODO set values according to the target generated
         numberOfTiles = TILE_LIMIT;
@@ -274,8 +278,27 @@ public class OwlGame extends MiniGame {
 
     }
 
-    //TODO
-    private void makeNewTarget() {}
+    /* Generates a new shuffled expression and sets a new target
+     * A proper target can only be retrieved after getNewExpr() is called
+     */
+    private void makeNewTarget() {
+        dummy = getShuffledExpression();
+        target = generator.getTarget();
+    }
+
+    /* Can be modified depending on balance. The first 13 targets are computed from a expression
+     * with only 1 operator, each operator +, -, *, / getting ~3 iterations to ease the player in.
+     * After the initial 13 targets, every 4 targets generates an expression using 3 ops
+     * Otherwise we generate an expression using 2 operators. getNewExpr() also sets the target.
+     */
+    private String[] getShuffledExpression() {
+        if (targetsReached < 3)      return generator.getNewExpr(new String[] {"+"});
+        if (targetsReached < 6)      return generator.getNewExpr(new String[] {"-"});
+        if (targetsReached < 10)     return generator.getNewExpr(new String[] {"*"});
+        if (targetsReached < 13)     return generator.getNewExpr(new String[] {"/"});
+        if (targetsReached % 4 == 0) return generator.getNewExpr(3);
+                                     return generator.getNewExpr(2);
+    }
 
     //TODO
     private void resetGame() { }
@@ -398,9 +421,12 @@ public class OwlGame extends MiniGame {
 
                     if (t.isUsed()){
                         moveToTiles(t);
+                        Log.d(TAG, "moveToTiles");
                     } else {
                         moveToExpr(t);
+                        Log.d(TAG, "moveToExpr");
                     }
+                    checkExpr();
                     break;
             }
         }
@@ -507,5 +533,35 @@ public class OwlGame extends MiniGame {
     //Delete a token from the ExpressionEvaluator object
     public void deleteTokenToEval(int index){
         evaluator.slots.delete(index);
+    }
+
+
+    public void checkExpr() {
+        String expr = evaluator.getUserExpr();
+        if (expr == null) {
+            return;
+        }
+        int userNumber = evaluator.evalExpr(expr);
+        if (userNumber != target) {
+            return;
+        }
+        score += getPoints();
+    }
+
+    public int getPoints() {
+        final int EASY   = 1;
+        final int MEDIUM = 2;
+        final int HARD   = 3;
+
+        int difficulty = generator.getDifficulty();
+        switch (difficulty) {
+            case EASY:
+                return 1;
+            case MEDIUM:
+                return 5;
+            case HARD:
+                return 10;
+        }
+        return -1;
     }
 }

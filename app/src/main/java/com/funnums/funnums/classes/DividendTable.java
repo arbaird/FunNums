@@ -42,9 +42,7 @@ public class DividendTable {
 
     private final int MAX_GENERATED_NUM = 1000;
     private final int SMALL_NUM = 144;
-
-    private HashMap<Integer, DivisorList> dividends =
-            new HashMap<>();
+    private HashMap<Integer, DivisorList> dividends = new HashMap<>();
 
     public DividendTable() {
         generateTable(MAX_GENERATED_NUM);

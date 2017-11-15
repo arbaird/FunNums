@@ -65,23 +65,23 @@ public class ExpressionEvaluator {
     public ActiveSlots slots = new ActiveSlots();
 
     /* Scans through the expression array to test if the values in it represent an expression.
-     * If it's not an expression "false" is returned, else the space-seperated expression is returned.
-     * -If the expr is length 1 or and even length, then return "false"
-     * -If the the scanned index doesn't equal the next type, then return "false"
+     * If it's not an expression "false" is returned, else the space-separated expression is returned.
+     * -If the expr is length 1 or and even length, then return null
+     * -If the the scanned index doesn't equal the next type, then return null
      * The nextType is multiplied by -1 each time because the check has to flip between op and num
      */
-    public String isExpr() {
+    public String getUserExpr() {
         String expr  = "";
         int size     = slots.activeIndexes;
         int maxSize  = slots.MAX_EXPR_SIZE;
         int nextType = 1; //The first thing encountered has to be a number
 
         if (size == 1 || (size % 2 == 0)) {
-            return "false";
+            return null;
         }
         for (int i=0, count=0; i<maxSize && count<size; i++) {
             if (slots.typeArr[i] == 0)        continue;
-            if (slots.typeArr[i] != nextType) return "false";
+            if (slots.typeArr[i] != nextType) return null;
 
             expr = expr + slots.exprArr[i] + " ";
             count++;
