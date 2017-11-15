@@ -57,6 +57,7 @@ public class ExpressionEvaluator {
         }
 
         public void clearSlots() {
+            activeIndexes = 0;
             Arrays.fill(typeArr, 0);
         }
     }
@@ -107,7 +108,7 @@ public class ExpressionEvaluator {
      * then we execute the entire op-stack, fully evaluating the expr.
      */
     public int evalExpr(String expr) {
-        if (expr.equals("false")) return -9999;
+        if (expr == null) return -9999;
 
         Scanner sc = new Scanner(expr);
         while(sc.hasNext()) {

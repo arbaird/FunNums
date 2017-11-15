@@ -390,7 +390,7 @@ public class OwlGame extends MiniGame {
 
             // If there is a hit
             if (touchInXRange && touchInYRange) {
-
+                    Log.d(TAG, "Tile Pressed: " + t.getValue());
                     if (t.isUsed()){
                         moveToTiles(t);
                         Log.d(TAG, "moveToTiles");
@@ -512,8 +512,10 @@ public class OwlGame extends MiniGame {
         String expr = evaluator.getUserExpr();
         Log.d(TAG, "User Expr: "+expr);
         if (expr == null) {
+            Log.d(TAG, "Expr is null, returning false");
             return false;
         }
+        Log.d(TAG, "Expr Length: " + expr.length());
         int userNumber = evaluator.evalExpr(expr);
         Log.d(TAG, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
         if (userNumber != target) {
