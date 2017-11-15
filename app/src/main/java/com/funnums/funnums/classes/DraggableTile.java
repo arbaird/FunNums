@@ -3,6 +3,7 @@ package com.funnums.funnums.classes;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 /**
  * Created by Cesar on 11/11/2017.
@@ -11,7 +12,7 @@ import android.graphics.Paint;
  */
 
 public class DraggableTile extends DraggableObject{
-
+    private final String TAG = "DraggableTile";
     //Font size inside tile
     float TEXT_SIZE = 50;
 
@@ -76,6 +77,8 @@ public class DraggableTile extends DraggableObject{
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
+
+
         //draw the rectangle (tile)
         paint.setColor(Color.argb(255, 245, 228, 118));
         canvas.drawRect(left, top, right, bottom, paint);
@@ -86,7 +89,7 @@ public class DraggableTile extends DraggableObject{
         paint.setTextAlign(Paint.Align.CENTER);
 
         //Draw Tile text
-        canvas.drawText(value, getX()+(length/2), getY()+(length/2)+(TEXT_SIZE/2), paint);
+        canvas.drawText(value, getX() + (length / 2), getY() + (length / 2) + (TEXT_SIZE / 2), paint);
     }
 
 

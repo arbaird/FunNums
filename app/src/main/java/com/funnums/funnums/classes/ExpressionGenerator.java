@@ -151,7 +151,7 @@ public class ExpressionGenerator {
      * and returns it.
      */
     String[] fillAndShuffleExpr(String[] expr, int tilesToFill) {
-        int startFillingIndex = expr.length - tilesToFill + 1;
+        int startFillingIndex = expr.length - tilesToFill;
         for (int i=startFillingIndex; i<expr.length; i++) {
             int randomNum = generateNum();
             expr[i] = Integer.toString(randomNum);
