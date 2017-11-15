@@ -1,8 +1,11 @@
 package com.funnums.funnums.minigames;
 
+import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -11,6 +14,7 @@ import java.util.Random;
 import android.graphics.Bitmap;
 import java.util.Set;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.BubbleTargetGenerator;
 import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
@@ -19,6 +23,7 @@ import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.maingame.GameActivity;
+import com.funnums.funnums.maingame.MainMenuActivity;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -82,6 +87,9 @@ public class BubbleGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
+    private SoundPool soundPool;
+    private int popSound;
+
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
@@ -90,6 +98,10 @@ public class BubbleGame extends MiniGame {
 
         //game only finished when timer is done
         isFinished = false;
+
+        //initialize soundPool
+        soundPool=new SoundPool(1,AudioManager.STREAM_MUSIC,0);
+        popSound=com.funnums.funnums.maingame.GameView.loadSound("bubble.wav");
 
         //initalize random generator
         r = new Random();
@@ -297,6 +309,12 @@ public class BubbleGame extends MiniGame {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
+                soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
+                                                        @Override
+                                                        public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                                                            soundPool.play(popSound, 1, 1, 1, 0, 1);
+                                                        }
+                                                    });
                 numberList.remove(num);
                 break;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway

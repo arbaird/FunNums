@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import java.util.Set;
 import android.view.MotionEvent;
@@ -41,6 +43,9 @@ public class GameView extends SurfaceView implements Runnable {
 
     //thread for the game
     Thread gameThread = null;
+
+    //For sound effects
+    private static SoundPool soundPool;
 
     // For drawing
     private Paint paint;
@@ -256,6 +261,22 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
 
         return bitmap;
+    }
+    /*
+    load sound effects in minigames
+     */
+    public static int loadSound(String filename) {
+        int soundID=0;
+        if (soundPool == null) {
+            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        }
+        try {
+            soundID = soundPool.load(GameActivity.assets.openFd(filename), 1);
+        }catch (IOException e) {
+            Log.d("Sound","Didn't load sound");
+            e.printStackTrace();
+        }
+        return soundID;
     }
 
 
