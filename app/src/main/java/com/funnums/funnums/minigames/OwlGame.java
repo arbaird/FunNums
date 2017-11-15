@@ -270,55 +270,7 @@ public class OwlGame extends MiniGame {
 
     }
 
-    /* Generates a new shuffled expression and sets a new target
-     * A proper target can only be retrieved after getNewExpr() is called inside
-     * getShuffledExpression
-     */
-    private void makeNewTargetAndExpr() {
-        expr = getShuffledExpression();
-        target = generator.getTarget();
-    }
 
-    /* Removes all references of current tiles from the exprHolder ArrayList
-     * and from the tileList ArrayList.
-     * Then new tiles are generated and stored in the the tileHolder Arraylist
-     */
-    private void setupNewTiles() {
-        evaluator.slots.clearSlots();
-        numberOfTileSpacesUsed = 0;
-        numberOfExprSpacesUsed = 0;
-        clearTilesInExprHolder();
-        clearTilesInTopHolder();
-        tileList.clear();           //old tiles need to be cleared
-        generateTiles();
-    }
-
-    // Removes the reference to the tile from each holder in TopHolder
-    private void clearTilesInTopHolder() {
-        for (TilePlaceHolder placeHolder: tileSpaces) {
-            placeHolder.setTile(null);
-        }
-    }
-    // Removes the reference to the tile from each holder in ExprHolder
-    private void clearTilesInExprHolder() {
-        for (TilePlaceHolder placeHolder: exprSpaces) {
-            placeHolder.setTile(null);
-        }
-    }
-
-    /* Can be modified depending on balance. The first 13 targets are computed from a expression
-     * with only 1 operator, each operator +, -, *, / getting ~3 iterations to ease the player in.
-     * After the initial 13 targets, every 4 targets generates an expression using 3 ops
-     * Otherwise we generate an expression using 2 operators. getNewExpr() also sets the target.
-     */
-    private String[] getShuffledExpression() {
-        if (targetsReached < 3)      return generator.getNewExpr(new String[] {"+"});
-        if (targetsReached < 6)      return generator.getNewExpr(new String[] {"-"});
-        if (targetsReached < 10)     return generator.getNewExpr(new String[] {"*"});
-        if (targetsReached < 13)     return generator.getNewExpr(new String[] {"/"});
-        if (targetsReached % 4 == 0) return generator.getNewExpr(3);
-                                     return generator.getNewExpr(2);
-    }
 
     //TODO
     private void resetGame() { }
@@ -446,13 +398,14 @@ public class OwlGame extends MiniGame {
                         moveToExpr(t);
                         Log.d(TAG, "moveToExpr");
                     }
-                    checkExpr();
+                    if (equalsTarget()) {
+                        handleOnCorrect();
+                    }
                     break;
             }
         }
-
     }
-    
+
     //If there is a slot available in the expression
     // 1) Free your current spot
     // 2) Find the next open available space in the expression
@@ -555,16 +508,71 @@ public class OwlGame extends MiniGame {
     }
 
 
-    public void checkExpr() {
+    public boolean equalsTarget() {
         String expr = evaluator.getUserExpr();
+        Log.d(TAG, "User Expr: "+expr);
         if (expr == null) {
-            return;
+            return false;
         }
         int userNumber = evaluator.evalExpr(expr);
         Log.d(TAG, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
         if (userNumber != target) {
-            return;
+            return false;
         }
+        return true;
+    }
+
+    /* Generates a new shuffled expression and sets a new target
+     * A proper target can only be retrieved after getNewExpr() is called inside
+     * getShuffledExpression
+     */
+    private void makeNewTargetAndExpr() {
+        expr = getShuffledExpression();
+        target = generator.getTarget();
+    }
+
+    /* Removes all references of current tiles from the exprHolder ArrayList
+     * and from the tileList ArrayList.
+     * Then new tiles are generated and stored in the the tileHolder Arraylist
+     */
+    private void setupNewTiles() {
+        evaluator.slots.clearSlots();
+        numberOfTileSpacesUsed = 0;
+        numberOfExprSpacesUsed = 0;
+        clearTilesInExprHolder();
+        clearTilesInTopHolder();
+        tileList.clear();           //old tiles need to be cleared
+        generateTiles();
+    }
+
+    // Removes the reference to the tile from each holder in TopHolder
+    private void clearTilesInTopHolder() {
+        for (TilePlaceHolder placeHolder: tileSpaces) {
+            placeHolder.setTile(null);
+        }
+    }
+    // Removes the reference to the tile from each holder in ExprHolder
+    private void clearTilesInExprHolder() {
+        for (TilePlaceHolder placeHolder: exprSpaces) {
+            placeHolder.setTile(null);
+        }
+    }
+
+    /* Can be modified depending on balance. The first 13 targets are computed from a expression
+     * with only 1 operator, each operator +, -, *, / getting ~3 iterations to ease the player in.
+     * After the initial 13 targets, every 4 targets generates an expression using 3 ops
+     * Otherwise we generate an expression using 2 operators. getNewExpr() also sets the target.
+     */
+    private String[] getShuffledExpression() {
+        if (targetsReached < 3)      return generator.getNewExpr(new String[] {"+"});
+        if (targetsReached < 6)      return generator.getNewExpr(new String[] {"-"});
+        if (targetsReached < 10)     return generator.getNewExpr(new String[] {"*"});
+        if (targetsReached < 13)     return generator.getNewExpr(new String[] {"/"});
+        if (targetsReached % 4 == 0) return generator.getNewExpr(3);
+        return generator.getNewExpr(2);
+    }
+
+    public void handleOnCorrect() {
         score += getPoints();
         makeNewTargetAndExpr();
         setupNewTiles();
