@@ -95,7 +95,6 @@ public class OwlGame extends MiniGame {
      */
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-
     //clouds to draw
     Cloud cloud1;
     Cloud cloud2;
@@ -174,7 +173,7 @@ public class OwlGame extends MiniGame {
         generateTargetTile();
 
         //place owl at top of screen, we can change the spawn point in the future
-        owl = new Owl(100, 100);
+        owl = new Owl(screenX/2, 100);
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -193,15 +192,11 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-
-
-
         //set up the pause button
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
-
 
     }
 
@@ -255,10 +250,6 @@ public class OwlGame extends MiniGame {
             canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
                     (float)screenY, paint);
 
-            //Draw all the tile spots
-            for(TilePlaceHolder ph : exprSpaces)
-                ph.draw(canvas, paint);
-
             //Draw all the tiles
             for(DraggableTile t : tileList)
                 t.draw(canvas, paint);
@@ -266,6 +257,10 @@ public class OwlGame extends MiniGame {
             //Draw Target and equals tile
             equalsTile.draw(canvas, paint);
             targetTile.draw(canvas, paint);
+
+            //Draw all the tile spots
+            for(TilePlaceHolder ph : exprSpaces)
+                ph.draw(canvas, paint);
 
             //Draw pause button
             if(pauseButton != null)
