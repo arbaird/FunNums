@@ -391,7 +391,7 @@ public class OwlGame extends MiniGame {
                         moveToExpr(t);
                         Log.d(TAG, "moveToExpr");
                     }
-                    if (equalsTarget()) {
+                    if (evaluatesToTarget()) {
                         handleOnCorrect();
                     }
                     break;
@@ -493,7 +493,7 @@ public class OwlGame extends MiniGame {
     /* Calls getUserExpr() to check if the current user expression is valid, and if so, we call
      * evalExpr() to check the value of it. Returns true if the expression evaluates to the target.
      */
-    public boolean equalsTarget() {
+    public boolean evaluatesToTarget() {
         String expr = evaluator.getUserExpr();
         Log.d(TAG, "User Expr: "+expr);
         if (expr == null) {
@@ -514,6 +514,7 @@ public class OwlGame extends MiniGame {
         score += getPoints();
         makeNewTargetAndExpr();
         setupNewTiles();
+        events.clear();
     }
 
     /* Retrieves the difficulty of the last expr from the generator and updates our score accordingly.
@@ -560,7 +561,7 @@ public class OwlGame extends MiniGame {
 
     /* Removes all references of current tiles from the exprHolder ArrayList
      * and from the tileList ArrayList.
-     * Then new tiles are generated and stored in the the tileHolder Arraylist
+     * Then new tiles are generated and stored in the the tileHolder ArrayList
      */
     private void setupNewTiles() {
         numberOfTileSpacesUsed = 0;
