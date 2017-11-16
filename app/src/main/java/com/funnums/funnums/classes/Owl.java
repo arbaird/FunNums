@@ -17,12 +17,11 @@ public class Owl {
     //maximum velocity that the owl will reach
     public float maxYVelocity;
 
-    //acceleration, only y is used for now, might be nice to have x values just in case
-    float xAcceleration, yAcceleration;
+    //velocity, only y is used for now, might be nice to have x values just in case
     public float xVelocity, yVelocity;
 
     //velocity the owl flies at when it increases altitude
-    float flyVelocity;
+    public float flyVelocity;
 
     //size of the owl, jsust used to draw a circle for now
     int size;
@@ -38,11 +37,11 @@ public class Owl {
         this.x = x;
         this.y = y;
 
-        maxYVelocity = 1;
+        maxYVelocity = 0.5f;
 
-        flyVelocity = 2;
+        flyVelocity = 2.0f;
 
-        size = 50;
+        size = 100;
 
         gravity = 0.5f;
     }
@@ -57,10 +56,9 @@ public class Owl {
         //see if velocity is too high and, if it is, set velocity to max value in the correct direction
         //i.e detect if it reached max ascending or descending
         if (Math.abs(yVelocity) > maxYVelocity){
+            //set max falling velocity, but flying altitude can be greater than max so owl can fly higher as equations get harder
             if(yVelocity > 0)
                 yVelocity = maxYVelocity;
-            else
-                yVelocity = -maxYVelocity;
         }
     }
 
@@ -81,7 +79,7 @@ public class Owl {
         Right now, just draw a circle where the owl will be
      */
     public void draw(Canvas canvas, Paint paint){
-        paint.setColor(Color.argb(255, 255, 255, 255));
+        paint.setColor(Color.argb(255, 100, 100, 100));
         canvas.drawCircle(x, y, size, paint);
     }
 
@@ -100,6 +98,14 @@ public class Owl {
         addVelocity(0, -flyVelocity);
     }
 
+    public void increaseFlyVelocty(float addVelocity){
+        flyVelocity += addVelocity;
+    }
+
+    public float getFlyVelocty(){
+        return flyVelocity;
+    }
+
     public float getY(){
         return y;
     }
@@ -107,7 +113,5 @@ public class Owl {
     public float getSize(){
         return size;
     }
-
-
 
 }

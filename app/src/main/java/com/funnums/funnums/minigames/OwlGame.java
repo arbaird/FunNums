@@ -12,10 +12,14 @@ import android.view.SurfaceHolder;
 
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
+import com.funnums.funnums.classes.ExpressionGenerator;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.Owl;
+
+import com.funnums.funnums.classes.Cloud;
+import com.funnums.funnums.uihelpers.UIButton;
 
 
 public class OwlGame extends MiniGame {
@@ -28,12 +32,22 @@ public class OwlGame extends MiniGame {
     class TilePlaceHolder{
         float x;
         float y;
+        float left, top, right, bottom;
         DraggableTile t;
 
-        TilePlaceHolder(float x, float y){
+        TilePlaceHolder(float x, float y, float length){
             this.x = x;
             this.y = y;
             t = null;
+
+            //distance of the left side of rectangular from left side of canvas.
+            left = x;
+            //Distance of bottom side of rectangle from the top side of canvas
+            top = y;
+            //distance of the right side of rectangular from left side of canvas.
+            right = x + length;
+            //Distance of the top side of rectangle from top side of canvas
+            bottom = y + length;
         }
 
         boolean isOccupied(){
@@ -47,15 +61,25 @@ public class OwlGame extends MiniGame {
         void setTile(DraggableTile t){
             this.t = t;
         }
+
+        public void draw(Canvas canvas, Paint paint) {
+
+            //draw the rectangle (tile space)
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.argb(255, 0, 0, 0));
+            canvas.drawRect(left, top, right, bottom, paint);
+            paint.setStyle(Paint.Style.FILL);
+
+        }
     }
 
-    final int TILE_LIMIT = 10;
-    final int EXPR_LIMIT = 7;
+    private final int TILE_LIMIT = 10;
+    private final int EXPR_LIMIT =  7;
 
     //Ratios based on screen size
-    double TILE_LENGTH_RATIO = .10;     /*10% of the screen width*/
-    double T_BUFFER_RATIO = .20;        /*20% of the screen length*/
-    double E_BUFFER_RATIO = .15;        /*15% of the screen length*/
+    private double TILE_LENGTH_RATIO = .10;     /*10% of the screen width*/
+    private double T_BUFFER_RATIO    = .20;     /*20% of the screen length*/
+    private double E_BUFFER_RATIO    = .15;     /*15% of the screen length*/
 
     //Dimensions of the screen
     private int screenX;
@@ -65,67 +89,60 @@ public class OwlGame extends MiniGame {
     private float tileBuffer;
     private float exprBuffer;
 
+    /* Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent
+     * access not likely that these threads would interact, but if they do the game will crash!!
+     * which is why we keep events in a separate list to be processed in the game loop
+     */
+    private ArrayList<MotionEvent> events = new ArrayList<>();
+
+    //clouds to draw
+    Cloud cloud1;
+    Cloud cloud2;
+    //our master, the owl
+    Owl owl;
+
+
     //Tile coordinates
     private ArrayList<TilePlaceHolder> tileSpaces = new ArrayList<>();
     //Expression coordinates
     private ArrayList<TilePlaceHolder> exprSpaces = new ArrayList<>();
 
     // List of all the touchable tiles on screen
-    private ArrayList<DraggableTile> tileList;
+    private ArrayList<DraggableTile> tileList = new ArrayList<>();
 
-    // Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent access
-    // not likely that these threads would interact, but if they do the game will crash!! which is why
-    //we keep events in a separate list to be processed in the game loop
-    private ArrayList<MotionEvent> events = new ArrayList<>();
+    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private ExpressionGenerator generator = new ExpressionGenerator();
 
-    //TODO initialize Derek's target generator
-    // The target generator
-    // ExpressionGenerator expGenerator = new ExpressionGenerator();
-    //For now we use dummy espression
-    String [] dummy = {"1", "+", "2", "*", "3", "4", "-", "10", "+", "8"};
-
-    // The Target evaluator
-    ExpressionEvaluator evaluator;
+    //The shuffled expression as a string
+    private String [] expr;
 
     // Target player is trying to sum to
     private int target;
+    // The current number of targets that the player has reached
+    private int targetsReached = 0;
 
     //Optimal tile length/width radius
     private float tLength;
 
     //Counter of tiles
-    int numberOfTiles;
-    int numberOfExprSpaces;
+    private int numberOfTiles;
+    private int numberOfExprSpaces;
 
     //Counter or tile spaces in use
-    int numberOfTileSpacesUsed;
-    int numberOfExprSpacesUsed;
+    private int numberOfTileSpacesUsed;
+    private int numberOfExprSpacesUsed;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
-    //Owl Initializer
-    Owl owl;
+    //Separate tile objects
+    DraggableTile targetTile;
+    DraggableTile equalsTile;
 
-    public void init() {
+    public synchronized void init() {
 
         //Game only finished when owl has died :P
         isFinished = false;
-
-        //Initialize ArrayList of Tiles
-        tileList = new ArrayList<>();
-
-        //TODO Initialize Derek's generator
-        //Initialize Expression generator Object
-        //expGenerator = new ExpressionGenerator();
-
-        //Initialize Expression Evaluator Object
-        evaluator = new ExpressionEvaluator();
-
-        //TODO get a target from the target generator
-        //target = targetGen.nextTarget();
-        //!!For now refer use dummy
-        target = 10;
 
         //TODO set values according to the target generated
         numberOfTiles = TILE_LIMIT;
@@ -148,11 +165,26 @@ public class OwlGame extends MiniGame {
         generateTileSpaceHolders();
         generateExprSpaceHolders();
 
+        //Generate initial target and expression
+        makeNewTargetAndExpr();
+
         //Generate tiles
         generateTiles();
+        generateTargetTile();
 
         //place owl at top of screen, we can change the spawn point in the future
-        owl = new Owl(100, 100);
+        owl = new Owl(screenX/2, 100);
+
+        screenX = com.funnums.funnums.maingame.GameActivity.screenX;
+        screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+
+        Log.d("OWL", "INIT CLOUDS");
+        int cloudSize = 75;
+        //arguments for new cloud are initial x, initial y, min spawn point, max span paint, size)
+        cloud1 = new Cloud(screenX/2, screenY/8, screenY/8, screenY *3/8, cloudSize);
+        cloud2 = new Cloud(screenX*3/2,  screenY -tileBuffer - exprBuffer - cloudSize/2, screenY /2, (int)(screenY -tileBuffer - exprBuffer- cloudSize/2), cloudSize);
+        Log.d("OWL", "Clouds initialized");
+        //cloud3 = new Cloud(screenX * 3/2, 300);
 
         //we don't use a gametimer in this game, make sure that any left over timer from another game
         //isn't used for this one
@@ -160,48 +192,38 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-        /**Even tough pause button is not being used it has to be declared,
-         * because minigame class forces you to have one :P
-         */
+        //set up the pause button
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
-        Log.d(TAG, "init pauseButton: " + pauseButton);
-
-        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
-        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
-        UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
-
-        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", true);
-        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
-        UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
-
     }
 
+
     //Update method to be called by game loop
-    public void update(long delta) {
+    public synchronized void update(long delta) {
         if (isPaused)
             return;
 
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
-        if(owl.getY() > screenY - owl.getSize()){
+        if(owl.getY() - owl.getSize() > screenY -tileBuffer - exprBuffer){
             GameCountdownTimer.completeGame();
         }
         //if owl is at top of screen, make sure it won't go off the screen
         else if(owl.getY() < owl.getSize()){
             owl.yVelocity = 0;
         }
+        cloud1.update(delta);
+        cloud2.update(delta);
 
         processEvents();
     }
 
+
     //Draw method
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
-
-
+    public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
             canvas = ourHolder.lockCanvas();
@@ -209,8 +231,14 @@ public class OwlGame extends MiniGame {
             // Rub out the last frame
             canvas.drawColor(Color.argb(255, 0, 0, 0));
 
+            //draw the clouds
+            cloud1.draw(canvas, paint);
+            cloud2.draw(canvas, paint);
+
             //draw the owl
             owl.draw(canvas, paint);
+
+            paint.setColor(Color.argb(255, 0, 0, 255));
 
             //draw tile buffer
             paint.setColor(Color.argb(255, 100, 150, 155));
@@ -223,8 +251,16 @@ public class OwlGame extends MiniGame {
                     (float)screenY, paint);
 
             //Draw all the tiles
-            for(DraggableTile num : tileList)
-                num.draw(canvas, paint);
+            for(DraggableTile t : tileList)
+                t.draw(canvas, paint);
+
+            //Draw Target and equals tile
+            equalsTile.draw(canvas, paint);
+            targetTile.draw(canvas, paint);
+
+            //Draw all the tile spots
+            for(TilePlaceHolder ph : exprSpaces)
+                ph.draw(canvas, paint);
 
             //Draw pause button
             if(pauseButton != null)
@@ -248,10 +284,15 @@ public class OwlGame extends MiniGame {
     private void processEvents() {
 
         for(MotionEvent e : events) {
-            float  x = e.getX();
-            float  y = e.getY();
 
-            checkTouchedTile(x, y);
+            //Prevents double/multiple touch action
+            if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+                float x = e.getX();
+                float y = e.getY();
+
+                checkTouchedTile(x, y);
+            }
         }
 
         events.clear();
@@ -268,21 +309,13 @@ public class OwlGame extends MiniGame {
         events.add(e);
         Log.d(TAG, "Touch event added");
 
-        if(!(owl.getY() < owl.getSize()))
-            owl.increaseAltitude();
         return true;
 
     }
 
-    //TODO
-    private void makeNewTarget() {}
-
-    //TODO
-    private void resetGame() { }
-
     // Generates TileSpaceHolders to be used by the tiles, initially no actual tiles
     // are being held inside the place holders
-    private void generateTileSpaceHolders(){
+    private synchronized void generateTileSpaceHolders(){
         double SPACING_TOP_PERCENTAGE = .15;
         double SPACING_LEFT_PERCENTAGE = .05;
         double SPACING_MIDDLE_PERCENTAGE = .45;
@@ -297,14 +330,14 @@ public class OwlGame extends MiniGame {
         //X leaves 5% spacing
         x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
-        space = new TilePlaceHolder (x, y);
+        space = new TilePlaceHolder (x, y, tLength);
         tileSpaces.add(space);
 
         for(int i = 1; i < 5; i++){
 
             x += (int) (SPACING_BETWEEN_PERCENTAGE * screenX) + tLength;
 
-            space = new TilePlaceHolder (x, y);
+            space = new TilePlaceHolder (x, y, tLength);
             tileSpaces.add(space);
         }
 
@@ -315,19 +348,19 @@ public class OwlGame extends MiniGame {
         //Reset X
         x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
-        space = new TilePlaceHolder (x, y);
+        space = new TilePlaceHolder (x, y, tLength);
         tileSpaces.add(space);
 
         for(int i = 6; i < 10; i++){
             x += (int) (SPACING_BETWEEN_PERCENTAGE * screenX) + tLength;
 
-            space = new TilePlaceHolder (x, y);
+            space = new TilePlaceHolder (x, y, tLength);
             tileSpaces.add(space);
         }
     }
 
     // Generates TileSpaceHolders to be used by the tiles in an expression
-    private void generateExprSpaceHolders(){
+    private synchronized void generateExprSpaceHolders(){
         double SPACING_TOP_PERCENTAGE = .25;
         double SPACING_LEFT_PERCENTAGE = .05;
 
@@ -338,22 +371,21 @@ public class OwlGame extends MiniGame {
         y = screenY - exprBuffer + (int)(SPACING_TOP_PERCENTAGE * exprBuffer);
         x = (int) (SPACING_LEFT_PERCENTAGE * screenX);
 
-        space = new TilePlaceHolder (x, y);
+        space = new TilePlaceHolder (x, y, tLength);
         exprSpaces.add(space);
 
-        for(int i = 1; i < 10; i++){
+        for(int i = 1; i < 9; i++){
 
             x += tLength;
 
-            space = new TilePlaceHolder (x, y);
+            space = new TilePlaceHolder (x, y, tLength);
             exprSpaces.add(space);
         }
-
 
     }
 
     // Generates a draggable tiles on screen
-    private void generateTiles() {
+    private synchronized void generateTiles() {
 
         float x, y;
         String value;
@@ -365,11 +397,16 @@ public class OwlGame extends MiniGame {
             x = space.x;
             y = space.y;
 
-            //TODO change from dummy to actual new expression
-            value = dummy[i];
+            //TODO change from expr to actual new expression
+            value = expr[i];
 
             til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
+
+            //Set to operator type
+            if ( value == "+"|| value == "-" || value == "/" || value == "*"){
+                til.setIsOperator(true);
+            }
 
             space.setTile(til);
         }
@@ -377,6 +414,33 @@ public class OwlGame extends MiniGame {
         //TODO make sure is based on generator
         numberOfTileSpacesUsed = numberOfTiles;
 
+    }
+
+    //Generate  a tile to represent the target as well as equal sign
+    private void generateTargetTile(){
+        float x, y;
+        String value;
+        TilePlaceHolder space;
+
+        //Generate equal sign
+        space = exprSpaces.get(numberOfExprSpaces);
+
+        x = space.x;
+        y = space.y;
+        value = "=";
+
+        equalsTile = new DraggableTile (x, y, tLength, value);
+        space.setTile(equalsTile);
+
+        //Generate target tile
+        space = exprSpaces.get(numberOfExprSpaces+1);
+
+        x = space.x;
+        y = space.y;
+        value = String.valueOf(target);
+
+        targetTile = new DraggableTile (x, y, tLength, value);
+        space.setTile(targetTile);
     }
 
     //Check if there is a tile in the touch coordinates, and if so,
@@ -388,25 +452,30 @@ public class OwlGame extends MiniGame {
         boolean touchInXRange, touchInYRange;
 
         for (DraggableTile t : tileList) {
+
             //TODO fix touch sensitivity
             //Boolean check of touch
-            touchInXRange = ( x >= t.getX() && x <= (t.getX() + tLength) );
-            touchInYRange = ( y >= (t.getY()+HOLY_MAGIC_NUMBER) && y <= (t.getY() + tLength)+HOLY_MAGIC_NUMBER);
+            touchInXRange = ( x >= t.getLeft() && x <= t.getRight() );
+            touchInYRange = ( y >= (t.getTop()+HOLY_MAGIC_NUMBER) && y <= (t.getBottom()+HOLY_MAGIC_NUMBER) );
 
             // If there is a hit
             if (touchInXRange && touchInYRange) {
-
+                    Log.d(TAG, "Tile Pressed: " + t.getValue());
                     if (t.isUsed()){
                         moveToTiles(t);
+                        Log.d(TAG, "moveToTiles");
                     } else {
                         moveToExpr(t);
+                        Log.d(TAG, "moveToExpr");
+                    }
+                    if (evaluatesToTarget()) {
+                        handleOnCorrect();
                     }
                     break;
             }
         }
-
     }
-    
+
     //If there is a slot available in the expression
     // 1) Free your current spot
     // 2) Find the next open available space in the expression
@@ -440,7 +509,7 @@ public class OwlGame extends MiniGame {
                     p.setTile(tile);
 
                     //Insert token to evaluate
-                    insertTokenToEval(tile.getValue(), index);
+                    evaluator.slots.insert(tile.getValue(), index);
 
                     break;
                 }
@@ -455,7 +524,6 @@ public class OwlGame extends MiniGame {
 
     }
 
-
     // 1) Free your current spot in the expression
     // 2) Find the next open available space in the overall tile space
     private void moveToTiles(DraggableTile tile){
@@ -469,7 +537,7 @@ public class OwlGame extends MiniGame {
                 p.setTile(null);
 
                 //Insert token in evaluator
-                deleteTokenToEval(index);
+                evaluator.slots.delete(index);
                 break;
             }
 
@@ -499,13 +567,105 @@ public class OwlGame extends MiniGame {
 
     }
 
-    //Inserts a new token to be evaluated by ExpressionEvaluator object
-    public void insertTokenToEval(String t, int index){
-        evaluator.slots.insert(t, index);
+    /* Calls getUserExpr() to check if the current user expression is valid, and if so, we call
+     * evalExpr() to check the value of it. Returns true if the expression evaluates to the target.
+     */
+    public boolean evaluatesToTarget() {
+        String expr = evaluator.getUserExpr();
+        Log.d(TAG, "User Expr: "+expr);
+        if (expr == null) {
+            Log.d(TAG, "Expr is null, returning false");
+            return false;
+        }
+        Log.d(TAG, "Expr Length: " + expr.length());
+        int userNumber = evaluator.evalExpr(expr);
+        Log.d(TAG, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
+        if (userNumber != target) {
+            return false;
+        }
+        return true;
     }
 
-    //Delete a token from the ExpressionEvaluator object
-    public void deleteTokenToEval(int index){
-        evaluator.slots.delete(index);
+    public void handleOnCorrect() {
+        //Give the Owl a push!
+        if(!(owl.getY() < owl.getSize()))
+            owl.increaseAltitude();
+
+        targetsReached++;
+        score += getPoints();
+        makeNewTargetAndExpr();
+        setupNewTiles();
+    }
+
+    /* Retrieves the difficulty of the last expr from the generator and updates our score accordingly.
+     */
+    public int getPoints() {
+        final int EASY   = 1;
+        final int MEDIUM = 2;
+        final int HARD   = 3;
+
+        int difficulty = generator.getDifficulty();
+        switch (difficulty) {
+            case EASY:
+                return 1;
+            case MEDIUM:
+                return 5;
+            case HARD:
+                return 10;
+        }
+        return -1;
+    }
+
+    /* Generates a new shuffled expression and sets a new target
+     * A proper target can only be retrieved after getNewExpr() is called inside
+     * getShuffledExpression, which is why these 2 calls are grouped as a single function.
+     */
+    private void makeNewTargetAndExpr() {
+        expr = getShuffledExpression();
+        target = generator.getTarget();
+    }
+
+    /* Can be modified depending on balance. The first 13 targets are computed from a expression
+     * with only 1 operator, each operator +, -, *, / getting ~3 iterations to ease the player in.
+     * After the initial 13 targets, every 4 targets generates an expression using 3 ops
+     * Otherwise we generate an expression using 2 operators. getNewExpr() also sets the target.
+     */
+    private String[] getShuffledExpression() {
+        if (targetsReached < 3)      return generator.getNewExpr(new String[] {"+"});
+        if (targetsReached < 6)      return generator.getNewExpr(new String[] {"-"});
+        if (targetsReached < 10)     return generator.getNewExpr(new String[] {"*"});
+        if (targetsReached < 13)     return generator.getNewExpr(new String[] {"/"});
+        if (targetsReached % 4 == 0) return generator.getNewExpr(3);
+                                     return generator.getNewExpr(2);
+    }
+
+    /* Removes all references of current tiles from the exprHolder ArrayList
+     * and from the tileList ArrayList.
+     * Then new tiles are generated and stored in the the tileHolder ArrayList
+     */
+    private void setupNewTiles() {
+        numberOfTileSpacesUsed = 0;
+        numberOfExprSpacesUsed = 0;
+        evaluator.slots.clearSlots();
+        clearTilesInExprHolder();
+        clearTilesInTopHolder();
+        tileList.clear();           //old tiles need to be cleared
+        generateTiles();
+        generateTargetTile();
+    }
+
+    // Removes the reference to the tile from each holder in TopHolder
+    private void clearTilesInTopHolder() {
+        for (TilePlaceHolder placeHolder: tileSpaces) {
+            placeHolder.setTile(null);
+        }
+    }
+
+    // Removes the reference to the tile from each holder in ExprHolder
+    private void clearTilesInExprHolder() {
+        for (TilePlaceHolder placeHolder: exprSpaces) {
+            placeHolder.setTile(null);
+        }
+
     }
 }
