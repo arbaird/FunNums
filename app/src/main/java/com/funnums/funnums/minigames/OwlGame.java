@@ -50,13 +50,13 @@ public class OwlGame extends MiniGame {
         }
     }
 
-    final int TILE_LIMIT = 10;
-    final int EXPR_LIMIT = 7;
+    private final int TILE_LIMIT = 10;
+    private final int EXPR_LIMIT =  7;
 
     //Ratios based on screen size
-    double TILE_LENGTH_RATIO = .10;     /*10% of the screen width*/
-    double T_BUFFER_RATIO = .20;        /*20% of the screen length*/
-    double E_BUFFER_RATIO = .15;        /*15% of the screen length*/
+    private double TILE_LENGTH_RATIO = .10;     /*10% of the screen width*/
+    private double T_BUFFER_RATIO    = .20;     /*20% of the screen length*/
+    private double E_BUFFER_RATIO    = .15;     /*15% of the screen length*/
 
     //Dimensions of the screen
     private int screenX;
@@ -66,60 +66,53 @@ public class OwlGame extends MiniGame {
     private float tileBuffer;
     private float exprBuffer;
 
+    /* Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent
+     * access not likely that these threads would interact, but if they do the game will crash!!
+     * which is why we keep events in a separate list to be processed in the game loop
+     */
+    private ArrayList<MotionEvent> events = new ArrayList<>();
+
     //Tile coordinates
     private ArrayList<TilePlaceHolder> tileSpaces = new ArrayList<>();
     //Expression coordinates
     private ArrayList<TilePlaceHolder> exprSpaces = new ArrayList<>();
 
     // List of all the touchable tiles on screen
-    private ArrayList<DraggableTile> tileList;
+    private ArrayList<DraggableTile> tileList = new ArrayList<>();
 
-    // Used to hold touch events so that drawing thread and onTouch thread don't result in concurrent access
-    // not likely that these threads would interact, but if they do the game will crash!! which is why
-    //we keep events in a separate list to be processed in the game loop
-    private ArrayList<MotionEvent> events = new ArrayList<>();
+    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private ExpressionGenerator generator = new ExpressionGenerator();
 
-    //TODO initialize Derek's target generator
-    // The target generator
-    // ExpressionGenerator expGenerator = new ExpressionGenerator();
-    String [] expr;
-
-    // The Target evaluator
-    ExpressionEvaluator evaluator;
-    ExpressionGenerator generator = new ExpressionGenerator();
+    //The shuffled expression as a string
+    private String [] expr;
 
     // Target player is trying to sum to
     private int target;
     // The current number of targets that the player has reached
     private int targetsReached = 0;
 
+
     //Optimal tile length/width radius
     private float tLength;
 
     //Counter of tiles
-    int numberOfTiles;
-    int numberOfExprSpaces;
+    private int numberOfTiles;
+    private int numberOfExprSpaces;
 
     //Counter or tile spaces in use
-    int numberOfTileSpacesUsed;
-    int numberOfExprSpacesUsed;
+    private int numberOfTileSpacesUsed;
+    private int numberOfExprSpacesUsed;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
     //Owl Initializer
-    Owl owl;
+    private Owl owl;
 
     public void init() {
 
         //Game only finished when owl has died :P
         isFinished = false;
-
-        //Initialize ArrayList of Tiles
-        tileList = new ArrayList<>();
-
-        //Initialize Expression Evaluator Object
-        evaluator = new ExpressionEvaluator();
 
         makeNewTargetAndExpr();
 
@@ -156,7 +149,7 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-        /**Even tough pause button is not being used it has to be declared,
+        /**Even though pause button is not being used it has to be declared,
          * because minigame class forces you to have one :P
          */
         int offset = 100;
@@ -439,7 +432,7 @@ public class OwlGame extends MiniGame {
                     p.setTile(tile);
 
                     //Insert token to evaluate
-                    insertTokenToEval(tile.getValue(), index);
+                    evaluator.slots.insert(tile.getValue(), index);
 
                     break;
                 }
@@ -467,7 +460,7 @@ public class OwlGame extends MiniGame {
                 p.setTile(null);
 
                 //Insert token in evaluator
-                deleteTokenToEval(index);
+                evaluator.slots.delete(index);
                 break;
             }
 
@@ -497,16 +490,6 @@ public class OwlGame extends MiniGame {
 
     }
 
-    //Inserts a new token to be evaluated by ExpressionEvaluator object
-    public void insertTokenToEval(String t, int index){
-        evaluator.slots.insert(t, index);
-    }
-
-    //Delete a token from the ExpressionEvaluator object
-    public void deleteTokenToEval(int index){
-        evaluator.slots.delete(index);
-    }
-
     /* Calls getUserExpr() to check if the current user expression is valid, and if so, we call
      * evalExpr() to check the value of it. Returns true if the expression evaluates to the target.
      */
@@ -527,6 +510,7 @@ public class OwlGame extends MiniGame {
     }
 
     public void handleOnCorrect() {
+        targetsReached++;
         score += getPoints();
         makeNewTargetAndExpr();
         setupNewTiles();
@@ -553,7 +537,7 @@ public class OwlGame extends MiniGame {
 
     /* Generates a new shuffled expression and sets a new target
      * A proper target can only be retrieved after getNewExpr() is called inside
-     * getShuffledExpression
+     * getShuffledExpression, which is why these 2 calls are grouped as a single function.
      */
     private void makeNewTargetAndExpr() {
         expr = getShuffledExpression();
