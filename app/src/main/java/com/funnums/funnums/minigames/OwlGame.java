@@ -180,8 +180,10 @@ public class OwlGame extends MiniGame {
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
         Log.d("OWL", "INIT CLOUDS");
-        cloud1 = new Cloud(screenX/2, screenY/8, screenY/8, screenY *3/8, 75);
-        cloud2 = new Cloud(screenX*3/2, screenY *3/4, screenY /2, screenY *3/4, 75);
+        int cloudSize = 75;
+        //arguments for new cloud are initial x, initial y, min spawn point, max span paint, size)
+        cloud1 = new Cloud(screenX/2, screenY/8, screenY/8, screenY *3/8, cloudSize);
+        cloud2 = new Cloud(screenX*3/2,  screenY -tileBuffer - exprBuffer - cloudSize/2, screenY /2, (int)(screenY -tileBuffer - exprBuffer- cloudSize/2), cloudSize);
         Log.d("OWL", "Clouds initialized");
         //cloud3 = new Cloud(screenX * 3/2, 300);
 
