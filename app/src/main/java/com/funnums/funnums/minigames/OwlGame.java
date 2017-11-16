@@ -507,7 +507,9 @@ public class OwlGame extends MiniGame {
         evaluator.slots.delete(index);
     }
 
-
+    /* Calls getUserExpr() to check if the current user expression is valid, and if so, we call
+     * evalExpr() to check the value of it. Returns true if the expression evaluates to the target.
+     */
     public boolean equalsTarget() {
         String expr = evaluator.getUserExpr();
         Log.d(TAG, "User Expr: "+expr);
@@ -524,6 +526,31 @@ public class OwlGame extends MiniGame {
         return true;
     }
 
+    public void handleOnCorrect() {
+        score += getPoints();
+        makeNewTargetAndExpr();
+        setupNewTiles();
+    }
+
+    /* Retrieves the difficulty of the last expr from the generator and updates our score accordingly.
+     */
+    public int getPoints() {
+        final int EASY   = 1;
+        final int MEDIUM = 2;
+        final int HARD   = 3;
+
+        int difficulty = generator.getDifficulty();
+        switch (difficulty) {
+            case EASY:
+                return 1;
+            case MEDIUM:
+                return 5;
+            case HARD:
+                return 10;
+        }
+        return -1;
+    }
+
     /* Generates a new shuffled expression and sets a new target
      * A proper target can only be retrieved after getNewExpr() is called inside
      * getShuffledExpression
@@ -531,33 +558,6 @@ public class OwlGame extends MiniGame {
     private void makeNewTargetAndExpr() {
         expr = getShuffledExpression();
         target = generator.getTarget();
-    }
-
-    /* Removes all references of current tiles from the exprHolder ArrayList
-     * and from the tileList ArrayList.
-     * Then new tiles are generated and stored in the the tileHolder Arraylist
-     */
-    private void setupNewTiles() {
-        evaluator.slots.clearSlots();
-        numberOfTileSpacesUsed = 0;
-        numberOfExprSpacesUsed = 0;
-        clearTilesInExprHolder();
-        clearTilesInTopHolder();
-        tileList.clear();           //old tiles need to be cleared
-        generateTiles();
-    }
-
-    // Removes the reference to the tile from each holder in TopHolder
-    private void clearTilesInTopHolder() {
-        for (TilePlaceHolder placeHolder: tileSpaces) {
-            placeHolder.setTile(null);
-        }
-    }
-    // Removes the reference to the tile from each holder in ExprHolder
-    private void clearTilesInExprHolder() {
-        for (TilePlaceHolder placeHolder: exprSpaces) {
-            placeHolder.setTile(null);
-        }
     }
 
     /* Can be modified depending on balance. The first 13 targets are computed from a expression
@@ -574,26 +574,31 @@ public class OwlGame extends MiniGame {
         return generator.getNewExpr(2);
     }
 
-    public void handleOnCorrect() {
-        score += getPoints();
-        makeNewTargetAndExpr();
-        setupNewTiles();
+    /* Removes all references of current tiles from the exprHolder ArrayList
+     * and from the tileList ArrayList.
+     * Then new tiles are generated and stored in the the tileHolder Arraylist
+     */
+    private void setupNewTiles() {
+        numberOfTileSpacesUsed = 0;
+        numberOfExprSpacesUsed = 0;
+        evaluator.slots.clearSlots();
+        clearTilesInExprHolder();
+        clearTilesInTopHolder();
+        tileList.clear();           //old tiles need to be cleared
+        generateTiles();
     }
 
-    public int getPoints() {
-        final int EASY   = 1;
-        final int MEDIUM = 2;
-        final int HARD   = 3;
-
-        int difficulty = generator.getDifficulty();
-        switch (difficulty) {
-            case EASY:
-                return 1;
-            case MEDIUM:
-                return 5;
-            case HARD:
-                return 10;
+    // Removes the reference to the tile from each holder in TopHolder
+    private void clearTilesInTopHolder() {
+        for (TilePlaceHolder placeHolder: tileSpaces) {
+            placeHolder.setTile(null);
         }
-        return -1;
+    }
+
+    // Removes the reference to the tile from each holder in ExprHolder
+    private void clearTilesInExprHolder() {
+        for (TilePlaceHolder placeHolder: exprSpaces) {
+            placeHolder.setTile(null);
+        }
     }
 }
