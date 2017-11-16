@@ -5,17 +5,21 @@ import java.util.Scanner;
 import java.util.Stack;
 import android.util.Log;
 
-/* This class takes as input an expression as a space seperated string of numbers and operators
+/* This class takes as input an expression as a space separated string of numbers and operators
    evaluates it. Currently only +, -, *, /, % are supported. The unary negative operator is not supported.
 
    Whenever a player adds or removes a 'tile" from the expression, insert() and delete() need to be
    called to maintain ActiveSlots. For the index in insert(), pass in the index where the player
-   inserted the num or op: E.g _ _ _ + _ _ _ -> pass in 3 for index. Use isExpr() whenever the player
-   adds or removes a tile to automatically check if the expression is legal-- and if it is, use
-   evalExpr() to evaluate the expression.
+   inserted the num or op: E.g _ _ _ + _ _ _ -> pass in 3 for index. Then, getUserExpr() can be used
+   to check if the current user expression is valid, since ActiveSlots are maintained. If it is
+   valid, then evalExpr() can be called to evaluate the expression.
  */
 public class ExpressionEvaluator {
 
+    /* This class uses an array to maintain which indexes in the user expression are active,
+     * and also marks the type of the value in the index, so we can quickly check if an expression
+     * is valid or not.
+     */
     public class ActiveSlots {
         /* exprArr represents the expression, where the val in each index is a num or op
          * typeArr represents the what type of val is at the index of the exprArr
@@ -102,7 +106,7 @@ public class ExpressionEvaluator {
      * Else if the tok-op's prec is > than op-stack.top's prec
      * we push the tok-op to the op-stack
      * Else while the op-stack != empty and the tok-op's prec is
-     * not > than op-stack.top's prec, we execute the op-stack once
+     * not > than op-stack.top's prec, we execute the op-stack once.
      * When the above condition is finally false, then we push tok-op
      * Once there are no more tokens, if the op-stack is still not empty,
      * then we execute the entire op-stack, fully evaluating the expr.
@@ -144,7 +148,7 @@ public class ExpressionEvaluator {
         return (opPrec1 > opPrec2);
     }
 
-    // Returns the precendence level of the given operator.
+    // Returns the precedence level of the given operator.
     // The higher the number, the higher the precedence.
     // Returns -1 if the op is not recognized.
     private int getOpPrec(String op) {

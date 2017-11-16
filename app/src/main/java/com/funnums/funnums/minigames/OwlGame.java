@@ -555,7 +555,7 @@ public class OwlGame extends MiniGame {
         if (targetsReached < 10)     return generator.getNewExpr(new String[] {"*"});
         if (targetsReached < 13)     return generator.getNewExpr(new String[] {"/"});
         if (targetsReached % 4 == 0) return generator.getNewExpr(3);
-        return generator.getNewExpr(2);
+                                     return generator.getNewExpr(2);
     }
 
     /* Removes all references of current tiles from the exprHolder ArrayList
