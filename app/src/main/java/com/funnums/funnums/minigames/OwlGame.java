@@ -403,6 +403,11 @@ public class OwlGame extends MiniGame {
             til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
 
+            //Set to operator type
+            if ( value == "+"|| value == "-" || value == "/" || value == "*"){
+                til.setIsOperator(true);
+            }
+
             space.setTile(til);
         }
 
@@ -450,8 +455,8 @@ public class OwlGame extends MiniGame {
 
             //TODO fix touch sensitivity
             //Boolean check of touch
-            touchInXRange = ( x >= t.getX() && x <= (t.getX() + tLength) );
-            touchInYRange = ( y >= (t.getY()+HOLY_MAGIC_NUMBER) && y <= (t.getY() + tLength)+HOLY_MAGIC_NUMBER);
+            touchInXRange = ( x >= t.getLeft() && x <= t.getRight() );
+            touchInYRange = ( y >= (t.getTop()+HOLY_MAGIC_NUMBER) && y <= (t.getBottom()+HOLY_MAGIC_NUMBER) );
 
             // If there is a hit
             if (touchInXRange && touchInYRange) {
