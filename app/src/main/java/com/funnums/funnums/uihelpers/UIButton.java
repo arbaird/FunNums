@@ -35,19 +35,29 @@ public class UIButton {
     }
 
     //might use this to scale buttons rather than always draw them as the size of the .png file
-    /*public void drawImage(Bitmap bitmap, int x, int y, int width, int height) {
-        srcRect.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    public void drawImage(Canvas canvas, Paint p, int width, int height) {
+        //get rect for actual size of image
+        Bitmap currentButtonImage = buttonDown ? buttonDownImage : buttonImage;
+        Rect srcRect = new Rect();
+        srcRect.set(0, 0, currentButtonImage.getWidth(), currentButtonImage.getHeight());
+        //get rect for scaled image, based on given width and height
+        Rect dstRect = new Rect();
+
+        int x = buttonRect.left;
+        int y = buttonRect.top;
         dstRect.set(x, y, x + width, y + height);
-        canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
-    }*/
+        canvas.drawBitmap(currentButtonImage, srcRect, dstRect, p);
+    }
+
 
     //repsond when user touches button
-    public void onTouchDown(int touchX, int touchY) {
+    public boolean onTouchDown(int touchX, int touchY) {
         if (buttonRect.contains(touchX, touchY)) {
             buttonDown = true;
         } else {
             buttonDown = false;
         }
+        return buttonDown;
     }
 
     //user lifted finger from button

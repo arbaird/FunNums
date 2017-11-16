@@ -17,6 +17,7 @@ import java.io.InputStream;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.minigames.BalloonGame;
@@ -24,6 +25,8 @@ import com.funnums.funnums.minigames.OwlGame;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.uihelpers.*;
 import com.funnums.funnums.classes.GameCountdownTimer;
+
+import android.media.MediaPlayer;
 
 
 import android.os.Handler;
@@ -46,6 +49,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     //For sound effects
     private static SoundPool soundPool;
+    private int pauseId;
 
     // For drawing
     private Paint paint;
@@ -68,10 +72,12 @@ public class GameView extends SurfaceView implements Runnable {
     //minimum sleep time between frames, used if the updates are occuring so fast that sleep time is negative
     private final static int MIN_SLEEP_TIME = 1000 / (MAX_FPS*10);
 
+    public Context context;
+
     GameView(Context context, String type) {
         //set up view properly
         super(context);
-
+        this.context = context;
         //store which minigame type player selected
         this.gameType = type;
 
@@ -88,6 +94,11 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap menuDown = loadBitmap("button_quit_down.png", true);
         Bitmap menu = loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+
+        //set up sound effects
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+        pauseId = soundPool.load(context, R.raw.pause,1);
+
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
         int offset = 100;
@@ -120,6 +131,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
+
     public void setCurrentMiniGame(MiniGame newGame)
     {
         currentGame = newGame;
@@ -142,6 +154,21 @@ public class GameView extends SurfaceView implements Runnable {
 
             updateDurationNanos = (System.nanoTime() - beforeUpdateRender);
         }
+    }
+
+    public void restart(){
+        playing = false;
+        try {
+            gameThread.join();
+        }
+        catch (InterruptedException e) {
+            Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
+        }
+        playing = true;
+        gameThread = new Thread(this);
+        gameThread.start();
+        startGame();
+
     }
 
     private void control(long updateDurationNanos) {
@@ -221,15 +248,19 @@ public class GameView extends SurfaceView implements Runnable {
         int x = (int)e.getX();
         int y = (int)e.getY();
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
-            currentGame.pauseButton.onTouchDown(x, y);
+            if(currentGame.pauseButton.onTouchDown(x, y))
+                return true;
+
         }
         if (e.getAction() == MotionEvent.ACTION_UP) {
             if (currentGame.pauseButton.isPressed(x, y)) {
                 currentGame.pauseButton.cancel();
                 currentGame.isPaused = true;
+                soundPool.play(pauseId,1,1,1,0,1);
 
                 if(currentGame.gameTimer != null)
                     pauseGameTimer();
+                return true;
             }
             else {
                 currentGame.pauseButton.cancel();
@@ -262,23 +293,6 @@ public class GameView extends SurfaceView implements Runnable {
 
         return bitmap;
     }
-    /*
-    load sound effects in minigames
-     */
-    public static int loadSound(String filename) {
-        int soundID=0;
-        if (soundPool == null) {
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        }
-        try {
-            soundID = soundPool.load(GameActivity.assets.openFd(filename), 1);
-        }catch (IOException e) {
-            Log.d("Sound","Didn't load sound");
-            e.printStackTrace();
-        }
-        return soundID;
-    }
-
 
     /*
         Add a given amount of time to the current game timer
@@ -288,7 +302,9 @@ public class GameView extends SurfaceView implements Runnable {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                long newTime = currentGame.gameTimer.getTime() + timeToAdd;
+                long newTime = Math.max(0, currentGame.gameTimer.getTime() + timeToAdd);
+
+
 
                 currentGame.gameTimer.cancel();
                 currentGame.gameTimer = null;
@@ -298,5 +314,6 @@ public class GameView extends SurfaceView implements Runnable {
             }
         });
     }
+
 }
 

@@ -1,10 +1,12 @@
 package com.funnums.funnums.minigames;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -12,13 +14,13 @@ import android.view.SurfaceHolder;
 import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
-import java.util.Set;
+
 
 import com.funnums.funnums.R;
+import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.BubbleTargetGenerator;
 import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
-import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -28,9 +30,10 @@ import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 
+
 public class BubbleGame extends MiniGame {
 
-    public String VIEW_LOG_TAG = "Game"; //for debugging
+    public String TAG = "Game"; //for debugging
 
     public final static int NANOS_TO_SECONDS = 1000000000; //conversion from nanosecs to seconds
 
@@ -64,12 +67,11 @@ public class BubbleGame extends MiniGame {
     //The number generator
     BubbleNumberGenerator numGen = new BubbleNumberGenerator();
 
-
     //speed of the bubbles
     private int speed=5;
 
     //list of all the touchable numbers on screen
-    ArrayList<TouchableBubble> numberList = new ArrayList<>();
+    ArrayList<TouchableBubble> numberList;
 
     // For drawing
     //private Paint paint;
@@ -87,21 +89,32 @@ public class BubbleGame extends MiniGame {
     //Optimal bubble radius
     private int bRadius;
 
+    //used to implement sound
     private SoundPool soundPool;
-    private int popSound;
-
+    private int bubblePopId;
+    private int correctId;
+    private int splashId;
+    private int wrongId;
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
     public void init() {
 
+        numberList = new ArrayList<>();
+
         //game only finished when timer is done
         isFinished = false;
 
-        //initialize soundPool
-        soundPool=new SoundPool(1,AudioManager.STREAM_MUSIC,0);
-        popSound=com.funnums.funnums.maingame.GameView.loadSound("bubble.wav");
+        //gets the context to be used in soundPool
+        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
+
+        //initializes soundPool
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        bubblePopId = soundPool.load(context,R.raw.bubble,1);
+        correctId = soundPool.load(context,R.raw.correct,1);
+        splashId = soundPool.load(context,R.raw.splash,1);
+        wrongId = soundPool.load(context,R.raw.wrong,1);
 
         //initalize random generator
         r = new Random();
@@ -118,9 +131,10 @@ public class BubbleGame extends MiniGame {
 
 
 
-        //Initialize timer to 61 seconds, update after 1 sec interval
-        gameTimer = new GameCountdownTimer(61000, 1000);
-        gameTimer.start();
+        //Initialize timer to 60 seconds, update after 1 sec interval
+        initTimer(60000);
+
+
 
 
 
@@ -132,20 +146,8 @@ public class BubbleGame extends MiniGame {
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
 
-        Log.d(VIEW_LOG_TAG, "init pauseButton: " + pauseButton);
-        /**!!This will be removed is just a test*/
-        /*Log.d("Fraction", "Test LT or GT");
-        FractionNumberGenerator lol = new FractionNumberGenerator(0);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test LEQ or GEQ ");
-        lol.new_game(1);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test EQ");
-        lol.new_game(2);
-        lol.runTest();*/
-        /****************************************************/
+        Log.d(TAG, "init pauseButton: " + pauseButton);
+
 
         Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
         Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
@@ -165,16 +167,16 @@ public class BubbleGame extends MiniGame {
 
 
 
-    public void update(long delta) {
+    public synchronized void update(long delta) {
         if(isPaused)
             return;
 
         //detect and handle collisions
         findCollisions();
 
-        for(TouchableNumber num : numberList) {
+        for(TouchableBubble num : numberList) {
             //update the number
-            num.update();
+            num.update(delta);
 
 
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
@@ -210,6 +212,7 @@ public class BubbleGame extends MiniGame {
         for(TextAnimator faded : scoresToRemove) {
             scoreAnimations.remove(faded);
         }
+
     }
 
 
@@ -217,7 +220,7 @@ public class BubbleGame extends MiniGame {
     /*
     Generates a touchable number on screen
      */
-    private void generateNumber() {
+    private synchronized void generateNumber() {
         int x, y;
         int radius = bRadius;
         do {
@@ -279,15 +282,23 @@ public class BubbleGame extends MiniGame {
     /*
     Process the touch events
      */
-    private void processEvents() {
+    private synchronized void processEvents() {
 
+        boolean removedNum = false;
         for(MotionEvent e : events) {
-            int x = (int) e.getX();
-            int y = (int) e.getY();
+            if(e.getActionMasked()==MotionEvent.ACTION_DOWN) {
+                int x = (int) e.getX();
+                int y = (int) e.getY();
 
-            checkTouchRadius(x, y);
+                if (checkTouchRadius(x, y)) {
+                    removedNum = true;
+                    break;
+                }
+            }
         }
         events.clear();
+        if(removedNum)
+            System.gc();
     }
 
     private boolean valueAlreadyOnScreen(int value) {
@@ -303,24 +314,22 @@ public class BubbleGame extends MiniGame {
    Check if where the player touched the screen is on a touchable number and, if it is, call
    processScore() to update the number/score/etc
     */
-    private void checkTouchRadius(int x, int y) {
+    private synchronized boolean checkTouchRadius(int x, int y) {
 
         for(TouchableBubble num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
                 processScore(num);
-                soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
-                                                        @Override
-                                                        public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                                                            soundPool.play(popSound, 1, 1, 1, 0, 1);
-                                                        }
-                                                    });
+                soundPool.play(bubblePopId,1,1,1,0,1);
                 numberList.remove(num);
-                break;
+                return true;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
+            }else{
+                soundPool.play(splashId,1,1,0,0,1);
             }
         }
+        return false;
     }
 
     /*
@@ -330,18 +339,20 @@ public class BubbleGame extends MiniGame {
 
        Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
     */
-    private void processScore(TouchableBubble num) {
+    private synchronized void processScore(TouchableBubble num) {
 
         sum += num.getValue();
         score = sum;
         TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
         scoreAnimations.add(textAnimator);
         if (sum == target) {
+            soundPool.play(correctId,1,1,2,0,1);
             makeNewTarget();
             long newTime = 1000;
             com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
 
         } else if (sum > target) {
+            soundPool.play(wrongId,1,1,1,0,1);
             resetGame();
 
             long newTime = -1000;
@@ -398,7 +409,7 @@ public class BubbleGame extends MiniGame {
     /*
         Detect collisions for all our numbers on screen and bouce numbers that have collided
      */
-    private void findCollisions() {
+    private synchronized void findCollisions() {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
         for(int i = 0; i < numberList.size(); i++)
@@ -412,7 +423,7 @@ public class BubbleGame extends MiniGame {
         Overloaded to take an x and y coordinate as arguments.
         Return true if a given coordinate will cause a collision with numbers on screen, false otherwise
      */
-    private boolean findCollisions(int x, int y) {
+    private synchronized boolean findCollisions(int x, int y) {
         //this double for loop set up is so we don't check 0 1 and then 1 0 later, since they would have the same result
         //a bit of a micro optimization, but can be useful if there are a lot of numbers on screen
 
@@ -425,7 +436,7 @@ public class BubbleGame extends MiniGame {
         return false;
     }
 
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
+    public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
 
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
@@ -456,6 +467,8 @@ public class BubbleGame extends MiniGame {
             //draw timer
             canvas.drawText("Timer", screenX * 1/2, offset, paint);
             canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
+
+
             //Draw pause button
             if(pauseButton != null)
                 pauseButton.render(canvas, paint);
@@ -474,7 +487,7 @@ public class BubbleGame extends MiniGame {
     }
 
 
-    public boolean onTouch(MotionEvent e) {
+    public synchronized boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes
