@@ -576,7 +576,6 @@ public class OwlGame extends MiniGame {
         score += getPoints();
         makeNewTargetAndExpr();
         setupNewTiles();
-        events.clear();
     }
 
     /* Retrieves the difficulty of the last expr from the generator and updates our score accordingly.
