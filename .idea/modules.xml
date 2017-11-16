@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://C:\Users\Derek\Desktop\UCSC\4th Year\1__Fall 2017\CMPS115\Project\FunNums\CS115.iml" filepath="C:\Users\Derek\Desktop\UCSC\4th Year\1__Fall 2017\CMPS115\Project\FunNums\CS115.iml" />
       <module fileurl="file://$PROJECT_DIR$/FunNums.iml" filepath="$PROJECT_DIR$/FunNums.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
