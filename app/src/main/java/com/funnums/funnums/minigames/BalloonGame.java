@@ -85,7 +85,7 @@ public class BalloonGame extends MiniGame {
     private boolean inBalloonGenBuffer;
 
 
-    public void init() {
+    public synchronized void init() {
         //game only finished when timer is done
         isFinished = false;
         //initalize random generator and make the first target between 5 and 8

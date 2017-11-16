@@ -124,19 +124,7 @@ public class BubbleGame extends MiniGame {
 
 
         Log.d(TAG, "init pauseButton: " + pauseButton);
-        /**!!This will be removed is just a test*/
-        /*Log.d("Fraction", "Test LT or GT");
-        FractionNumberGenerator lol = new FractionNumberGenerator(0);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test LEQ or GEQ ");
-        lol.new_game(1);
-        lol.runTest();
-        /*!!*/
-        /*Log.d("Fraction", "Test EQ");
-        lol.new_game(2);
-        lol.runTest();*/
-        /****************************************************/
+
 
         Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
         Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);

@@ -21,7 +21,7 @@ public class Owl {
     public float xVelocity, yVelocity;
 
     //velocity the owl flies at when it increases altitude
-    float flyVelocity;
+    public float flyVelocity;
 
     //size of the owl, jsust used to draw a circle for now
     int size;
@@ -37,13 +37,13 @@ public class Owl {
         this.x = x;
         this.y = y;
 
-        maxYVelocity = 5f;
+        maxYVelocity = 0.5f;
 
         flyVelocity = 2.0f;
 
         size = 100;
 
-        gravity = 5f;
+        gravity = 0.5f;
     }
 
     /*
@@ -56,10 +56,9 @@ public class Owl {
         //see if velocity is too high and, if it is, set velocity to max value in the correct direction
         //i.e detect if it reached max ascending or descending
         if (Math.abs(yVelocity) > maxYVelocity){
+            //set max falling velocity, but flying altitude can be greater than max so owl can fly higher as equations get harder
             if(yVelocity > 0)
                 yVelocity = maxYVelocity;
-            //else
-              //  yVelocity = -maxYVelocity;
         }
     }
 
@@ -80,7 +79,7 @@ public class Owl {
         Right now, just draw a circle where the owl will be
      */
     public void draw(Canvas canvas, Paint paint){
-        paint.setColor(Color.argb(100, 100, 100, 100));
+        paint.setColor(Color.argb(255, 100, 100, 100));
         canvas.drawCircle(x, y, size, paint);
     }
 
@@ -99,6 +98,14 @@ public class Owl {
         addVelocity(0, -flyVelocity);
     }
 
+    public void increaseFlyVelocty(float addVelocity){
+        flyVelocity += addVelocity;
+    }
+
+    public float getFlyVelocty(){
+        return flyVelocity;
+    }
+
     public float getY(){
         return y;
     }
@@ -106,7 +113,5 @@ public class Owl {
     public float getSize(){
         return size;
     }
-
-
 
 }

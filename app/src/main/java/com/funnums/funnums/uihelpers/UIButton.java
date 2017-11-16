@@ -1,6 +1,7 @@
 package com.funnums.funnums.uihelpers;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -30,6 +31,7 @@ public class UIButton {
     }
 
     public void render(Canvas g, Paint p) {
+        p.setColor(Color.argb(255, 255, 255, 255));
         Bitmap currentButtonImage = buttonDown ? buttonDownImage : buttonImage;
         g.drawBitmap(currentButtonImage, buttonRect.left, buttonRect.top, p);
     }
@@ -48,6 +50,7 @@ public class UIButton {
         dstRect.set(x, y, x + width, y + height);
         canvas.drawBitmap(currentButtonImage, srcRect, dstRect, p);
     }
+
 
     //repsond when user touches button
     public boolean onTouchDown(int touchX, int touchY) {
