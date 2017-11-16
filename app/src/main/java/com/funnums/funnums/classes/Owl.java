@@ -17,8 +17,7 @@ public class Owl {
     //maximum velocity that the owl will reach
     public float maxYVelocity;
 
-    //acceleration, only y is used for now, might be nice to have x values just in case
-    float xAcceleration, yAcceleration;
+    //velocity, only y is used for now, might be nice to have x values just in case
     public float xVelocity, yVelocity;
 
     //velocity the owl flies at when it increases altitude
@@ -38,13 +37,13 @@ public class Owl {
         this.x = x;
         this.y = y;
 
-        maxYVelocity = 1;
+        maxYVelocity = 5f;
 
-        flyVelocity = 2;
+        flyVelocity = 2.0f;
 
-        size = 50;
+        size = 100;
 
-        gravity = 0.5f;
+        gravity = 5f;
     }
 
     /*
@@ -59,8 +58,8 @@ public class Owl {
         if (Math.abs(yVelocity) > maxYVelocity){
             if(yVelocity > 0)
                 yVelocity = maxYVelocity;
-            else
-                yVelocity = -maxYVelocity;
+            //else
+              //  yVelocity = -maxYVelocity;
         }
     }
 
@@ -81,7 +80,7 @@ public class Owl {
         Right now, just draw a circle where the owl will be
      */
     public void draw(Canvas canvas, Paint paint){
-        paint.setColor(Color.argb(255, 255, 255, 255));
+        paint.setColor(Color.argb(100, 100, 100, 100));
         canvas.drawCircle(x, y, size, paint);
     }
 

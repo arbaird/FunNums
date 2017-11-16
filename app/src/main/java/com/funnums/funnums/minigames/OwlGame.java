@@ -11,17 +11,30 @@ import android.view.SurfaceHolder;
 
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.Owl;
+import com.funnums.funnums.classes.Cloud;
 import com.funnums.funnums.uihelpers.UIButton;
 
 public class OwlGame extends MiniGame {
+
+    Cloud cloud1;
+    Cloud cloud2;
 
     Owl owl;
     int screenY;
     int screenX;
 
-    public void init() {
+    public synchronized void init() {
         //place owl at top of screen, we can change the spawn point in the future
         owl = new Owl(100, 100);
+
+        screenX = com.funnums.funnums.maingame.GameActivity.screenX;
+        screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+
+        Log.d("OWL", "INIT CLOUDS");
+        cloud1 = new Cloud(screenX/2, screenY/8, screenY/8, screenY *3/8, 75);
+        cloud2 = new Cloud(screenX*3/2, screenY *3/4, screenY /2, screenY *3/4, 75);
+        Log.d("OWL", "Clouds initialized");
+        //cloud3 = new Cloud(screenX * 3/2, 300);
 
         //we don't use a gametimer in this game, make sure that any left over timer from another game
         //isn't used for this one
@@ -29,20 +42,21 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-        screenX = com.funnums.funnums.maingame.GameActivity.screenX;
-        screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+
 
         //set up the pause button
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+
+
     }
 
     /*
         Update the game logic
      */
-    public void update(long delta){
+    public synchronized void update(long delta){
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
         if(owl.getY() > screenY - owl.getSize()){
@@ -52,9 +66,12 @@ public class OwlGame extends MiniGame {
         else if(owl.getY() < owl.getSize()){
             owl.yVelocity = 0;
         }
+
+        cloud1.update(delta);
+        cloud2.update(delta);
     }
 
-    public void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint){
+    public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint){
         if (ourHolder.getSurface().isValid()) {
             //First we lock the area of memory we will be drawing to
             canvas = ourHolder.lockCanvas();
@@ -65,6 +82,11 @@ public class OwlGame extends MiniGame {
             //draw the owl
             owl.draw(canvas, paint);
 
+            //draw the clouds
+            cloud1.draw(canvas, paint);
+            cloud2.draw(canvas, paint);
+
+            paint.setColor(Color.argb(255, 0, 0, 255));
             //Draw pause button
             if(pauseButton != null)
                 pauseButton.render(canvas, paint);
@@ -86,8 +108,10 @@ public class OwlGame extends MiniGame {
      */
     public synchronized boolean onTouch(MotionEvent e){
         //only make owl fly if it won't go off screen
-        if(!(owl.getY() < owl.getSize()))
-            owl.increaseAltitude();
+        if(e.getAction() == MotionEvent.ACTION_UP) {
+            if (!(owl.getY() < owl.getSize()))
+                owl.increaseAltitude();
+        }
         return true;
     }
 }
