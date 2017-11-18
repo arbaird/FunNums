@@ -61,7 +61,6 @@ public class DraggableTile extends DraggableObject{
     //Setter methods
     public void setUsed(boolean used){ this.used = used; }
 
-    //Setter methods
     public void setIsOperator(boolean isOperator){ this.isOperator = isOperator; }
 
     //Abstract overloaded methods
