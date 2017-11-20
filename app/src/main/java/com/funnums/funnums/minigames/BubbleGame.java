@@ -75,6 +75,7 @@ public class BubbleGame extends MiniGame {
     //used to animate text, i.e show +3 when a 3 is touched
     ArrayList<TextAnimator> scoreAnimations = new ArrayList<>();
 
+
     private int maxVal = 4; //one less than the maximum value to appear on a bubble
 
     //Optimal bubble radius
@@ -84,7 +85,11 @@ public class BubbleGame extends MiniGame {
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
-    public void init() {
+    private Bitmap background;
+
+
+    boolean loading = true;
+    public synchronized void init() {
 
 
         numberList = new ArrayList<>();
@@ -100,6 +105,15 @@ public class BubbleGame extends MiniGame {
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+
+        /*area = 852480
+            speed * factor = area
+            aread * factor = speed
+          */
+
+        Log.d("DIMENSIONS", screenX + " " + screenY);
+        speed = (int)Math.round((screenX * screenY) * 0.000005865);
+        Log.d("DIMENSIONS", speed + "");
 
         bRadius = (int) (screenX * .13);
 
@@ -126,13 +140,18 @@ public class BubbleGame extends MiniGame {
         Log.d(TAG, "init pauseButton: " + pauseButton);
 
 
-        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", true);
-        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", true);
+        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", false);
+        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", false);
         UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
 
-        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", true);
-        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", true);
+        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", false);
+        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", false);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+
+        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
+
+        com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(background);
 
         gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
                 offset,
@@ -140,6 +159,8 @@ public class BubbleGame extends MiniGame {
                 screenY - offset,
                 resumeButton,
                 menuButton, sum);
+
+
     }
 
 
@@ -151,10 +172,14 @@ public class BubbleGame extends MiniGame {
         //detect and handle collisions
         findCollisions();
 
+        ArrayList<TouchableBubble> toRemove = new ArrayList<>();
+
         for(TouchableBubble num : numberList) {
             //update the number
             num.update(delta);
 
+            if (isPopped(num))
+                toRemove.add(num);
 
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
@@ -165,6 +190,11 @@ public class BubbleGame extends MiniGame {
                 num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge
 
         }
+        for(TouchableBubble popped : toRemove) {
+            numberList.remove(popped);
+            System.gc();
+        }
+
 
         runningMilis += delta;
         //generate a new number every 1/2 second if there are less than the max amount of numbers on the screen
@@ -176,6 +206,7 @@ public class BubbleGame extends MiniGame {
 
         //process all touch events
         processEvents();
+
 
         //create a list that will hold textAnimations that have completed so we can remove them
         //we can't remove them while iterating through numberList without a ConcurrentModificationError,
@@ -291,10 +322,10 @@ public class BubbleGame extends MiniGame {
 
         for(TouchableBubble num : numberList) {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
-            if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2)) {
+            if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2) && !num.popping) {
                 processScore(num);
-                numberList.remove(num);
-                return true;
+                num.pop();
+                return false;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
             }
@@ -313,7 +344,7 @@ public class BubbleGame extends MiniGame {
 
         sum += num.getValue();
         score = sum;
-        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), num.getX(), num.getY(), 0, 255, 0);
+        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), screenX * 1/4, topBuffer /*num.getX(), num.getY()*/, 0, 255, 0);
         scoreAnimations.add(textAnimator);
         if (sum == target) {
             makeNewTarget();
@@ -411,14 +442,18 @@ public class BubbleGame extends MiniGame {
             canvas = ourHolder.lockCanvas();
 
             // Rub out the last frame
-            canvas.drawColor(Color.argb(255, 0, 0, 0));
+            canvas.drawColor(Color.argb(255, 70, 103, 234));
 
-            //draw all the numbers
-            for(TouchableNumber num : numberList)
-                num.draw(canvas, paint);
+            canvas.drawBitmap(background, 0 , screenY/2 , paint);
+
+
             //draw all text animations
             for(TextAnimator score : scoreAnimations)
                 score.render(canvas, paint);
+            //draw all the numbers
+            for(TouchableNumber num : numberList)
+                num.draw(canvas, paint);
+
 
             // Draw the Current Sum and Target Score at top of screen
             int offset = 50;
@@ -450,8 +485,6 @@ public class BubbleGame extends MiniGame {
 
             ourHolder.unlockCanvasAndPost(canvas);
         }
-
-
     }
 
 
@@ -462,8 +495,21 @@ public class BubbleGame extends MiniGame {
         //because two threads are accessing same memory being removed. We could do mutex but this setup
         //is pretty standard I believe.
 
+        Log.d("Touch", "Touched the screen!");
         events.add(e);
+
+        Log.d("Thread", Thread.currentThread().getName());
         return true;
+    }
+
+    public synchronized boolean isPopped(TouchableBubble num){
+
+        if(num.popping && !num.anim.playing) {
+            Log.d("pop", "remove it");
+            return true;
+        }
+        return false;
+
     }
 
 

@@ -15,9 +15,10 @@ import com.funnums.funnums.animation.*;
 public class TouchableBubble extends TouchableNumber {
     private String VIEW_LOG_TAG = "l";
 
+    public boolean popping = false;
 
     private int value;
-    private Animation anim;
+    public Animation anim;
 
     // Constructor
     public TouchableBubble(int screenX, int screenY, int travelAngle, int radius, int speed, int value) {
@@ -36,19 +37,21 @@ public class TouchableBubble extends TouchableNumber {
      */
     private void initAnim(){
         //get each image for animation
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleTestmdpi.png", true);
-        /*Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim2.png", true);
-        Bitmap run3 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim3.png", true);
-        Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim4.png", true);
-        Bitmap run5 = com.funnums.funnums.maingame.GameView.loadBitmap("run_anim5.png", true);*/
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleTestmdpi.png", false);
+        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble small left ripplemdpi.png", false);
+        Bitmap run3 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble left ripplemdpi.png", false);
+        Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble small right ripplemdpi.png", false);
+        Bitmap run5 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
+        Bitmap run6 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
-        /*Frame f2 = new Frame(run2, .1f);
+        Frame f2 = new Frame(run2, .1f);
         Frame f3 = new Frame(run3, .1f);
         Frame f4 = new Frame(run4, .1f);
-        Frame f5 = new Frame(run5, .1f);*/
+        Frame f5 = new Frame(run5, .1f);
+        Frame f6 = new Frame(run6, .1f);
         //create animation object
-        anim = new Animation(f1);
+        anim = new Animation(f1, /*f2, f3,*/ f4, f5, f6);
     }
 
     public int getValue() {
@@ -56,7 +59,8 @@ public class TouchableBubble extends TouchableNumber {
     }
 
     public void update(long delta){
-        super.update();
+        if(!popping)
+            super.update();
         anim.update(delta*1.0f/ com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS);
     }
 
@@ -64,6 +68,9 @@ public class TouchableBubble extends TouchableNumber {
         update bouncing bubble physics and also start animation for the bubbles that collided
      */
     public void bounceWith(TouchableBubble collidingNum){
+        if(popping || collidingNum.popping)
+            return;
+
         super.bounceWith(collidingNum);
         animateCollision();
         collidingNum.animateCollision();
@@ -77,6 +84,18 @@ public class TouchableBubble extends TouchableNumber {
             anim.restart();
         else
             anim.start();
+    }
+
+    public void pop(){
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop larger groupingmdpi.png", false);
+        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop smaller groupingmdpi.png", false);
+        //create Frame objects for each frame in animation
+        Frame f1 = new Frame(run1, .1f);
+        Frame f2 = new Frame(run2, .1f);
+        //create animation object
+        anim = new Animation(f1, f2);
+        anim.start();
+        popping = true;
     }
 
 
@@ -95,12 +114,14 @@ public class TouchableBubble extends TouchableNumber {
         //takes x, y coords, then the length and width to scale the image to
         anim.render(canvas, paint, drawX, drawY, diameter, diameter);
 
-        //draw the value of the number in the center of the circle(bubble)
-        paint.setTextSize(40);
-        paint.setTextAlign(Paint.Align.CENTER);
+        if(!popping) {
+            //draw the value of the number in the center of the circle(bubble)
+            paint.setTextSize(40);
+            paint.setTextAlign(Paint.Align.CENTER);
 
 
-        canvas.drawText(String.valueOf(value), x, y, paint);
+            canvas.drawText(String.valueOf(value), x, y, paint);
+        }
     }
 
 

@@ -42,11 +42,11 @@ public class GameView extends SurfaceView implements Runnable {
     public boolean playing;
 
     //thread for the game
-    Thread gameThread = null;
+    public Thread gameThread = null;
 
     // For drawing
     private Paint paint;
-    private Canvas canvas;
+    public Canvas canvas;
     private SurfaceHolder ourHolder;
 
     public PauseMenu pauseScreen;
@@ -58,7 +58,7 @@ public class GameView extends SurfaceView implements Runnable {
     private long timeLeft;
 
     //Max FPS,used to control frame rate
-    private final static int MAX_FPS = 50;;
+    private final static int MAX_FPS = 50;
     // the frame period
     private final static int FRAME_PERIOD = 1000 / MAX_FPS;
 
@@ -116,6 +116,7 @@ public class GameView extends SurfaceView implements Runnable {
         else if(gameType.equals("owl"))
             currentGame = new OwlGame();
         currentGame.init();
+        System.gc();
 
     }
 
@@ -126,7 +127,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
 
         //keep track of dela time, that is, how much time has passed in between each iteration of
         //the game loop
@@ -152,6 +153,7 @@ public class GameView extends SurfaceView implements Runnable {
         catch (InterruptedException e) {
             Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
+
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
@@ -170,6 +172,13 @@ public class GameView extends SurfaceView implements Runnable {
         else
             sleep(MIN_SLEEP_TIME);
 
+
+
+
+    }
+
+    public void pauseTheThread(){
+        sleep(3000);
     }
 
     private void sleep(int sleepTime)

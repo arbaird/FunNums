@@ -174,7 +174,7 @@ public class OwlGame extends MiniGame {
         generateTargetTile();
 
         //place owl at top of screen, we can change the spawn point in the future
-        owl = new Owl(100, 100);
+        owl = new Owl(screenX/2, 100);
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
