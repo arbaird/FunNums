@@ -43,6 +43,7 @@ public class TouchableBubble extends TouchableNumber {
         Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble small right ripplemdpi.png", false);
         Bitmap run5 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
         Bitmap run6 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
+
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
         Frame f2 = new Frame(run2, .1f);

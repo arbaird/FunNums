@@ -8,7 +8,7 @@ import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
-import java.util.Set;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -81,10 +81,14 @@ public class GameView extends SurfaceView implements Runnable {
         //store which minigame type player selected
         this.gameType = type;
 
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Cendol_Pulut.ttf");
+
         // Initialize our drawing objects
         ourHolder = getHolder();
         paint = new Paint();
         canvas = new Canvas();
+
+        paint.setTypeface(tf);
 
         //set up buttons for game finished menu and pause screen
         Bitmap resumeDown = loadBitmap("button_resume_down.png", true);
@@ -189,7 +193,8 @@ public class GameView extends SurfaceView implements Runnable {
         else
             sleep(MIN_SLEEP_TIME);
 
-        gameThread.yield();
+
+        //yield();
 
 
     }
@@ -254,6 +259,7 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         //first check if the pause menu should handle the touch
+
         if(currentGame.isPaused)
             return pauseScreen.onTouch(e);
         if(currentGame.isFinished)

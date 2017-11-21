@@ -114,7 +114,9 @@ public class BubbleGame extends MiniGame {
     private Bitmap bg;
 
 
-    boolean loading = true;
+    HUDSquare curHUD;
+    HUDSquare targetHUD;
+    HUDSquare timerHUD;
 
 
     public synchronized void init() {
@@ -190,8 +192,8 @@ public class BubbleGame extends MiniGame {
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
-        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("Bubblescape test 1mdpi", false);
-        //bg = Bitmap.createScaledBitmap(bg, screenX, screenY - topBuffer,false);
+        bg = com.funnums.funnums.maingame.GameView.loadBitmap("Bubblescape test 1mdpi.png", false);
+        bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
 
         //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
 
@@ -202,9 +204,7 @@ public class BubbleGame extends MiniGame {
                 resumeButton,
                 menuButton, sum);
 
-        //drawBoard(GameActivity.gameView.ourHolder, GameActivity.gameView.canvas, GameActivity.gameView.paint);
-
-
+        initHud();
     }
 
 
@@ -236,7 +236,7 @@ public class BubbleGame extends MiniGame {
         }
         for(TouchableBubble popped : toRemove) {
             numberList.remove(popped);
-            System.gc();
+            //System.gc();
         }
 
 
@@ -399,8 +399,9 @@ public class BubbleGame extends MiniGame {
 
         sum += num.getValue();
         score = sum;
-        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), screenX * 1/4, topBuffer /*num.getX(), num.getY()*/, 0, 255, 0);
+        TextAnimator textAnimator = new TextAnimator("+" + String.valueOf(num.getValue()), screenX * 1/4, topBuffer, 0, 255, 0);
         scoreAnimations.add(textAnimator);
+
         if (sum == target) {
             soundPool.play(correctId,1,1,2,0,1);
             makeNewTarget();
@@ -423,6 +424,8 @@ public class BubbleGame extends MiniGame {
         //text, x, y, r, g, b, interval, size
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
+        TextAnimator addTimetextAnimator = new TextAnimator("+1", screenX * 1/2, timerHUD.bottom-timerHUD.MARGIN, 0, 255, 0);
+        scoreAnimations.add(addTimetextAnimator);
 
         previousTarget = target;
         target = targetGen.nextTarget();
@@ -501,10 +504,12 @@ public class BubbleGame extends MiniGame {
             // Rub out the last frame
             //canvas.drawColor(Color.argb(255, 70, 103, 234));
             paint.setColor(Color.argb(255, 70, 103, 234));
-            canvas.drawRect(0, topBuffer, screenX, screenY, paint);
+            //canvas.drawRect(0, topBuffer, screenX, screenY, paint);
 
             //canvas.drawBitmap(bg, 0 , topBuffer , paint);
-            canvas.drawBitmap(background, 0 , screenY/2 , paint);
+            //canvas.drawBitmap(background, 0 , screenY/2 , paint);
+
+            canvas.drawBitmap(bg, 0, 0, paint);
 
             canvas.drawBitmap(HUDBoard, 0 , 0 , paint);
             // border
@@ -522,32 +527,10 @@ public class BubbleGame extends MiniGame {
                 num.draw(canvas, paint);
 
 
-            // Draw the Current Sum and Target Score at top of screen
-            int offset = 60;
 
-            HUDSquare cur = new HUDSquare(screenX * 1/4, topBuffer - offset, 315/2, "Current", String.valueOf(sum));
-            cur.draw(canvas, paint);
-
-            //Draw Current
-
-            //canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            //canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer-10, paint);
-            //Draw Target
-            HUDSquare targ = new HUDSquare(screenX * 3/4, topBuffer - offset, 315/2 , "Target", String.valueOf(target));
-            targ.draw(canvas, paint);
-
-            //paint.setColor(Color.argb(255, 0, 0, 255));
-            //paint.setTextSize(45);
-            //paint.setTextAlign(Paint.Align.CENTER);
-            //canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
-            //canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer-10, paint);
-            //draw timer
-
-            HUDSquare time = new HUDSquare(screenX * 1/2, offset, 270/2 , "Timer", gameTimer.toString());
-            time.drawNoLabel(canvas, paint);
-
-            //canvas.drawText("Timer", screenX * 1/2, offset, paint);
-            //canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2 -10, paint);
+            curHUD.draw(canvas, paint, String.valueOf(sum));
+            targetHUD.draw(canvas, paint, String.valueOf(target));
+            timerHUD.drawNoLabel(canvas, paint, gameTimer.toString());
 
 
             //draw all text animations
@@ -570,17 +553,14 @@ public class BubbleGame extends MiniGame {
     }
 
 
-    public synchronized boolean onTouch(MotionEvent e) {
+    public  boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes
         //because two threads are accessing same memory being removed. We could do mutex but this setup
         //is pretty standard I believe.
-
-        Log.d("Touch", "Touched the screen!");
         events.add(e);
 
-        Log.d("Thread", Thread.currentThread().getName());
         return true;
     }
 
@@ -611,6 +591,14 @@ public class BubbleGame extends MiniGame {
             Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
         }
 
+    }
+
+    private void initHud(){
+        int offset = 60;
+        Paint paint = GameActivity.gameView.paint;
+        curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
+        targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
+        timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
     }
 
 

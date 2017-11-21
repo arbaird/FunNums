@@ -37,7 +37,7 @@ public class GameCountdownTimer extends CountDownTimer {
     @Override
     public void onTick(long millisUntilFinished) {
         timeLeft = millisUntilFinished;
-        displayTime = String.format("%02d:%02d",
+        displayTime = String.format("%01d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(timeLeft) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeLeft)),
                 TimeUnit.MILLISECONDS.toSeconds(timeLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft)));
     }
@@ -51,7 +51,7 @@ public class GameCountdownTimer extends CountDownTimer {
         completeGame();
 
         timeLeft = 0;
-        displayTime = "00:00";
+        displayTime = "0:00";
     }
 
     public static void completeGame(){
