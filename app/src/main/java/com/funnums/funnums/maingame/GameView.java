@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import java.util.Set;
 import android.view.MotionEvent;
@@ -15,6 +17,7 @@ import java.io.InputStream;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.minigames.MiniGame;
 import com.funnums.funnums.minigames.BubbleGame;
 import com.funnums.funnums.minigames.BalloonGame;
@@ -43,6 +46,10 @@ public class GameView extends SurfaceView implements Runnable {
 
     //thread for the game
     public Thread gameThread = null;
+
+    //For sound effects
+    private static SoundPool soundPool;
+    private int pauseId;
 
     // For drawing
     public Paint paint;
@@ -88,7 +95,16 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap menu = loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
+
         Bitmap backdrop = loadBitmap("MenuBoard.png", true);
+
+        //set up sound effects
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+        pauseId = soundPool.load(context, R.raw.pause,1);
+
+
+        //Bitmap backdrop = loadBitmap("rounded.png", true);
+
         int offset = 100;
         pauseScreen = new PauseMenu(GameActivity.screenX*1/8,
                                     offset,
@@ -255,6 +271,7 @@ public class GameView extends SurfaceView implements Runnable {
             if (currentGame.pauseButton.isPressed(x, y)) {
                 currentGame.pauseButton.cancel();
                 currentGame.isPaused = true;
+                soundPool.play(pauseId,1,1,1,0,1);
 
                 if(currentGame.gameTimer != null)
                     pauseGameTimer();
@@ -291,7 +308,6 @@ public class GameView extends SurfaceView implements Runnable {
 
         return bitmap;
     }
-
 
     /*
         Add a given amount of time to the current game timer

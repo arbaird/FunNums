@@ -64,6 +64,7 @@ public class ExpressionEvaluator {
             activeIndexes = 0;
             Arrays.fill(typeArr, 0);
         }
+
     }
 
     private static final String TAG = "ExpressionEvaluator";

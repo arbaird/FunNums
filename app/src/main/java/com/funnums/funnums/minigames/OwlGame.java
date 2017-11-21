@@ -17,61 +17,22 @@ import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.Owl;
+import com.funnums.funnums.classes.TilePlaceHolder;
 
 import com.funnums.funnums.classes.Cloud;
 import com.funnums.funnums.uihelpers.UIButton;
 
 
 public class OwlGame extends MiniGame {
-    public String TAG = "Owl Game"; //for debugging
+    public String TAG_OWL = "Owl Game"; //for debugging
+
+    //TODO find out the source of the mysterious power that this number holds
+    int HOLY_MAGIC_NUMBER = 60;
 
     /**
      * Private TitlePlaceHolder class holds the coordinates for a tile to be placed
      * and a reference to the tile that holds that position
      * */
-    class TilePlaceHolder{
-        float x;
-        float y;
-        float left, top, right, bottom;
-        DraggableTile t;
-
-        TilePlaceHolder(float x, float y, float length){
-            this.x = x;
-            this.y = y;
-            t = null;
-
-            //distance of the left side of rectangular from left side of canvas.
-            left = x;
-            //Distance of bottom side of rectangle from the top side of canvas
-            top = y;
-            //distance of the right side of rectangular from left side of canvas.
-            right = x + length;
-            //Distance of the top side of rectangle from top side of canvas
-            bottom = y + length;
-        }
-
-        boolean isOccupied(){
-            return (t != null);
-        }
-
-        DraggableTile getTile(){
-            return t;
-        }
-
-        void setTile(DraggableTile t){
-            this.t = t;
-        }
-
-        public void draw(Canvas canvas, Paint paint) {
-
-            //draw the rectangle (tile space)
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(Color.argb(255, 0, 0, 0));
-            canvas.drawRect(left, top, right, bottom, paint);
-            paint.setStyle(Paint.Style.FILL);
-
-        }
-    }
 
     private final int TILE_LIMIT = 10;
     private final int EXPR_LIMIT =  7;
@@ -95,13 +56,11 @@ public class OwlGame extends MiniGame {
      */
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-
     //clouds to draw
     Cloud cloud1;
     Cloud cloud2;
     //our master, the owl
     Owl owl;
-
 
     //Tile coordinates
     private ArrayList<TilePlaceHolder> tileSpaces = new ArrayList<>();
@@ -137,15 +96,23 @@ public class OwlGame extends MiniGame {
     private GameFinishedMenu gameFinishedMenu;
 
     //Separate tile objects
-    DraggableTile targetTile;
-    DraggableTile equalsTile;
+    private DraggableTile targetTile;
+    private DraggableTile equalsTile;
+
+    //Current tile being dragged
+    private DraggableTile currentDraggTIle;
+    private boolean isSingleTouch;
+    private int countTouches;
 
     public synchronized void init() {
 
         //Game only finished when owl has died :P
         isFinished = false;
 
-        //TODO set values according to the target generated
+        currentDraggTIle = null;
+        isSingleTouch = false;
+        countTouches = 0;
+
         numberOfTiles = TILE_LIMIT;
         numberOfExprSpaces = EXPR_LIMIT;
 
@@ -193,18 +160,13 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-
-
-
         //set up the pause button
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
 
-
     }
-
 
     //Update method to be called by game loop
     public synchronized void update(long delta) {
@@ -225,7 +187,6 @@ public class OwlGame extends MiniGame {
 
         processEvents();
     }
-
 
     //Draw method
     public synchronized void draw(SurfaceHolder ourHolder, Canvas canvas, Paint paint) {
@@ -255,10 +216,6 @@ public class OwlGame extends MiniGame {
             canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
                     (float)screenY, paint);
 
-            //Draw all the tile spots
-            for(TilePlaceHolder ph : exprSpaces)
-                ph.draw(canvas, paint);
-
             //Draw all the tiles
             for(DraggableTile t : tileList)
                 t.draw(canvas, paint);
@@ -266,6 +223,10 @@ public class OwlGame extends MiniGame {
             //Draw Target and equals tile
             equalsTile.draw(canvas, paint);
             targetTile.draw(canvas, paint);
+
+            //Draw all the tile spots
+            for(TilePlaceHolder ph : exprSpaces)
+                ph.draw(canvas, paint);
 
             //Draw pause button
             if(pauseButton != null)
@@ -285,7 +246,7 @@ public class OwlGame extends MiniGame {
 
     }
 
-    //Process the touch events
+    /**Process the touch events WITHOUT Drag and Drop feature
     private void processEvents() {
 
         for(MotionEvent e : events) {
@@ -302,6 +263,88 @@ public class OwlGame extends MiniGame {
 
         events.clear();
 
+    }*/
+
+    //Process the touch events WITH Drag and Drop feature
+    private void processEvents() {
+        int COUNT_TO_DRAGGING_ACTION = 5;
+
+        DraggableTile t;
+        float x, y;
+
+        for(MotionEvent e : events) {
+
+            x = e.getX();
+            y = e.getY();
+
+
+            if  (e.getActionMasked() == MotionEvent.ACTION_DOWN){       /*First touch*/
+                //Log.d(TAG_OWL, "DOWN event" );
+
+                //Get a reference to the Tile in that coordinate, otherwise null
+                t = getTouchedTile(x, y);
+                //Set the t to be the tile that is the target of a dragging action
+                currentDraggTIle = t;
+
+                //Set the action to be a single touch
+                isSingleTouch = true;
+                countTouches = 0;
+
+
+            }else if (e.getActionMasked() == MotionEvent.ACTION_MOVE){      /*Dragging action*/
+                //Log.d(TAG_OWL, "MOVE event" );
+
+                //Check that a tile has been set as target of the dragging action
+                if (currentDraggTIle != null) {
+
+                    //Update the coordinate of the tile to match the touch
+                    currentDraggTIle.setXY(x - (tLength / 2), y - 60 - (tLength / 2));
+
+                    /*Dragging only takes place after a certain number of ACTION_MOVE events have occurred
+                    * Otherwise the event is considered a single touch. Without this, even a single touch could be considered
+                     * as a dragging instead of a single touch. This is the case because even though we think
+                     * that human touch is instantaneous, the program could register more than one touch action.*/
+                    if (countTouches++ >= COUNT_TO_DRAGGING_ACTION)
+                        isSingleTouch = false;
+
+
+                }
+
+            } else if (e.getActionMasked() == MotionEvent.ACTION_UP){           /*Final touch/End of dragging action*/
+                //Log.d(TAG_OWL, "UP event" );
+
+                //If it is a single touch, continue as before dragging was implemented
+                if (isSingleTouch) {
+                    checkTouchedTile(x,y);
+
+                } else if (currentDraggTIle != null){
+                    //Otherwise there is a dragging action and need to check if the dragged tile needs its position to be updated
+                    findPlaceHolder(x,y);
+                }
+
+                //Clear the pointer to dragged tile
+                currentDraggTIle = null;
+                //Reset boolean and count
+                isSingleTouch = false;
+                countTouches = 0;
+            }
+        }
+
+        events.clear();
+
+    }
+
+    // Function is called after the end of a dragging action that ends at coordinates x and y
+    // Using x and y the appropriate position that the dragged object must take
+    public void findPlaceHolder(float x, float y){
+
+        //If is not part of the expression
+        if (!currentDraggTIle.isUsed()) {
+            dragCheckExprSpaceHolder(x, y);
+        } else{
+            dragCheckIsOutsideExpression(x, y);
+        }
+
     }
 
     //Touch handler
@@ -312,7 +355,7 @@ public class OwlGame extends MiniGame {
         //because two threads are accessing same memory being removed. We could do mutex but this setup
         //is pretty standard I believe.
         events.add(e);
-        Log.d(TAG, "Touch event added");
+        Log.d(TAG_OWL, "Touch event added");
 
         return true;
 
@@ -402,16 +445,19 @@ public class OwlGame extends MiniGame {
             x = space.x;
             y = space.y;
 
-            //TODO change from expr to actual new expression
             value = expr[i];
 
             til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
 
+            //Set to operator type
+            if ( value == "+"|| value == "-" || value == "/" || value == "*"){
+                til.setIsOperator(true);
+            }
+
             space.setTile(til);
         }
-
-        //TODO make sure is based on generator
+        
         numberOfTileSpacesUsed = numberOfTiles;
 
     }
@@ -446,34 +492,48 @@ public class OwlGame extends MiniGame {
     //Check if there is a tile in the touch coordinates, and if so,
     //move tile to corresponding space
     private void checkTouchedTile(float x, float y) {
-        //TODO find out the source of the mysterious power that this number holds
-        int HOLY_MAGIC_NUMBER = 60;
+        boolean touchInXRange, touchInYRange;
 
+        for (DraggableTile t : tileList) {
+            touchInXRange = ( x >= t.getLeft() && x <= t.getRight() );
+            touchInYRange = ( y >= (t.getTop()+HOLY_MAGIC_NUMBER) && y <= (t.getBottom()+HOLY_MAGIC_NUMBER) );
+
+            // If there is a hit
+            if (touchInXRange && touchInYRange) {
+                Log.d(TAG_OWL, "Tile Pressed: " + t.getValue());
+                if (t.isUsed()){
+                    moveToTiles(t);
+                    Log.d(TAG_OWL, "moveToTiles");
+                } else {
+                    moveToExpr(t);
+                    Log.d(TAG_OWL, "moveToExpr");
+                }
+
+                if (evaluatesToTarget()) {
+                    handleOnCorrect();
+                }
+                break;
+            }
+        }
+    }
+
+    //Check if there is a tile in the touch coordinates, and if so,
+    //return it, otherwise return null
+    private DraggableTile getTouchedTile(float x, float y) {
         boolean touchInXRange, touchInYRange;
 
         for (DraggableTile t : tileList) {
 
-            //TODO fix touch sensitivity
-            //Boolean check of touch
-            touchInXRange = ( x >= t.getX() && x <= (t.getX() + tLength) );
-            touchInYRange = ( y >= (t.getY()+HOLY_MAGIC_NUMBER) && y <= (t.getY() + tLength)+HOLY_MAGIC_NUMBER);
+            touchInXRange = ( x >= t.getLeft() && x <= t.getRight() );
+            touchInYRange = ( y >= (t.getTop()+HOLY_MAGIC_NUMBER) && y <= (t.getBottom()+HOLY_MAGIC_NUMBER) );
 
             // If there is a hit
             if (touchInXRange && touchInYRange) {
-                    Log.d(TAG, "Tile Pressed: " + t.getValue());
-                    if (t.isUsed()){
-                        moveToTiles(t);
-                        Log.d(TAG, "moveToTiles");
-                    } else {
-                        moveToExpr(t);
-                        Log.d(TAG, "moveToExpr");
-                    }
-                    if (evaluatesToTarget()) {
-                        handleOnCorrect();
-                    }
-                    break;
+                return t;
             }
         }
+
+        return null;
     }
 
     //If there is a slot available in the expression
@@ -488,14 +548,7 @@ public class OwlGame extends MiniGame {
 
 
             //Free your spot
-            for (TilePlaceHolder p : tileSpaces) {
-
-                if (p.getTile() == tile) {
-                    p.setTile(null);
-                    break;
-                }
-
-            }
+            freeTileSpaceHolder(tile);
 
             //Find an open spot in the expression
             for (TilePlaceHolder p : exprSpaces) {
@@ -572,14 +625,14 @@ public class OwlGame extends MiniGame {
      */
     public boolean evaluatesToTarget() {
         String expr = evaluator.getUserExpr();
-        Log.d(TAG, "User Expr: "+expr);
+        Log.d(TAG_OWL, "User Expr: "+expr);
         if (expr == null) {
-            Log.d(TAG, "Expr is null, returning false");
+            Log.d(TAG_OWL, "Expr is null, returning false");
             return false;
         }
-        Log.d(TAG, "Expr Length: " + expr.length());
+        Log.d(TAG_OWL, "Expr Length: " + expr.length());
         int userNumber = evaluator.evalExpr(expr);
-        Log.d(TAG, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
+        Log.d(TAG_OWL, "User Expr: "+expr+" " + "UserValue: "+userNumber +" Target: " + target);
         if (userNumber != target) {
             return false;
         }
@@ -668,4 +721,146 @@ public class OwlGame extends MiniGame {
         }
 
     }
+
+    //Free your current TilePlaceHolder
+    private void freeTileSpaceHolder(DraggableTile t) {
+
+        //Return to original position in the expression
+        if ( t.isUsed() ){
+
+            for (TilePlaceHolder p : exprSpaces){
+                if (p.getTile() == t){
+                    p.setTile(null);
+                    break;
+                }
+            }
+
+        } else {
+            //Return to original position in tile buffer
+
+            for (TilePlaceHolder p : tileSpaces){
+                if (p.getTile() == t){
+                    p.setTile(null);
+                    break;
+                }
+            }
+
+        }
+
+    }
+
+    //Checks if the current dragged object is in one of the slots of the expression,
+    // if so add it to expression, otherwise return to tile buffer
+    private void dragCheckExprSpaceHolder(float x, float y){
+        int index = 0;
+        boolean spotFound = false;
+        boolean touchInXRange = false, touchInYRange = false;
+
+        //Find if the tile is placed in a placeHolder that is part of the expression
+        for (TilePlaceHolder p : exprSpaces) {
+
+            //Boolean check of touch
+            touchInXRange = (x >= p.left && x <= p.right);
+            touchInYRange = (y >= (p.top + HOLY_MAGIC_NUMBER) && y <= (p.bottom + HOLY_MAGIC_NUMBER));
+
+            spotFound = touchInXRange && touchInYRange;
+
+            // If there is a hit
+            if (spotFound) {
+
+                //No tile is there
+                if (p.getTile() == null ){
+
+                    //Free your spot
+                    freeTileSpaceHolder(currentDraggTIle);
+
+                    //Change your position
+                    currentDraggTIle.setXY(p.x, p.y);
+
+                    //Add tile to expression
+                    currentDraggTIle.setUsed(true);
+                    p.setTile(currentDraggTIle);
+
+                    //Insert token to evaluate
+                    evaluator.slots.insert(currentDraggTIle.getValue(), index);
+
+                    //Update values accordingly
+                    numberOfExprSpacesUsed++;
+                    numberOfTileSpacesUsed--;
+
+                    break;
+
+                } else { //there is a tile there, no valid change of position
+                    spotFound = false;
+                }
+
+
+            }
+
+            index++;
+        }
+
+        //No hit, return to position
+        if (!spotFound) {
+            dragTileToOriginalPosition();
+        }
+
+        //Evaluate
+        if (evaluatesToTarget()) {
+            handleOnCorrect();
+        }
+
+    }
+
+    //Checks if the current dragged object is outside of the boundaries of the expression buffer,
+    // if so return it to the next available position in the tile buffer
+    private void dragCheckIsOutsideExpression(float x, float y){
+        boolean touchInYRange = false;
+
+        //Boolean check of touch
+        touchInYRange = (y <= screenY - exprBuffer + HOLY_MAGIC_NUMBER);
+
+        // If there is a hit
+        if (touchInYRange) {
+            moveToTiles(currentDraggTIle);
+        } else {
+            dragTileToOriginalPosition();
+        }
+
+        //Evaluate current state of expression
+        if (evaluatesToTarget()) {
+            handleOnCorrect();
+        }
+
+    }
+
+    // Return a tile to its original position before dragging
+    private void dragTileToOriginalPosition(){
+
+        //Return to original position in the expression
+        if ( currentDraggTIle.isUsed() ){
+
+            for (TilePlaceHolder p : exprSpaces){
+                if (p.getTile() == currentDraggTIle){
+                    currentDraggTIle.setXY(p.x, p.y);
+                    break;
+                }
+            }
+
+        } else {
+            //Return to original position in tile buffer
+
+            for (TilePlaceHolder p : tileSpaces){
+                if (p.getTile() == currentDraggTIle){
+                    currentDraggTIle.setXY(p.x, p.y);
+                    break;
+                }
+            }
+
+        }
+
+    }
+
+
+
 }

@@ -18,6 +18,7 @@ public class DraggableTile extends DraggableObject{
 
     private String value;           /*Character/variable/operand inside the tile*/
     private boolean used;           /*//Tile is marked as used if it part of the expression*/
+    private boolean isOperator;
 
     //Used as coordinates when drawing rectangle (Later on they can be erased
     //for now they make the code easier to read)
@@ -39,6 +40,7 @@ public class DraggableTile extends DraggableObject{
         bottom = y + tileLength;
 
         used = false;
+        isOperator = false;
     }
 
     //Getter methods
@@ -59,6 +61,7 @@ public class DraggableTile extends DraggableObject{
     //Setter methods
     public void setUsed(boolean used){ this.used = used; }
 
+    public void setIsOperator(boolean isOperator){ this.isOperator = isOperator; }
 
     //Abstract overloaded methods
     @Override
@@ -81,10 +84,12 @@ public class DraggableTile extends DraggableObject{
 
         //draw the rectangle (tile)
         paint.setColor(Color.argb(255, 245, 228, 118));
+        //Different color for operators
+        if (isOperator) paint.setColor(Color.argb(255, 245, 191, 0));
         canvas.drawRect(left, top, right, bottom, paint);
 
         //draw the value of the number in the center of the rectangle (tile)
-        paint.setColor(Color.argb(100, 100, 100, 100));
+        paint.setColor(Color.argb(100, 0, 0, 0));
         paint.setTextSize(TEXT_SIZE);
         paint.setTextAlign(Paint.Align.CENTER);
 
