@@ -23,14 +23,50 @@ public class PauseMenu {
     private UIButton resume, mainMenu;
 
     private Rect backDropRect;
+    private Bitmap bg;
 
     //space between each button
     private int padding;
+
+    int x, y;
 
     public PauseMenu(int left, int top, int right, int bottom,
                      UIButton resumeButton,  UIButton menuButton) {
 
         backDropRect = new Rect(left, top, right, bottom);
+        fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
+
+        resume = resumeButton;
+        mainMenu = menuButton;
+
+        padding = 100;
+
+        resume.setRect(left + padding, top +padding);
+        mainMenu.setRect(left + padding, top + padding*2);
+
+
+    }
+
+    public PauseMenu(int left, int top, int width, int height,
+                     UIButton resumeButton,  UIButton menuButton, Bitmap bg) {
+
+        /*
+        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
+
+
+new PauseMenu(GameActivity.screenX/4,
+                                    offset,
+                                    GameActivity.screenX * 3/4,
+                                    GameActivity.screenY - offset,
+                                    resumeButton,
+                                    menuButton);
+
+         */
+        x = left;
+        y = top;
+        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        this.bg =  Bitmap.createScaledBitmap(bg, left + width,top + height,true);
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
         resume = resumeButton;
@@ -52,10 +88,10 @@ public class PauseMenu {
 
         //draw the rectangle containing the pasue menu buttons
         paint.setColor(Color.argb(255, 100, 100, 100));
-        canvas.drawRect(backDropRect, paint);
+        //canvas.drawRect(backDropRect, paint);
 
         //TODO uncomment when we have a cool backdrop for menu instead of a grey rectangle
-        //canvas.drawBitmap(backdrop, backDropRect.left, backDropRect.top, paint);
+        canvas.drawBitmap(bg, x, y, paint);
 
         //draw the buttons
         resume.render(canvas, paint);

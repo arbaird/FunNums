@@ -45,9 +45,9 @@ public class GameView extends SurfaceView implements Runnable {
     public Thread gameThread = null;
 
     // For drawing
-    private Paint paint;
+    public Paint paint;
     public Canvas canvas;
-    private SurfaceHolder ourHolder;
+    public SurfaceHolder ourHolder;
 
     public PauseMenu pauseScreen;
 
@@ -88,14 +88,15 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap menu = loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
-        //Bitmap backdrop = loadBitmap("rounded.png", true);
+        Bitmap backdrop = loadBitmap("MenuBoard.png", true);
         int offset = 100;
-        pauseScreen = new PauseMenu(GameActivity.screenX/4,
+        pauseScreen = new PauseMenu(GameActivity.screenX*1/8,
                                     offset,
-                                    GameActivity.screenX * 3/4,
-                                    GameActivity.screenY - offset,
+                                    GameActivity.screenX * 5/8,
+                                    GameActivity.screenY - offset*3,
                                     resumeButton,
-                                    menuButton);
+                                    menuButton,
+                                    backdrop);
 
         gameFinishedMenu = new GameFinishedMenu(GameActivity.screenX * 1/8,
                 offset,
@@ -172,7 +173,7 @@ public class GameView extends SurfaceView implements Runnable {
         else
             sleep(MIN_SLEEP_TIME);
 
-
+        gameThread.yield();
 
 
     }
@@ -231,6 +232,7 @@ public class GameView extends SurfaceView implements Runnable {
         }
         gameThread = new Thread(this);
         gameThread.start();
+        gameThread.setPriority(Thread.MIN_PRIORITY);
     }
 
     @Override

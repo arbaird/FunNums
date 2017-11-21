@@ -1,6 +1,8 @@
 package com.funnums.funnums.minigames;
 
 import android.graphics.Canvas;
+
+import android.graphics.Rect;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
@@ -10,13 +12,14 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
 
-import com.funnums.funnums.classes.ExpressionEvaluator;
+import com.funnums.funnums.maingame.GameActivity;
+import com.funnums.funnums.uihelpers.HUDSquare;
 import com.funnums.funnums.classes.BubbleTargetGenerator;
 import com.funnums.funnums.classes.BubbleNumberGenerator;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableNumber;
 import com.funnums.funnums.classes.TouchableBubble;
-import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.animation.*;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -86,9 +89,13 @@ public class BubbleGame extends MiniGame {
     private GameFinishedMenu gameFinishedMenu;
 
     private Bitmap background;
+    private Bitmap HUDBoard;
+    private Bitmap bg;
 
 
     boolean loading = true;
+
+
     public synchronized void init() {
 
 
@@ -134,7 +141,7 @@ public class BubbleGame extends MiniGame {
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
 
 
         Log.d(TAG, "init pauseButton: " + pauseButton);
@@ -151,7 +158,13 @@ public class BubbleGame extends MiniGame {
         background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
         background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
 
-        com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(background);
+        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
+        HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
+
+        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("Bubblescape test 1mdpi", false);
+        //bg = Bitmap.createScaledBitmap(bg, screenX, screenY - topBuffer,false);
+
+        //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
 
         gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
                 offset,
@@ -159,6 +172,8 @@ public class BubbleGame extends MiniGame {
                 screenY - offset,
                 resumeButton,
                 menuButton, sum);
+
+        //drawBoard(GameActivity.gameView.ourHolder, GameActivity.gameView.canvas, GameActivity.gameView.paint);
 
 
     }
@@ -442,35 +457,60 @@ public class BubbleGame extends MiniGame {
             canvas = ourHolder.lockCanvas();
 
             // Rub out the last frame
-            canvas.drawColor(Color.argb(255, 70, 103, 234));
+            //canvas.drawColor(Color.argb(255, 70, 103, 234));
+            paint.setColor(Color.argb(255, 70, 103, 234));
+            canvas.drawRect(0, topBuffer, screenX, screenY, paint);
 
+            //canvas.drawBitmap(bg, 0 , topBuffer , paint);
             canvas.drawBitmap(background, 0 , screenY/2 , paint);
 
+            canvas.drawBitmap(HUDBoard, 0 , 0 , paint);
+            // border
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.BLACK);
+            paint.setStrokeWidth(1);
+            canvas.drawRect(0, 0, screenX, topBuffer, paint);
 
-            //draw all text animations
-            for(TextAnimator score : scoreAnimations)
-                score.render(canvas, paint);
+            paint.setStyle(Paint.Style.FILL);
+
+
+
             //draw all the numbers
             for(TouchableNumber num : numberList)
                 num.draw(canvas, paint);
 
 
             // Draw the Current Sum and Target Score at top of screen
-            int offset = 50;
+            int offset = 60;
+
+            HUDSquare cur = new HUDSquare(screenX * 1/4, topBuffer - offset, 315/2, "Current", String.valueOf(sum));
+            cur.draw(canvas, paint);
 
             //Draw Current
-            paint.setColor(Color.argb(255, 0, 0, 255));
-            paint.setTextSize(45);
-            paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
-            canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer, paint);
-            //Draw Target
-            canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
-            canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer, paint);
-            //draw timer
-            canvas.drawText("Timer", screenX * 1/2, offset, paint);
-            canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2, paint);
 
+            //canvas.drawText("Current", screenX * 1/4, topBuffer - offset, paint);
+            //canvas.drawText(String.valueOf(sum),  screenX * 1/4, topBuffer-10, paint);
+            //Draw Target
+            HUDSquare targ = new HUDSquare(screenX * 3/4, topBuffer - offset, 315/2 , "Target", String.valueOf(target));
+            targ.draw(canvas, paint);
+
+            //paint.setColor(Color.argb(255, 0, 0, 255));
+            //paint.setTextSize(45);
+            //paint.setTextAlign(Paint.Align.CENTER);
+            //canvas.drawText("Target", screenX * 3/4, topBuffer - offset, paint);
+            //canvas.drawText(String.valueOf(target),  screenX * 3/4, topBuffer-10, paint);
+            //draw timer
+
+            HUDSquare time = new HUDSquare(screenX * 1/2, offset, 270/2 , "Timer", gameTimer.toString());
+            time.drawNoLabel(canvas, paint);
+
+            //canvas.drawText("Timer", screenX * 1/2, offset, paint);
+            //canvas.drawText(String.valueOf(gameTimer.toString()),  screenX *  1/2, offset*2 -10, paint);
+
+
+            //draw all text animations
+            for(TextAnimator score : scoreAnimations)
+                score.render(canvas, paint);
 
             //Draw pause button
             if(pauseButton != null)
@@ -509,6 +549,25 @@ public class BubbleGame extends MiniGame {
             return true;
         }
         return false;
+
+    }
+
+    public synchronized void drawBoard(SurfaceHolder ourHolder, Canvas canvas, Paint paint){
+        if (true/*ourHolder.getSurface().isValid()*/) {
+            canvas = ourHolder.lockCanvas();
+            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
+            //paint.setColor(Color.argb(255, 0,0,0));
+            canvas.drawBitmap(HUDBoard, 0, 0, paint);
+            ourHolder.unlockCanvasAndPost(canvas);
+            canvas = ourHolder.lockCanvas();
+            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
+            //paint.setColor(Color.argb(255, 0,0,0));
+            canvas.drawBitmap(HUDBoard, 0, 0, paint);
+            ourHolder.unlockCanvasAndPost(canvas);
+        }
+        else {
+            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
+        }
 
     }
 
