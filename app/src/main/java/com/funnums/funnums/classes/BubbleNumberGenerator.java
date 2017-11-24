@@ -3,65 +3,56 @@ package com.funnums.funnums.classes;
  * Created by Derek on 10/30/2017.
  */
 import android.util.Log;
-import java.util.*;
 import java.util.Random;
+import java.util.HashMap;
 import java.lang.Math;
 
 public class BubbleNumberGenerator {
     public static final String TAG = "BubbleNumberGenerator";
 
-    /* There are 4 bubble types: Mini, Small, Medium, and Large.
-       Each Type corresponds to how large relatively the bubble's number is .
-       The CHANCES correspond to the chance for each bubble type to be generated,
-       and must add up to 100.
-       The FACTORS relate to what fraction of absTarget we generate,
-       so a larger FACTOR will mean a smaller generated number.
-    */
-    private int MINI_CHANCE   = 20;
-    private int SMALL_CHANCE  = 35;
-    private int MEDIUM_CHANCE = 30;
-    private int LARGE_CHANCE  = 15;
+    private final int MAX_UNCHECKED_NUM = 2;
+    private final int MAX_VALUE_REPETITIONS = 0;
 
-    private int MINI_FACTOR   = 5;
-    private int SMALL_FACTOR  = 4;
-    private int MEDIUM_FACTOR = 3;
-    private int LARGE_FACTOR  = 2;
-
-    private int absTarget;
-
+    private HashMap<Integer, Integer> CurrentValues = new HashMap<>();
     private Random r = new Random();
 
+    private int absTarget; //the initial absolute difference between Current and Target
 
-    /* We generate a number that is a fraction of the current absolute target,
-       and the fraction is determined by the bubble type generated.
+    /* We generate a number from 1 to the (current absolute target - 1)
+       If the number is not 1 or 2, we check if it's in the hastable, and if it is,
+       then we generate a another number - we do this to maintain variety in the numbers
+       generated, but we don't check for 1 or 2 because those are the smallest prime numbers
+       which are useful for reaching the target.
      */
     public int nextNum() {
-        int num = absTarget;
-        int bubbleType = r.nextInt(100); // generates [0:99]
-        Log.d(TAG, "Bubble Type Chance: "+bubbleType);
-        if (bubbleType < MINI_CHANCE) {
-            Log.d(TAG, "Generating MINI bubble");
-            num = num/MINI_FACTOR;
+        int maxNum = absTarget - 1;
 
-        }else if (bubbleType < SMALL_CHANCE) {
-            Log.d(TAG, "Generating SMALL bubble");
-            num = num/SMALL_FACTOR;
+        int newNum = r.nextInt(maxNum + 1); //to inclusively generate maxNum, we add 1
 
-        }else if (bubbleType < MEDIUM_CHANCE) {
-            Log.d(TAG, "Generating MEDIUM bubble");
-            num = num/MEDIUM_FACTOR;
+        while (newNum > MAX_UNCHECKED_NUM         &&
+               CurrentValues.get(newNum) != null  &&
+               CurrentValues.get(newNum) > MAX_VALUE_REPETITIONS)   {
 
-        }else { //It's a large bubble
-            Log.d(TAG, "Generating LARGE bubble");
-            num = num/LARGE_FACTOR;
+            newNum = r.nextInt(maxNum + 1);
         }
-        //We want to return a number that's from 1-2 at minimum
-        int min = Math.max(r.nextInt(3), 1);
-        return Math.max(num, min);
+        return Math.max(newNum, 1);
+    }
+
+    public void increment(int value) {
+        if (!CurrentValues.containsKey(value)) {
+            CurrentValues.put(value, 0);
+        }
+        int oldCount = CurrentValues.get(value);
+        CurrentValues.put(value, oldCount + 1);
+    }
+
+    public void decrement(int value) {
+        int oldCount = CurrentValues.get(value);
+        CurrentValues.put(value, oldCount - 1);
     }
 
     public void setAbsoluteTarget(int val) {
         absTarget = val;
     }
-
 }
+

@@ -69,7 +69,7 @@ public class BubbleGame extends MiniGame {
     //player's current sum
     private int sum;
     //target player is trying to sum to
-    private int target;
+    private int target = 0;
     private int previousTarget = 0;
     //The target generator
     BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
@@ -130,16 +130,17 @@ public class BubbleGame extends MiniGame {
         Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
 
         //initializes soundPool
-        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        bubblePopId = soundPool.load(context,R.raw.bubble,1);
-        correctId = soundPool.load(context,R.raw.correct,1);
-        splashId = soundPool.load(context,R.raw.splash,1);
-        wrongId = soundPool.load(context,R.raw.wrong,1);
+        soundPool   = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        bubblePopId = soundPool.load(context,R.raw.bubble, 1);
+        correctId   = soundPool.load(context,R.raw.correct,1);
+        splashId    = soundPool.load(context,R.raw.splash, 1);
+        wrongId     = soundPool.load(context,R.raw.wrong,  1);
 
         //initalize random generator
         r = new Random();
         //get a target from the target generator
         target = targetGen.nextTarget();
+        numGen.setAbsoluteTarget(target - previousTarget);
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
