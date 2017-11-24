@@ -10,9 +10,13 @@ import java.lang.Math;
 public class BubbleNumberGenerator {
     public static final String TAG = "BubbleNumberGenerator";
 
-    private final int MAX_UNCHECKED_NUM = 2;
-    private final int MAX_VALUE_REPETITIONS = 0;
+    private final int MAX_UNCHECKED_NUM = 2;      //max value that can be generated without checking
+    private final int MAX_VALUE_REPETITIONS = 0;   //max repeats of a given number on the screen
+    private final int MAX_GENERATION_ATTEMPTS = 5; //max number of number generation attempts
 
+    /* The hashtable containing a pair where the key is the number
+     * the value is the count of it on the screen
+     */
     private HashMap<Integer, Integer> CurrentValues = new HashMap<>();
     private Random r = new Random();
 
@@ -38,6 +42,7 @@ public class BubbleNumberGenerator {
         return Math.max(newNum, 1);
     }
 
+    // Increments the count of the value in the CurrentNumbers on the screen hashtable.
     public void increment(int value) {
         if (!CurrentValues.containsKey(value)) {
             CurrentValues.put(value, 0);
@@ -46,13 +51,15 @@ public class BubbleNumberGenerator {
         CurrentValues.put(value, oldCount + 1);
     }
 
+    // Decremenets the count of the value in the CurrentNumbers on the screen hashtable
     public void decrement(int value) {
         int oldCount = CurrentValues.get(value);
         CurrentValues.put(value, oldCount - 1);
     }
 
-    public void setAbsoluteTarget(int val) {
-        absTarget = val;
+    // Sets the absolute target of current - target to main how we generate numbers.
+    public void setAbsoluteTarget(int target, int previousTarget) {
+        absTarget = target - previousTarget;
     }
 }
 
