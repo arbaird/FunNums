@@ -50,6 +50,7 @@ public class GameView extends SurfaceView implements Runnable {
     //For sound effects
     private static SoundPool soundPool;
     private int pauseId;
+    public int volume;
 
     // For drawing
     private Paint paint;
@@ -98,6 +99,7 @@ public class GameView extends SurfaceView implements Runnable {
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
         pauseId = soundPool.load(context, R.raw.pause,1);
+        volume=1;
 
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
@@ -314,6 +316,7 @@ public class GameView extends SurfaceView implements Runnable {
             }
         });
     }
+
 
 }
 

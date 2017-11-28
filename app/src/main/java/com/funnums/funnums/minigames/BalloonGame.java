@@ -2,6 +2,7 @@ package com.funnums.funnums.minigames;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.SoundPool;
 import android.util.Log;
 import android.graphics.Paint;
 import android.view.MotionEvent;
@@ -74,6 +75,11 @@ public class BalloonGame extends MiniGame {
 
     //Optimal bubble radius
     private int bRadius;
+
+    //for implementing sound effects
+    private SoundPool soundPool;
+    private int volume;
+
 
 
     private int balloonsProcessed;
