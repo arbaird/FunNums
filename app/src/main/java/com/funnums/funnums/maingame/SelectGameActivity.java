@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.funnums.funnums.classes.PopUp;
+
 /**
  * Created by Derek on 10/25/2017.
  */
@@ -48,6 +50,33 @@ public class SelectGameActivity extends AppCompatActivity {
         Intent i = new Intent(this, GameActivity.class);
 
         //setFlag that game we want to create is a bubble game
+        i.putExtra("minigame", "owl");
+
+        startActivity(i);
+    }
+
+    public void onPressedHowToBubbles(View v) {
+        Log.d(TAG, "How To Bubble game pressed");
+        Intent i = new Intent(this, PopUp.class);
+
+        i.putExtra("minigame", "bubble");
+
+        startActivity(i);
+    }
+
+    public void onPressedHowToBalloons(View v) {
+        Log.d(TAG, "How To Balloon game pressed");
+        Intent i = new Intent(this, PopUp.class);
+
+        i.putExtra("minigame", "balloon");
+
+        startActivity(i);
+    }
+
+    public void onPressedHowToOwl(View v) {
+        Log.d(TAG, "How To Owl game pressed");
+        Intent i = new Intent(this, PopUp.class);
+
         i.putExtra("minigame", "owl");
 
         startActivity(i);
