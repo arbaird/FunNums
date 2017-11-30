@@ -76,4 +76,5 @@ public class CollisionDetector {
         num2.x = midpointx + num2.radius * (num2.x - num1.x) / dist;
         num2.y = midpointy + num2.radius * (num2.y - num1.y) / dist;
     }
+
 }

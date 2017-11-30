@@ -118,12 +118,12 @@ public class GameView extends SurfaceView implements Runnable {
                                     menuButton,
                                     backdrop);
 
-        gameFinishedMenu = new GameFinishedMenu(GameActivity.screenX * 1/8,
+        gameFinishedMenu = new GameFinishedMenu(GameActivity.screenX*1/8,
                 offset,
-                GameActivity.screenX * 7/8,
-                GameActivity.screenY - offset,
+                GameActivity.screenX * 5/8,
+                GameActivity.screenY - offset*3,
                 resumeButton,
-                menuButton, 0);
+                menuButton, backdrop, paint);
     }
 
     /*

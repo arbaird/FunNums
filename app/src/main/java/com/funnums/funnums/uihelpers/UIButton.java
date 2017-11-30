@@ -6,7 +6,6 @@ import android.graphics.Rect;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-
 public class UIButton {
 
     private Rect buttonRect;
@@ -70,5 +69,12 @@ public class UIButton {
     //true when button is pressed
     public boolean isPressed(int touchX, int touchY) {
         return buttonDown && buttonRect.contains(touchX, touchY);
+    }
+
+    public Bitmap getImg(){
+        return buttonImage;
+    }
+    public Bitmap getImgDown(){
+        return buttonDownImage;
     }
 }

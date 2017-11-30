@@ -49,4 +49,5 @@ public abstract class MiniGame
         gameTimer.context = com.funnums.funnums.maingame.GameActivity.gameView.context;
         gameTimer.start();
     }
+
 }

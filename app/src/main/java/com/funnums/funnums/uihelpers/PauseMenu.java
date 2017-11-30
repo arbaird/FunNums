@@ -29,8 +29,9 @@ public class PauseMenu {
     private int padding;
 
     int x, y;
+    int width, height;
 
-    public PauseMenu(int left, int top, int right, int bottom,
+    /*public PauseMenu(int left, int top, int right, int bottom,
                      UIButton resumeButton,  UIButton menuButton) {
 
         backDropRect = new Rect(left, top, right, bottom);
@@ -45,7 +46,7 @@ public class PauseMenu {
         mainMenu.setRect(left + padding, top + padding*2);
 
 
-    }
+    }*/
 
     public PauseMenu(int left, int top, int width, int height,
                      UIButton resumeButton,  UIButton menuButton, Bitmap bg) {
@@ -65,17 +66,20 @@ new PauseMenu(GameActivity.screenX/4,
          */
         x = left;
         y = top;
+        this.width = width;
+        this.height = height;
         //bg = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
         this.bg =  Bitmap.createScaledBitmap(bg, left + width,top + height,true);
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
-        resume = resumeButton;
-        mainMenu = menuButton;
+        //UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+        resume = new UIButton(0,0,0,0, resumeButton.getImg(), resumeButton.getImgDown());
+        mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
 
-        padding = 100;
+        padding = height/4;
 
-        resume.setRect(left + padding, top +padding);
-        mainMenu.setRect(left + padding, top + padding*2);
+        resume.setRect(left + width/2 - resume.getWidth()/4, top +padding);
+        mainMenu.setRect(left + width/2- resume.getWidth()/4, top + padding*2);
 
 
     }
@@ -129,5 +133,9 @@ new PauseMenu(GameActivity.screenX/4,
             }
         }
         return true;
+    }
+
+    public void setBackDrop(Bitmap bg){
+        this.bg =  Bitmap.createScaledBitmap(bg, x + width,y + height,true);
     }
 }

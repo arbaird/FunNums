@@ -6,7 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
+
+import com.funnums.funnums.maingame.GameActivity;
 
 /**
  * Created by austinbaird on 10/31/17.
@@ -17,7 +20,7 @@ public class GameFinishedMenu
     public String VIEW_LOG_TAG = "gameFinished";
 
     //will use when we have a cooler background for pause menu
-    private Bitmap backdrop;
+    private Bitmap bg;
 
     private Rect fade;
 
@@ -34,8 +37,11 @@ public class GameFinishedMenu
     //the message displayed on the game over menu
     private String gameFinishedMessage;
 
-    int screenX;
-    int screenY;
+    int x;
+    int y;
+    int width, height;
+
+    float xScale;
 
     public GameFinishedMenu(int left, int top, int right, int bottom,
                      UIButton resumeButton,  UIButton menuButton, int score) {
@@ -63,8 +69,49 @@ public class GameFinishedMenu
 
         this.score = String.valueOf(score);
 
-        screenX = com.funnums.funnums.maingame.GameActivity.screenX;
-        screenY = com.funnums.funnums.maingame.GameActivity.screenY;
+    }
+
+    public GameFinishedMenu(int left, int top, int width, int height,
+                     UIButton resumeButton,  UIButton menuButton, Bitmap bg, Paint paint) {
+
+        /*
+        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
+
+
+new PauseMenu(GameActivity.screenX/4,
+                                    offset,
+                                    GameActivity.screenX * 3/4,
+                                    GameActivity.screenY - offset,
+                                    resumeButton,
+                                    menuButton);
+
+         */
+        x = left;
+        y = top;
+        this.width = width;
+        this.height = height;
+        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        this.bg =  Bitmap.createScaledBitmap(bg, left + width,top + height,true);
+        fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
+
+        //UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+        playAgain = new UIButton(0,0,0,0, resumeButton.getImg(), resumeButton.getImgDown());
+        mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
+
+        padding = 100;
+
+        int buttonY = y + height/2;//.centerY();
+        int numButtons = 2;
+        int spaceBetweenButtons = (height - buttonY) / numButtons;
+        int centeredButtonX = (x+width/2) - playAgain.getWidth()/4;
+
+        playAgain.setRect(centeredButtonX, buttonY);
+        //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
+        mainMenu.setRect(centeredButtonX, buttonY + spaceBetweenButtons*1);
+
+        gameFinishedMessage = "Great Job! Your Score is ";
+        adjustTextScale(paint, gameFinishedMessage);
     }
 
     public void setScore(int score)
@@ -79,18 +126,21 @@ public class GameFinishedMenu
         canvas.drawRect(fade, paint);
 
         //draw the rectangle containing the pasue menu buttons
+        //paint.setColor(Color.argb(255, 100, 100, 100));
+        //canvas.drawRect(backDropRect, paint);
+
         paint.setColor(Color.argb(255, 100, 100, 100));
-        canvas.drawRect(backDropRect, paint);
-
         //TODO uncomment when we have a cool backdrop for menu instead of a grey rectangle
-        //canvas.drawBitmap(backdrop, backDropRect.left, backDropRect.top, paint);
+        canvas.drawBitmap(bg, x, y, paint);
 
+        int centeredX = GameActivity.screenX/2;//(x+x+width)/2;
         //Draw Current
         paint.setColor(Color.argb(255, 0, 0, 255));
         paint.setTextSize(45);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(gameFinishedMessage, backDropRect.centerX(), backDropRect.top + padding, paint);
-        canvas.drawText(score,  backDropRect.centerX(), backDropRect.top + padding*2, paint);
+        paint.setTextScaleX(xScale);
+        canvas.drawText(gameFinishedMessage, centeredX, y + padding*2, paint);
+        canvas.drawText(score,  centeredX, y + padding*3, paint);
 
         //draw the buttons
         playAgain.render(canvas, paint);
@@ -131,4 +181,29 @@ public class GameFinishedMenu
         return true;
     }
 
+    void adjustTextScale(Paint paint, String text) {
+        // do calculation with scale of 1.0 (no scale)
+        paint.setTextScaleX(1.0f);
+        Rect bounds = new Rect();
+        // ask the paint for the bounding rect if it were to draw this
+        // text.
+        paint.setTextSize(45);
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        // determine the width
+        int w = bounds.right - bounds.left;
+        // calculate the baseline to use so that the
+        // entire text is visible including the descenders
+        int text_h = bounds.bottom-bounds.top;
+        //mTextBaseline=bounds.bottom+((height-text_h)/2);
+        // determine how much to scale the width to fit the view
+        float xscale = ((float) (width/*-getPaddingLeft()-getPaddingRight()*/)) / w;
+        // set the scale for the text paint
+        paint.setTextScaleX(xscale);
+
+        this.xScale = xscale;
+    }
+
+    public void setBackDrop(Bitmap bg){
+        this.bg =  Bitmap.createScaledBitmap(bg, x + width,y + height,true);
+    }
 }

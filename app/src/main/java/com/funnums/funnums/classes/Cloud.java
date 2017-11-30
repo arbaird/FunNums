@@ -15,7 +15,7 @@ import java.util.Random;
 
 public class Cloud {
     public float x, y;
-    private static final int VEL_X = -150;
+    private static final int VEL_X = -2;
 
     private static Random r = new Random();
 
@@ -42,9 +42,9 @@ public class Cloud {
 
     public void update(long deltaTime) {
 
-        float delta = deltaTime*1.0f / com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS;
+        //float delta = deltaTime*1.0f / com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS;
 
-        x += VEL_X * delta;
+        x += VEL_X; //* delta;
         if (x <= -200) {
             // wrap x so that cloud respawns on right side of the screen
             x += GameActivity.screenX + 400;

@@ -13,6 +13,7 @@ import android.view.SurfaceHolder;
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.ExpressionGenerator;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -165,6 +166,11 @@ public class OwlGame extends MiniGame {
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
+
+        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
+        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
 
     }
 

@@ -62,7 +62,7 @@ public class TouchableBubble extends TouchableNumber {
     public void update(long delta){
         if(!popping)
             super.update();
-        anim.update(delta*1.0f/ com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS);
+        anim.update(delta/**1.0f/ com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS*/);
     }
 
     /*

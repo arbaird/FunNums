@@ -16,15 +16,15 @@ public class SelectGameActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "Beginning of onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(com.funnums.funnums.R.layout.select_game);
-        Log.d(TAG, "End of onCreate");
+
     }
 
 
     public void onPressedBubbles(View v) {
-        Log.d(TAG, "Bubble game pressed");
+
         Intent i = new Intent(this, GameActivity.class);
 
         //setFlag that game we want to create is a bubble game
@@ -34,7 +34,7 @@ public class SelectGameActivity extends AppCompatActivity {
     }
 
     public void onPressedBalloons(View v) {
-        Log.d(TAG, "Balloon game pressed");
+
         Intent i = new Intent(this, GameActivity.class);
 
         //setFlag that game we want to create is a bubble game
@@ -44,7 +44,7 @@ public class SelectGameActivity extends AppCompatActivity {
     }
 
     public void onPressedOwl(View v) {
-        Log.d(TAG, "Owl game pressed");
+
         Intent i = new Intent(this, GameActivity.class);
 
         //setFlag that game we want to create is a bubble game

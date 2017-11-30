@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import android.util.Log;
 /**
  * Created by austinbaird on 11/19/17.
  */
@@ -18,7 +19,7 @@ public class HUDSquare {
     public int MARGIN = 10;
     int OFFSET = 50;
 
-    float specificTextDimension = 55;
+    //float specificTextDimension = 55;
 
     private String msg, value;           /*Character/variable/operand inside the tile*/
     private boolean used;           /*//Tile is marked as used if it part of the expression*/
@@ -27,7 +28,10 @@ public class HUDSquare {
     //for now they make the code easier to read)
     public float left, top, right, bottom;
 
-    public float x, y, length;
+    public float x, y, height, width;
+    public float xScale;
+
+    public Rect backdrop;
     // Constructor:
     public HUDSquare(float x, float y,  String msg, String value, Paint paint) {
 
@@ -59,15 +63,33 @@ public class HUDSquare {
 
         paint.setTextSize(TEXT_SIZE);
         paint.getTextBounds(msg, 0, msg.length(), bounds);
-        paint.getTextBounds("0", 0, 1/*value.length()*/, b);
+        paint.getTextBounds("0", 0, 1, b);
 
         right = x + bounds.width()/2;
         bottom = y + b.height() + b.height() - MARGIN - MARGIN;
         left = x -  bounds.width()/2;
+    }
+
+    public HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint) {
+        left = x;
+        top = y;
+
+        this.height = height;
+        this.width = width;
+
+        bottom = y + height /*- BORDER/2*/;
+        right = x + width;
+        backdrop = new Rect((int)left,(int) top, (int)right,(int) bottom);
+
+        this.msg = msg;
+        this.value = value;
+
+        adjustTextSize(paint, height, msg);
+        adjustTextScale(paint, height, msg);
 
     }
 
-    //Getter methods
+        //Getter methods
     public String getValue() {
         return value;
     }
@@ -88,7 +110,27 @@ public class HUDSquare {
     public void setUsed(boolean used){ this.used = used; }
 
 
+    public void drawBetter(Canvas canvas, Paint paint, String val){
+        // border
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(Color.BLACK);
+        paint.setStrokeWidth(10);
+        canvas.drawRect(left, top, right, bottom, paint);
 
+        // fill
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.WHITE);
+        canvas.drawRect(left, top, right, bottom, paint);
+
+        paint.setColor(Color.argb(255, 255, 0, 0));
+        paint.setTextSize(TEXT_SIZE);
+        paint.setTextScaleX(xScale);
+        paint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(msg, (left + right)/2 , (top + bottom)/2 - height/8, paint);
+        canvas.drawText(val, (left + right)/2 , bottom -  height/8, paint);
+
+
+    }
 
     public void draw(Canvas canvas, Paint paint, String val) {
 
@@ -111,8 +153,8 @@ public class HUDSquare {
         paint.setColor(Color.argb(255, 255, 0, 0));
         paint.setTextSize(TEXT_SIZE);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(msg, x , y + MARGIN, paint);
-        canvas.drawText(val,  x , y+OFFSET + MARGIN, paint);
+        canvas.drawText(msg, (left + right)/2 , y + MARGIN, paint);
+        canvas.drawText(val, (left + right)/2 , y+OFFSET + MARGIN, paint);
 
 
         //draw the rectangle (tile)
@@ -128,7 +170,7 @@ public class HUDSquare {
         //canvas.drawText(value, x + (length / 2), y + (length / 2) + (TEXT_SIZE / 2), paint);
     }
 
-    public void drawNoLabel(Canvas canvas, Paint paint, String val){
+    public void drawBetterNoLabel(Canvas canvas, Paint paint, String val){
         // border
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.BLACK);
@@ -146,7 +188,50 @@ public class HUDSquare {
         //Draw Current
         paint.setColor(Color.argb(255, 255, 0, 0));
         paint.setTextSize(TEXT_SIZE);
+        paint.setTextScaleX(xScale);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(val, x , y + MARGIN*2, paint);
+        //canvas.drawText(val, (left + right)/2 , y+OFFSET + MARGIN, paint);
+        canvas.drawText(val, (left + right)/2 , (top + bottom)/2, paint);
+    }
+
+    void adjustTextSize(Paint paint, float height, String text) {
+        paint.setTextSize(100);
+        paint.setTextScaleX(1.0f);
+        Rect bounds = new Rect();
+        // ask the paint for the bounding rect if it were to draw this
+        // text
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        // get the height that would have been produced
+        int h = (bounds.bottom - bounds.top)*2;
+        // make the text text up 70% of the height
+        float target = (float)height *.8f;
+        // figure out what textSize setting would create that height
+        // of text
+        float size = ((target/h)*100f);
+        // and set it into the paint
+        paint.setTextSize(size);
+        TEXT_SIZE = size;
+    }
+
+    void adjustTextScale(Paint paint, float height, String text) {
+        // do calculation with scale of 1.0 (no scale)
+        paint.setTextScaleX(1.0f);
+        Rect bounds = new Rect();
+        // ask the paint for the bounding rect if it were to draw this
+        // text.
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        // determine the width
+        int w = bounds.right - bounds.left;
+        // calculate the baseline to use so that the
+        // entire text is visible including the descenders
+        int text_h = bounds.bottom-bounds.top;
+        //mTextBaseline=bounds.bottom+((height-text_h)/2);
+        // determine how much to scale the width to fit the view
+        float xscale = ((float) (width/*-getPaddingLeft()-getPaddingRight()*/)) / w;
+        // set the scale for the text paint
+        paint.setTextScaleX(xscale);
+
+        this.xScale = xscale;
+        Log.d("Scale", ""+ xScale);
     }
 }
