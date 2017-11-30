@@ -555,11 +555,8 @@ public class BalloonGame extends MiniGame {
         return true;
     }
 
-    /*************inequality functions************/
-    //all of these reward the player a given amount if the balloon passed as an argument satisfies
-    //the current inequality, and deducts the given amount if the balloon does not satisfy the
-    //given inequality
 
+    //return true if the number satisfies the current inequality, false otherwise
     private synchronized boolean satisfiesInequality(TouchableBalloon num, String inequality){
         switch (inequality){
             case ">":
