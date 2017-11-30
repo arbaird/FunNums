@@ -1,6 +1,7 @@
 package com.funnums.funnums.maingame;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -50,7 +51,7 @@ public class GameView extends SurfaceView implements Runnable {
     //For sound effects
     private static SoundPool soundPool;
     private int pauseId;
-    public int volume;
+    public float volume;
 
     // For drawing
     private Paint paint;
@@ -74,6 +75,7 @@ public class GameView extends SurfaceView implements Runnable {
     private final static int MIN_SLEEP_TIME = 1000 / (MAX_FPS*10);
 
     public Context context;
+    SharedPreferences prefs;
 
     GameView(Context context, String type) {
         //set up view properly
@@ -96,11 +98,15 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap menu = loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
+        //get the stored data on this phone
+        prefs = context.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
+
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
         pauseId = soundPool.load(context, R.raw.pause,1);
-        volume=1;
 
+        //get the volume float from sharedPreferences. Returns 1 (max volume) if no volume is stored.
+        volume=prefs.getFloat("volume", 1);
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
         int offset = 100;

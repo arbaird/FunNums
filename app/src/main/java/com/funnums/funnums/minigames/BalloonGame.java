@@ -1,7 +1,9 @@
 package com.funnums.funnums.minigames;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
 import android.graphics.Paint;
@@ -11,11 +13,13 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.graphics.Bitmap;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableBalloon;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.Fraction;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 
@@ -78,9 +82,10 @@ public class BalloonGame extends MiniGame {
 
     //for implementing sound effects
     private SoundPool soundPool;
-    private int volume;
-
-
+    private float volume;
+    private int balloonDeflateId;
+    private int balloonPopId;
+    private int balloonInflateId;
 
     private int balloonsProcessed;
 
@@ -94,6 +99,17 @@ public class BalloonGame extends MiniGame {
     public synchronized void init() {
         //game only finished when timer is done
         isFinished = false;
+
+        //gets the context to be used in soundPool
+        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
+
+        //initializes soundPool
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+        balloonDeflateId = soundPool.load(context, R.raw.balloondeflate,1);
+        balloonInflateId = soundPool.load(context,R.raw.ballooninflate,1);
+        balloonPopId = soundPool.load(context,R.raw.balloonpop,1);
+        volume = GameActivity.gameView.volume;
+
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
         int mode = r.nextInt(5);
@@ -122,6 +138,9 @@ public class BalloonGame extends MiniGame {
 
         balloonsProcessed = 0;
         inBalloonGenBuffer = false;
+
+        //play balloon inflating sound effect
+        soundPool.play(balloonInflateId,volume,volume,2,0,1);
     }
 
 
@@ -353,6 +372,9 @@ public class BalloonGame extends MiniGame {
         //add text animation
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
+
+        //play balloon inflating sound effect
+        soundPool.play(balloonInflateId,volume,volume,2,0,1);
     }
 
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remove balloon.
@@ -475,9 +497,11 @@ public class BalloonGame extends MiniGame {
         boolean correct;
         if (num.getValue().get_key() >= target.get_key()) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -486,9 +510,11 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator;
         if (num.getValue().get_key() <= target.get_key()) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -497,9 +523,11 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator;
         if (num.getValue().get_key() > target.get_key()) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -508,9 +536,11 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator;
         if (num.getValue().get_key() < target.get_key()) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -519,9 +549,11 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator;
         if (num.getValue().get_key().equals(target.get_key())) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -530,9 +562,11 @@ public class BalloonGame extends MiniGame {
         TextAnimator textAnimator;
         if (!num.getValue().get_key().equals(target.get_key())) {
             textAnimator = new TextAnimator("+" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
         } else {
             textAnimator = new TextAnimator("-" + String.valueOf(value), num.getX(), num.getY(), 0, 255, 0);
             value = -value;
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
         }
         scoreAnimations.add(textAnimator);
         score += value;

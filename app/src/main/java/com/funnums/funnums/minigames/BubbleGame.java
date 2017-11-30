@@ -91,7 +91,7 @@ public class BubbleGame extends MiniGame {
 
     //used to implement sound
     private SoundPool soundPool;
-    private int volume;
+    private float volume;
     private int bubblePopId;
     private int correctId;
     private int splashId;
