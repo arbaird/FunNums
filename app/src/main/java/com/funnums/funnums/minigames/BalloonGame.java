@@ -157,9 +157,9 @@ public class BalloonGame extends MiniGame {
         initHud();
 
         Bitmap hotAirImg1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir1.png", false);
-        hotAir1 = new HotAirBalloon(hotAirImg1.getWidth()/2, screenY/2, hotAirImg1);
+        hotAir1 = new HotAirBalloon(hotAirImg1.getWidth()/16, topBuffer+hotAirImg1.getHeight()/4, hotAirImg1);
         Bitmap hotAirImg2 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir2.png", false);
-        hotAir2 = new HotAirBalloon(screenX - hotAirImg2.getWidth()*3/2, screenY * 3/8, hotAirImg2);
+        hotAir2 = new HotAirBalloon(screenX - hotAirImg2.getWidth(), topBuffer, hotAirImg2);
 
 
         Bitmap directionBoardImg = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/DirectionBoard.png", false);
@@ -295,28 +295,17 @@ public class BalloonGame extends MiniGame {
                                 Log.d("SWIPE", "LEft to RIGHT");
                                 checkSwipeX(y, true);
                             }
-
                             // Right to left swipe action
                             else {
                                 Log.d("SWIPE", "RIGHT to LEFT");
                                 checkSwipeX(y, false);
                             }
-                        } else {
-                            // consider as something else - a screen tap for example
                         }
                         break;
                 }
-                /*if(e.getActionMasked()==MotionEvent.ACTION_DOWN) {
-                int x = (int) e.getX();
-                int y = (int) e.getY();
-
-                if (checkTouchRadius(x, y)) {
-                    //removedNum = true;
-                    break;
-                }
-            }*/
             }
         }
+        //don't let multiple threads working on touch events crash the app
         catch(ConcurrentModificationException ex){
             Log.e("ERROR", ex.toString());
         }
