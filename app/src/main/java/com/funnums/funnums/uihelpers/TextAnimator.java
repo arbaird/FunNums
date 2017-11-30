@@ -70,6 +70,8 @@ public class TextAnimator {
 
 
 
+
+
     public void render(Canvas canvas, Paint paint) {
         paint.setTextSize(size);
         paint.setColor(Color.argb(alpha, r, g, b));

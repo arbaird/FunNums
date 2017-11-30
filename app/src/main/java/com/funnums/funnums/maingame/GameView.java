@@ -9,7 +9,7 @@ import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
-import java.util.Set;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -46,7 +46,7 @@ public class GameView extends SurfaceView implements Runnable {
     public boolean playing;
 
     //thread for the game
-    Thread gameThread = null;
+    public Thread gameThread = null;
 
     //For sound effects
     private static SoundPool soundPool;
@@ -54,9 +54,9 @@ public class GameView extends SurfaceView implements Runnable {
     public float volume;
 
     // For drawing
-    private Paint paint;
-    private Canvas canvas;
-    private SurfaceHolder ourHolder;
+    public Paint paint;
+    public Canvas canvas;
+    public SurfaceHolder ourHolder;
 
     public PauseMenu pauseScreen;
 
@@ -67,7 +67,7 @@ public class GameView extends SurfaceView implements Runnable {
     private long timeLeft;
 
     //Max FPS,used to control frame rate
-    private final static int MAX_FPS = 50;;
+    private final static int MAX_FPS = 50;
     // the frame period
     private final static int FRAME_PERIOD = 1000 / MAX_FPS;
 
@@ -84,10 +84,14 @@ public class GameView extends SurfaceView implements Runnable {
         //store which minigame type player selected
         this.gameType = type;
 
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Cendol_Pulut.ttf");
+
         // Initialize our drawing objects
         ourHolder = getHolder();
         paint = new Paint();
         canvas = new Canvas();
+
+        paint.setTypeface(tf);
 
         //set up buttons for game finished menu and pause screen
         Bitmap resumeDown = loadBitmap("button_resume_down.png", true);
@@ -101,6 +105,8 @@ public class GameView extends SurfaceView implements Runnable {
         //get the stored data on this phone
         prefs = context.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
 
+        Bitmap backdrop = loadBitmap("MenuBoard.png", true);
+
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
         pauseId = soundPool.load(context, R.raw.pause,1);
@@ -109,13 +115,15 @@ public class GameView extends SurfaceView implements Runnable {
         volume=prefs.getFloat("volume", 1);
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
+
         int offset = 100;
-        pauseScreen = new PauseMenu(GameActivity.screenX/4,
+        pauseScreen = new PauseMenu(GameActivity.screenX*1/8,
                                     offset,
-                                    GameActivity.screenX * 3/4,
-                                    GameActivity.screenY - offset,
+                                    GameActivity.screenX * 5/8,
+                                    GameActivity.screenY - offset*3,
                                     resumeButton,
-                                    menuButton);
+                                    menuButton,
+                                    backdrop);
 
         gameFinishedMenu = new GameFinishedMenu(GameActivity.screenX * 1/8,
                 offset,
@@ -136,6 +144,7 @@ public class GameView extends SurfaceView implements Runnable {
         else if(gameType.equals("owl"))
             currentGame = new OwlGame();
         currentGame.init();
+        System.gc();
 
     }
 
@@ -146,7 +155,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
 
         //keep track of dela time, that is, how much time has passed in between each iteration of
         //the game loop
@@ -172,6 +181,7 @@ public class GameView extends SurfaceView implements Runnable {
         catch (InterruptedException e) {
             Log.e(TAG, "Error joining gameThread\n" + e.getStackTrace());
         }
+
         playing = true;
         gameThread = new Thread(this);
         gameThread.start();
@@ -190,6 +200,14 @@ public class GameView extends SurfaceView implements Runnable {
         else
             sleep(MIN_SLEEP_TIME);
 
+
+        //yield();
+
+
+    }
+
+    public void pauseTheThread(){
+        sleep(3000);
     }
 
     private void sleep(int sleepTime)
@@ -242,11 +260,13 @@ public class GameView extends SurfaceView implements Runnable {
         }
         gameThread = new Thread(this);
         gameThread.start();
+        gameThread.setPriority(Thread.MIN_PRIORITY);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         //first check if the pause menu should handle the touch
+
         if(currentGame.isPaused)
             return pauseScreen.onTouch(e);
         if(currentGame.isFinished)

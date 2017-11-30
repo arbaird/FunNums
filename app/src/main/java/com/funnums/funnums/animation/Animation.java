@@ -62,7 +62,7 @@ public class Animation {
     public synchronized void restart(){
         currentFrameIndex = 0;
         currentTime = 0;
-        playing = true;
+        start();
     }
 
     /*

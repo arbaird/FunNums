@@ -57,7 +57,7 @@ public class BalloonGame extends MiniGame {
     private Fraction target;
 
     //speed of the balloons
-    private int speed=5;
+    private int speed=4;
 
 
     //list of all the touchable numbers on screen
@@ -122,6 +122,10 @@ public class BalloonGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
+        speed = (int)Math.round(screenY * 0.003378);
+        Log.d("SPEED", screenY + "");
+        Log.d("SPEED", speed + "");
+
         bRadius = (int) (screenX * .15);
 
 
@@ -163,7 +167,7 @@ public class BalloonGame extends MiniGame {
 
         runningMilis += delta;
         //generate a new balloon every 1 1/2 second if there are less than the max amount of numbers on the screen
-        if (runningMilis > 1.5 * NANOS_TO_SECONDS) {
+        if (runningMilis > 2 * NANOS_TO_SECONDS) {
             runningMilis = 0;
             //if there is room on screen and we are not in buffer zone, generate a new balloon
             if(numberList.size() < maxNumsOnScreen && !inBalloonGenBuffer)
@@ -219,12 +223,12 @@ public class BalloonGame extends MiniGame {
         int angle, max, min;
         //determine the quadrant the number will spawn in to plan the angle
         if (x >= screenX/2) {
-            max = 120;
+            max = 105;
             min = 91;
         }
         else {
             max = 90;
-            min = 60;
+            min = 75;
         }
 
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles

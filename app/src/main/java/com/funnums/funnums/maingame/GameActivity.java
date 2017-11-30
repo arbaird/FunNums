@@ -36,7 +36,6 @@ public class GameActivity extends Activity {
         //see if this activity was started from library activity
         String type = extras.getString("minigame");
 
-
         // Create an instance of our Game
         gameView = new GameView(this, type);
         gameView.startGame();

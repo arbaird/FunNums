@@ -75,7 +75,7 @@ public class ExpressionEvaluator {
     public ActiveSlots slots = new ActiveSlots();
 
     /* Scans through the expression array to test if the values in it represent an expression.
-     * If it's not an expression "false" is returned, else the space-separated expression is returned.
+     * If it's not an expression null is returned, else the space-separated expression is returned.
      * -If the expr is length 1 or and even length, then return null
      * -If the the scanned index doesn't equal the next type, then return null
      * The nextType is multiplied by -1 each time because the check has to flip between op and num
