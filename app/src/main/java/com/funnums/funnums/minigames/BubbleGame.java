@@ -70,7 +70,7 @@ public class BubbleGame extends MiniGame {
     //player's current sum
     private int sum;
     //target player is trying to sum to
-    private int target;
+    private int target = 0;
     private int previousTarget = 0;
     //The target generator
     BubbleTargetGenerator targetGen = new BubbleTargetGenerator();
@@ -130,17 +130,18 @@ public class BubbleGame extends MiniGame {
         Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
 
         //initializes soundPool
-        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        bubblePopId = soundPool.load(context,R.raw.bubble,1);
-        correctId = soundPool.load(context,R.raw.correct,1);
-        splashId = soundPool.load(context,R.raw.splash,1);
-        wrongId = soundPool.load(context,R.raw.wrong,1);
+        soundPool   = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        bubblePopId = soundPool.load(context,R.raw.bubble, 1);
+        correctId   = soundPool.load(context,R.raw.correct,1);
+        splashId    = soundPool.load(context,R.raw.splash, 1);
+        wrongId     = soundPool.load(context,R.raw.wrong,  1);
 
 
         //initalize random generator
         r = new Random();
         //get a target from the target generator
         target = targetGen.nextTarget();
+        numGen.setAbsoluteTarget(target, previousTarget);
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
@@ -326,6 +327,7 @@ public class BubbleGame extends MiniGame {
         angle = r.nextInt(max - min) + min; //get random angle between max and min angles
 
         int newNumber = numGen.nextNum(); // get generated number from our num gen
+        numGen.increment(newNumber);      // maintain the count of each number on the screen
         TouchableBubble num = new TouchableBubble(x, y, angle, bRadius, speed, newNumber);
         numberList.add(num);
     }
@@ -371,7 +373,7 @@ public class BubbleGame extends MiniGame {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2) && !num.popping) {
                 processScore(num);
-
+                numGen.decrement(num.getValue()); //maintain the count of the number on the screen
                 num.pop();
 
                 soundPool.play(bubblePopId,1,1,1,0,1);
@@ -428,7 +430,7 @@ public class BubbleGame extends MiniGame {
 
         previousTarget = target;
         target = targetGen.nextTarget();
-        numGen.setAbsoluteTarget(target - previousTarget); //used for scaling the numbers generated
+        numGen.setAbsoluteTarget(target , previousTarget); //used for scaling the numbers generated
     }
 
     /*
