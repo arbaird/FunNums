@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import java.util.Random;
 
 import com.funnums.funnums.animation.Animation;
 import com.funnums.funnums.animation.Frame;
@@ -24,6 +24,9 @@ public class TouchableBalloon extends TouchableNumber {
     public boolean popping;
 
     public float xRadius, yRadius;
+
+   // public static Random r = new Random();
+    public static int color = 1;
 
     public TouchableBalloon(int screenX, int screenY, int travelAngle, int xRadius,int yRadius, int speed, Fraction frac) {
 
@@ -80,10 +83,12 @@ public class TouchableBalloon extends TouchableNumber {
        a bubble collides
     */
     private void initAnim(){
+        int num = ((color++)%3) +1;
+
         //get each image for animation
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/Balloon1.png", false);
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/Balloon" +num+".png", false);
         run1= Bitmap.createScaledBitmap(run1, (int) xRadius*2, (int)yRadius*2 ,false);
-        bottom  = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/BalloonTail.png", false);
+        bottom  = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/BalloonTail"+num+".png", false);
         bottom = Bitmap.createScaledBitmap(bottom, (int) xRadius*2, (int)yRadius*2 ,false);
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
@@ -119,9 +124,6 @@ public class TouchableBalloon extends TouchableNumber {
 
         super.bounceWith(collidingNum);
     }
-
-
-
 
 
 }
