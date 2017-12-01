@@ -86,10 +86,10 @@ public class BalloonGame extends MiniGame {
 
     //for implementing sound effects
     private SoundPool soundPool;
-    private float volume;
     private int balloonDeflateId;
     private int balloonPopId;
     private int balloonInflateId;
+    private int wooshId;
 
     private int balloonsProcessed;
 
@@ -125,7 +125,7 @@ public class BalloonGame extends MiniGame {
         balloonDeflateId = soundPool.load(context, R.raw.balloondeflate,1);
         balloonInflateId = soundPool.load(context,R.raw.ballooninflate,1);
         balloonPopId = soundPool.load(context,R.raw.balloonpop,1);
-        volume = GameActivity.gameView.volume;
+        wooshId=soundPool.load(context,R.raw.woosh,1);
 
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
@@ -395,15 +395,15 @@ public class BalloonGame extends MiniGame {
         processScore(isCorrect, value);
     }
 
-    /*
-    Allan Add sounds here
-     */
+
     private synchronized void processScore(boolean correct, int value){
 
         TextAnimator textAnimator;
         if (correct) {
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
             textAnimator = new TextAnimator("+" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
         } else {
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
             textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
             value = -value;
         }
@@ -632,6 +632,7 @@ public class BalloonGame extends MiniGame {
                     num.setXVelocity(10);
                 else
                     num.setXVelocity(-10);
+                soundPool.play(wooshId,volume,volume,1,0,1);
                 return true;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now

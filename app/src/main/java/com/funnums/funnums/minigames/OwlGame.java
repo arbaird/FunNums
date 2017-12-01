@@ -110,9 +110,10 @@ public class OwlGame extends MiniGame {
 
     //sound effects
     private SoundPool soundPool;
-    private float volume;
     private int clickId;
+    private int flappId;
     private int drownId;
+
 
     public synchronized void init() {
 
@@ -140,9 +141,10 @@ public class OwlGame extends MiniGame {
         exprBuffer = (float) (screenY * E_BUFFER_RATIO);
 
         //initialize soundPool to load sound effects
-        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
         clickId = soundPool.load(context, R.raw.click,1);
-        volume = GameActivity.gameView.volume;
+        flappId = soundPool.load(context,R.raw.flapp,1);
+        drownId = soundPool.load(context,R.raw.drown,1);
 
         //Generate tile coordinates
         generateTileSpaceHolders();
@@ -196,6 +198,7 @@ public class OwlGame extends MiniGame {
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
         if(owl.getY() - owl.getSize() > screenY -tileBuffer - exprBuffer){
+            soundPool.play(drownId,volume,volume,1,0,1);
             GameCountdownTimer.completeGame();
         }
         //if owl is at top of screen, make sure it won't go off the screen
@@ -665,6 +668,7 @@ public class OwlGame extends MiniGame {
     public void handleOnCorrect() {
         //Give the Owl a push!
         if(!(owl.getY() < owl.getSize()))
+            soundPool.play(flappId,volume,volume,1,0,1);
             owl.increaseAltitude();
 
         targetsReached++;

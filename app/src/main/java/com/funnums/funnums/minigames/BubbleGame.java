@@ -102,7 +102,6 @@ public class BubbleGame extends MiniGame {
 
     //used to implement sound
     private SoundPool soundPool;
-    private float volume;
     private int bubblePopId;
     private int correctId;
     private int splashId;
@@ -128,15 +127,12 @@ public class BubbleGame extends MiniGame {
         //game only finished when timer is done
         isFinished = false;
 
-        //gets the context to be used in soundPool
-
         //initializes soundPool
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
         bubblePopId = soundPool.load(context,R.raw.bubble,1);
         correctId = soundPool.load(context,R.raw.correct,1);
         splashId = soundPool.load(context,R.raw.splash,1);
         wrongId = soundPool.load(context,R.raw.wrong,1);
-        volume = GameActivity.gameView.volume;
 
 
         //initalize random generator
