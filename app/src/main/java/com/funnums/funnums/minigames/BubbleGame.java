@@ -35,6 +35,7 @@ import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.maingame.MainMenuActivity;
 
+import com.funnums.funnums.uihelpers.PauseMenu;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -111,7 +112,6 @@ public class BubbleGame extends MiniGame {
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
-    private Bitmap background;
     private Bitmap HUDBoard;
     private Bitmap bg;
 
@@ -129,7 +129,6 @@ public class BubbleGame extends MiniGame {
         isFinished = false;
 
         //gets the context to be used in soundPool
-        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
 
         //initializes soundPool
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
@@ -138,6 +137,7 @@ public class BubbleGame extends MiniGame {
         splashId = soundPool.load(context,R.raw.splash,1);
         wrongId = soundPool.load(context,R.raw.wrong,1);
         volume = GameActivity.gameView.volume;
+
 
         //initalize random generator
         r = new Random();
@@ -190,9 +190,6 @@ public class BubbleGame extends MiniGame {
         Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", false);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
-        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
-        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
-
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
@@ -201,12 +198,13 @@ public class BubbleGame extends MiniGame {
 
         //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
 
-        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
-                offset,
-                screenX * 7/8,
-                screenY - offset,
-                resumeButton,
-                menuButton, sum);
+
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
+        int menuOffset = 100;
+
+        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
+        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+
 
         initHud();
     }
@@ -429,7 +427,7 @@ public class BubbleGame extends MiniGame {
     */
     private void makeNewTarget() {
         //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
+        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 220, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
         TextAnimator addTimetextAnimator = new TextAnimator("+1", screenX * 1/2, timerHUD.bottom-timerHUD.MARGIN, 0, 255, 0);
         scoreAnimations.add(addTimetextAnimator);
@@ -513,9 +511,6 @@ public class BubbleGame extends MiniGame {
             paint.setColor(Color.argb(255, 70, 103, 234));
             //canvas.drawRect(0, topBuffer, screenX, screenY, paint);
 
-            //canvas.drawBitmap(bg, 0 , topBuffer , paint);
-            //canvas.drawBitmap(background, 0 , screenY/2 , paint);
-
             canvas.drawBitmap(bg, 0, 0, paint);
 
             canvas.drawBitmap(HUDBoard, 0 , 0 , paint);
@@ -535,9 +530,9 @@ public class BubbleGame extends MiniGame {
 
 
 
-            curHUD.draw(canvas, paint, String.valueOf(sum));
-            targetHUD.draw(canvas, paint, String.valueOf(target));
-            timerHUD.drawNoLabel(canvas, paint, gameTimer.toString());
+            curHUD.drawBetter(canvas, paint, String.valueOf(sum));
+            targetHUD.drawBetter(canvas, paint, String.valueOf(target));
+            timerHUD.drawBetterNoLabel(canvas, paint, gameTimer.toString());
 
 
             //draw all text animations
@@ -600,12 +595,16 @@ public class BubbleGame extends MiniGame {
 
     }
 
-    private void initHud(){
-        int offset = 60;
+    private synchronized void initHud(){
+        int offset = 50;
         Paint paint = GameActivity.gameView.paint;
-        curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
-        targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
-        timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
+        //HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint)
+        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint);
+        //curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
+        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint);
+        //targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
+        //timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
+        timerHUD = new HUDSquare(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00", gameTimer.toString(), paint);
     }
 
 

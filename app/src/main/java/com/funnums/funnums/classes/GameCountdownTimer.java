@@ -58,7 +58,6 @@ public class GameCountdownTimer extends CountDownTimer {
         com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
         int score = com.funnums.funnums.maingame.GameActivity.gameView.currentGame.score;
         com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);
-
         com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
     }
 

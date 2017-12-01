@@ -1,5 +1,6 @@
 package com.funnums.funnums.minigames;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.SurfaceHolder;
@@ -26,6 +27,9 @@ public abstract class MiniGame
 
     public static GameCountdownTimer gameTimer;
 
+    //gets the context to be used for sound effects(required in soundPool)
+    public Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
+
 
     public void setCurrentMiniGame(MiniGame newGame)
     {
@@ -49,4 +53,5 @@ public abstract class MiniGame
         gameTimer.context = com.funnums.funnums.maingame.GameActivity.gameView.context;
         gameTimer.start();
     }
+
 }

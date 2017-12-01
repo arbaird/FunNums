@@ -6,13 +6,17 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.ExpressionGenerator;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -104,6 +108,12 @@ public class OwlGame extends MiniGame {
     private boolean isSingleTouch;
     private int countTouches;
 
+    //sound effects
+    private SoundPool soundPool;
+    private float volume;
+    private int clickId;
+    private int drownId;
+
     public synchronized void init() {
 
         //Game only finished when owl has died :P
@@ -128,6 +138,11 @@ public class OwlGame extends MiniGame {
         tLength = (float) (screenX * TILE_LENGTH_RATIO);
         tileBuffer = (float) (screenY * T_BUFFER_RATIO);
         exprBuffer = (float) (screenY * E_BUFFER_RATIO);
+
+        //initialize soundPool to load sound effects
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        clickId = soundPool.load(context, R.raw.click,1);
+        volume = GameActivity.gameView.volume;
 
         //Generate tile coordinates
         generateTileSpaceHolders();
@@ -165,6 +180,11 @@ public class OwlGame extends MiniGame {
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
         pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
+
+        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
+        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
 
     }
 
@@ -509,6 +529,9 @@ public class OwlGame extends MiniGame {
                     Log.d(TAG_OWL, "moveToExpr");
                 }
 
+                //play click sound
+                soundPool.play(clickId,volume,volume,2,0,1);
+
                 if (evaluatesToTarget()) {
                     handleOnCorrect();
                 }
@@ -787,6 +810,9 @@ public class OwlGame extends MiniGame {
                     //Update values accordingly
                     numberOfExprSpacesUsed++;
                     numberOfTileSpacesUsed--;
+
+                    //play click sound
+                    soundPool.play(clickId,volume,volume,2,0,1);
 
                     break;
 
