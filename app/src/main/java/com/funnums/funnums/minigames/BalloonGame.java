@@ -10,13 +10,14 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Random;
 import android.graphics.Bitmap;
 
 import com.funnums.funnums.R;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableBalloon;
-import com.funnums.funnums.classes.GameCountdownTimer;
+import com.funnums.funnums.classes.FloatingObject;
 import com.funnums.funnums.classes.FractionNumberGenerator;
 import com.funnums.funnums.classes.Fraction;
 import com.funnums.funnums.classes.HotAirBalloon;
@@ -112,6 +113,7 @@ public class BalloonGame extends MiniGame {
 
     HotAirBalloon hotAir1;
     HotAirBalloon hotAir2;
+    FloatingObject directionBoard;
 
 
     public synchronized void init() {
@@ -174,12 +176,12 @@ public class BalloonGame extends MiniGame {
         initHud();
 
         Bitmap hotAirImg1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir1.png", false);
-        //bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
         hotAir1 = new HotAirBalloon(hotAirImg1.getWidth()/2, screenY/2, hotAirImg1);
         Bitmap hotAirImg2 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir2.png", false);
-        //bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
         hotAir2 = new HotAirBalloon(screenX - hotAirImg2.getWidth()*3/2, screenY * 3/8, hotAirImg2);
 
+        Bitmap directionBoardImg = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/DirectionBoard.png", false);
+        directionBoard = new FloatingObject(screenX *1/2 - directionBoardImg.getWidth()/2, topBuffer, directionBoardImg);
     }
 
 
@@ -248,6 +250,7 @@ public class BalloonGame extends MiniGame {
 
         hotAir1.update(delta);
         hotAir2.update(delta);
+        directionBoard.update(delta);
     }
 
 
@@ -292,40 +295,35 @@ public class BalloonGame extends MiniGame {
     Process the touch events
      */
     private synchronized void processEvents() {
-        for(MotionEvent e : events) {
+        try {
+            for (MotionEvent e : events) {
 
 
-            switch(e.getActionMasked())
-            {
-                case MotionEvent.ACTION_DOWN:
-                    x1 = e.getX();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    x2 = e.getX();
-                    float deltaX = x2 - x1;
-                    if (Math.abs(deltaX) > MIN_DISTANCE)
-                    {
-                        int x = (int) e.getX();
-                        int y = (int) e.getY();
-                        if (x2 > x1)
-                        {
-                            Log.d("SWIPE", "LEft to RIGHT");
-                            checkSwipeX(y, true);
+                switch (e.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        x1 = e.getX();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        x2 = e.getX();
+                        float deltaX = x2 - x1;
+                        if (Math.abs(deltaX) > MIN_DISTANCE) {
+                            int x = (int) e.getX();
+                            int y = (int) e.getY();
+                            if (x2 > x1) {
+                                Log.d("SWIPE", "LEft to RIGHT");
+                                checkSwipeX(y, true);
+                            }
+
+                            // Right to left swipe action
+                            else {
+                                Log.d("SWIPE", "RIGHT to LEFT");
+                                checkSwipeX(y, false);
+                            }
+                        } else {
+                            // consider as something else - a screen tap for example
                         }
-
-                        // Right to left swipe action
-                        else
-                        {
-                            Log.d("SWIPE", "RIGHT to LEFT");
-                            checkSwipeX(y, false);
-                        }
-                    }
-                    else
-                    {
-                        // consider as something else - a screen tap for example
-                    }
-                    break;
-            }
+                        break;
+                }
                 /*if(e.getActionMasked()==MotionEvent.ACTION_DOWN) {
                 int x = (int) e.getX();
                 int y = (int) e.getY();
@@ -335,6 +333,10 @@ public class BalloonGame extends MiniGame {
                     break;
                 }
             }*/
+            }
+        }
+        catch(ConcurrentModificationException ex){
+            Log.e("ERROR", ex.toString());
         }
         events.clear();
     }
@@ -363,21 +365,8 @@ public class BalloonGame extends MiniGame {
     }
 
     private synchronized void processCorrect(TouchableBalloon num, int value){
-        if (rFrac.gType == rFrac.GEQ_game) {
-            scoreGEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.LEQ_game){
-            scoreLEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.GT_game){
-            scoreGT(num, value);
-        }
-        else if(rFrac.gType == rFrac.LT_game){
-            scoreLT(num, value);
-        }
-        else if(rFrac.gType == rFrac.EQ_game){
-            scoreEQ(num, value);
-        }
+        boolean isCorrect = satisfiesInequality(num, inequality);
+        processScore(isCorrect, value);
     }
 
     /*
@@ -402,21 +391,24 @@ public class BalloonGame extends MiniGame {
     //balloond do NOT satisfy inequality
     private synchronized void processIncorrect(TouchableBalloon num, int value) {
         //score player on opposite of inequality truth value
-        if (rFrac.gType == rFrac.GEQ_game) {
-            scoreLT(num, value);
+        boolean isCorrect = !satisfiesInequality(num, inequality);
+        processScore(isCorrect, value);
+    }
+
+    /*
+    Allan Add sounds here
+     */
+    private synchronized void processScore(boolean correct, int value){
+
+        TextAnimator textAnimator;
+        if (correct) {
+            textAnimator = new TextAnimator("+" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
+        } else {
+            textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
+            value = -value;
         }
-        else if(rFrac.gType == rFrac.LEQ_game){
-            scoreGT(num, value);
-        }
-        else if(rFrac.gType == rFrac.GT_game){
-            scoreLEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.LT_game){
-            scoreGEQ(num, value);
-        }
-        else if(rFrac.gType == rFrac.EQ_game){
-            scoreNEQ(num, value);
-        }
+        scoreAnimations.add(textAnimator);
+        score += value;
     }
 
     /*
@@ -537,6 +529,7 @@ public class BalloonGame extends MiniGame {
 
             hotAir1.draw(canvas, paint);
             hotAir2.draw(canvas, paint);
+            directionBoard.draw(canvas, paint);
 
             canvas.drawBitmap(HUDBoard, 0 , 0 , paint);
 
@@ -583,10 +576,6 @@ public class BalloonGame extends MiniGame {
         return true;
     }
 
-    /*************inequality functions************/
-    //all of these reward the player a given amount if the balloon passed as an argument satisfies
-    //the current inequality, and deducts the given amount if the balloon does not satisfy the
-    //given inequality
 
     private void scoreGEQ(TouchableBalloon num, int value){
         TextAnimator textAnimator;
@@ -654,20 +643,36 @@ public class BalloonGame extends MiniGame {
         scoreAnimations.add(textAnimator);
         score += value;
     }
-    private void scoreNEQ(TouchableBalloon num, int value){
+    private void scoreNEQ(TouchableBalloon num, int value) {
         TextAnimator textAnimator;
         if (!num.getValue().get_key().equals(target.get_key())) {
-            soundPool.play(balloonPopId,volume,volume,1,0,1);
-            textAnimator = new TextAnimator("+" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
+            soundPool.play(balloonPopId, volume, volume, 1, 0, 1);
+            textAnimator = new TextAnimator("+" + String.valueOf(value), screenX * 1 / 8, offset * 2 * 4 / 5, 0, 255, 0);
         } else {
-            textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
+            textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1 / 8, offset * 2 * 4 / 5, 0, 255, 0);
             value = -value;
-            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
+            soundPool.play(balloonDeflateId, volume, volume, 1, 0, 1);
         }
-        scoreAnimations.add(textAnimator);
-        score += value;
     }
-
+    //return true if the number satisfies the current inequality, false otherwise
+    private synchronized boolean satisfiesInequality(TouchableBalloon num, String inequality){
+        switch (inequality){
+            case ">":
+                return num.getValue().get_key() > target.get_key();
+            case "<":
+                return num.getValue().get_key() < target.get_key();
+            case ">=":
+                return num.getValue().get_key() >= target.get_key();
+            case "<=":
+                return num.getValue().get_key() <= target.get_key();
+            case "=":
+                return num.getValue().get_key() <= target.get_key();
+            default:
+                Log.e("ERROR", "Invalide inequality " + inequality);
+                return false;
+        }
+    }
+    
     public synchronized boolean isPopped(TouchableBalloon num){
         if(num.popping && !num.anim.playing) {
             Log.d("pop", "remove it");
