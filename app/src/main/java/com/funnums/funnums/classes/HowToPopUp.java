@@ -41,7 +41,7 @@ public class HowToPopUp extends Activity {
 
     //Image Resources
     //TODO set proper images
-    private final int [] bubbleImages  = {R.drawable.owl_popup, R.drawable.owl_popup2, R.drawable.owl_popup3};
+    private final int [] bubbleImages  = { R.drawable.bubble1, R.drawable.bubble2, R.drawable.bubble3, R.drawable.bubble4, R.drawable.bubble5 };
     private final int [] balloonImages  = {R.drawable.owl_popup2, R.drawable.owl_popup3, R.drawable.owl_popup};
     private final int [] owlImages  = {R.drawable.owl_popup3, R.drawable.owl_popup, R.drawable.owl_popup2};
 
