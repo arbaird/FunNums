@@ -54,7 +54,6 @@ public class GameCountdownTimer extends CountDownTimer {
      */
     @Override
     public void onFinish() {
-        com.funnums.funnums.minigames.MiniGame.playGameOverSound();
         completeGame();
 
         timeLeft = 0;
@@ -62,6 +61,7 @@ public class GameCountdownTimer extends CountDownTimer {
     }
 
     public static void completeGame(){
+        GameActivity.gameView.currentGame.playGameOverSound();
         com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
         int score = com.funnums.funnums.maingame.GameActivity.gameView.currentGame.score;
         com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);

@@ -101,7 +101,6 @@ public class BubbleGame extends MiniGame {
     private int bRadius;
 
     //used to implement sound
-    private SoundPool soundPool;
     private int bubblePopId;
     private int correctId;
     private int splashId;
@@ -133,6 +132,7 @@ public class BubbleGame extends MiniGame {
         correctId = soundPool.load(context,R.raw.correct,1);
         splashId = soundPool.load(context,R.raw.splash,1);
         wrongId = soundPool.load(context,R.raw.wrong,1);
+        gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
 
 
         //initalize random generator

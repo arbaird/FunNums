@@ -85,7 +85,6 @@ public class BalloonGame extends MiniGame {
     private int yRadius;
 
     //for implementing sound effects
-    private SoundPool soundPool;
     private int balloonDeflateId;
     private int balloonPopId;
     private int balloonInflateId;
@@ -126,6 +125,7 @@ public class BalloonGame extends MiniGame {
         balloonInflateId = soundPool.load(context,R.raw.ballooninflate,1);
         balloonPopId = soundPool.load(context,R.raw.balloonpop,1);
         wooshId=soundPool.load(context,R.raw.woosh,1);
+        gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
 
         //initalize random generator and make the first target between 5 and 8
         r = new Random();

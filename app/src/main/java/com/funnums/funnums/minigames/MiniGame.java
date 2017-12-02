@@ -33,6 +33,8 @@ public abstract class MiniGame {
     //gets the context and volume to be used for sound effects(required in soundPool)
     public Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
     float volume = GameActivity.gameView.volume;
+    public SoundPool soundPool;
+    public int gameOverSoundId;
 
     public void setCurrentMiniGame(MiniGame newGame) {
         com.funnums.funnums.maingame.GameActivity.gameView.setCurrentMiniGame(newGame);
@@ -56,12 +58,8 @@ public abstract class MiniGame {
         gameTimer.start();
     }
 
-    public static void playGameOverSound(){
-        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
-        float volume = GameActivity.gameView.volume;
-        SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        int timeUpId = soundPool.load(context, R.raw.flapp,1);
-        soundPool.play(timeUpId,volume,volume,1,0,1);
+    public void playGameOverSound(){
+        soundPool.play(gameOverSoundId,volume,volume,1,0,1);
     }
 
 
