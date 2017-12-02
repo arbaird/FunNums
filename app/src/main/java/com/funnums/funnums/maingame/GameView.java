@@ -1,6 +1,7 @@
 package com.funnums.funnums.maingame;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -53,6 +54,8 @@ public class GameView extends SurfaceView implements Runnable {
     //For sound effects
     private static SoundPool soundPool;
     private int pauseId;
+    private int timeUpId;
+    public float volume;
 
     // For drawing
     public Paint paint;
@@ -77,6 +80,7 @@ public class GameView extends SurfaceView implements Runnable {
     private final static int MIN_SLEEP_TIME = 1000 / (MAX_FPS*10);
     //context used so we can still access shared preferences from outside an Activity
     public Context context;
+    SharedPreferences prefs;
 
     GameView(Context context, String type) {
         //set up view properly
@@ -103,13 +107,19 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap menu = loadBitmap("button_quit.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
+        //get the stored data on this phone
+        prefs = context.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
+
         //set up backdrop for menus
         Bitmap backdrop = loadBitmap("MenuBoard.png", true);
 
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
         pauseId = soundPool.load(context, R.raw.pause,1);
+        timeUpId = soundPool.load(context, R.raw.timesup,1);
 
+        //get the volume float from sharedPreferences. Returns 1 (max volume) if no volume is stored.
+        volume=prefs.getFloat("volume", 1);
 
         //Bitmap backdrop = loadBitmap("rounded.png", true);
 
@@ -268,8 +278,9 @@ public class GameView extends SurfaceView implements Runnable {
         if(currentGame.isPaused)
             return pauseScreen.onTouch(e);
         //then check if game finished menu should handle the touch
-        if(currentGame.isFinished)
+        if(currentGame.isFinished) {
             return gameFinishedMenu.onTouch(e);
+        }
 
         //then, check if the player is touching the pause button
         int x = (int)e.getX();
@@ -286,9 +297,11 @@ public class GameView extends SurfaceView implements Runnable {
                 //pause the timer
                 currentGame.pauseButton.cancel();
                 currentGame.isPaused = true;
+
                 //play pause sound
-                soundPool.play(pauseId,1,1,1,0,1);
+                soundPool.play(pauseId,volume,volume,1,0,1);
                 //make sure current game has a timer before pausing it (Owl game doesn't use a timer)
+
                 if(currentGame.gameTimer != null)
                     pauseGameTimer();
                 return true;
@@ -347,6 +360,7 @@ public class GameView extends SurfaceView implements Runnable {
             }
         });
     }
+
 
 }
 

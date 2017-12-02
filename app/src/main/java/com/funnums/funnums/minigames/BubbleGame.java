@@ -103,11 +103,11 @@ public class BubbleGame extends MiniGame {
     private int bRadius;
 
     //used to implement sound
-    private SoundPool soundPool;
     private int bubblePopId;
     private int correctId;
     private int splashId;
     private int wrongId;
+
 
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
@@ -128,15 +128,13 @@ public class BubbleGame extends MiniGame {
         //game only finished when timer is done
         isFinished = false;
 
-        //gets the context to be used in soundPool
-        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
-
         //initializes soundPool
-        soundPool   = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        bubblePopId = soundPool.load(context,R.raw.bubble, 1);
-        correctId   = soundPool.load(context,R.raw.correct,1);
-        splashId    = soundPool.load(context,R.raw.splash, 1);
-        wrongId     = soundPool.load(context,R.raw.wrong,  1);
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        bubblePopId = soundPool.load(context,R.raw.bubble,1);
+        correctId = soundPool.load(context,R.raw.correct,1);
+        splashId = soundPool.load(context,R.raw.splash,1);
+        wrongId = soundPool.load(context,R.raw.wrong,1);
+        gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
 
 
 
@@ -379,17 +377,19 @@ public class BubbleGame extends MiniGame {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2) && !num.popping) {
                 processScore(num);
+
+                soundPool.play(bubblePopId,volume,volume,1,0,1);
+                numberList.remove(num);
+
                 numGen.decrement(num.getValue()); //maintain the count of the number on the screen
                 num.pop();
 
-                soundPool.play(bubblePopId,1,1,1,0,1);
-                //numberList.remove(num);
                 return true;
 
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
             }else{
-                soundPool.play(splashId,1,1,0,0,1);
+                soundPool.play(splashId,volume,volume,0,0,1);
             }
         }
         return false;
@@ -410,13 +410,13 @@ public class BubbleGame extends MiniGame {
         scoreAnimations.add(textAnimator);
 
         if (sum == target) {
-            soundPool.play(correctId,1,1,2,0,1);
+            soundPool.play(correctId,volume,volume,2,0,1);
             makeNewTarget();
             long newTime = 1000;
             com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
 
         } else if (sum > target) {
-            soundPool.play(wrongId,1,1,1,0,1);
+            soundPool.play(wrongId,volume,volume,2,0,1);
             resetGame();
 
             long newTime = -1000;

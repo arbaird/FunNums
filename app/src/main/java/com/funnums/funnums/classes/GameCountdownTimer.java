@@ -10,8 +10,14 @@ package com.funnums.funnums.classes;
 
 
 import java.util.concurrent.TimeUnit;
+
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.CountDownTimer;
 import android.content.Context;
+
+import com.funnums.funnums.R;
+import com.funnums.funnums.maingame.GameActivity;
 
 public class GameCountdownTimer extends CountDownTimer {
 
@@ -50,13 +56,15 @@ public class GameCountdownTimer extends CountDownTimer {
         displayTime = "0:00";
     }
 
+
     /*
         OnFinish, set flag to display game finished menu and set the score to be displayed. Also
         update high score, if applicable
      */
-    public void completeGame(){
+    public void completeGame() {
         com.funnums.funnums.maingame.GameActivity.gameView.currentGame.onFinish();
     }
+
 
     public long getTime() {
         return timeLeft;
