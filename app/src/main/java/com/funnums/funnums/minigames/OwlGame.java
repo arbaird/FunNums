@@ -913,16 +913,16 @@ public class OwlGame extends MiniGame {
         ScrollingBackground bg1 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/Mountains.png", screenY/8, screenY * 1/2 + overlap, 1f);
+                "OwlGame/Mountains.png", screenY/8, screenY * 3/8 + overlap, 1f);
 
         ScrollingBackground bg2 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/Beach.png", screenY * 1/2,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
+                "OwlGame/Beach.png", screenY * 3/8,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
         ScrollingBackground bg3 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/BeachBottom.png", (int)(screenY-tileBuffer - exprBuffer-overlap),  (int)(screenY -exprBuffer), 1.5f);
+                "OwlGame/BeachBottom.png", (int)(screenY-tileBuffer - exprBuffer-overlap/2),  (int)(screenY -exprBuffer), 1.5f);
         int waveOffset = overlap/5;//offset for space between the waves
         ScrollingBackground bg4 = new ScrollingBackground(
                 screenX,
