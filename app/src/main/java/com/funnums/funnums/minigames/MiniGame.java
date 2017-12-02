@@ -50,4 +50,11 @@ public abstract class MiniGame
         gameTimer.start();
     }
 
+    public void onFinish(){
+        isFinished = true;
+        com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);
+        //update high score, if new one is achieved
+        com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
+    }
+
 }

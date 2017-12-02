@@ -3,7 +3,7 @@ package com.funnums.funnums.classes;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
+import android.graphics.Bitmap;
 
 import com.funnums.funnums.maingame.GameActivity;
 
@@ -15,7 +15,7 @@ import java.util.Random;
 
 public class Cloud {
     public float x, y;
-    private static final int VEL_X = -2;
+    private static final int VEL_X = -1;
 
     private static Random r = new Random();
 
@@ -24,37 +24,32 @@ public class Cloud {
 
     public int size;
 
+    private Bitmap image;
 
-    public Cloud(float x, float y, int minY, int maxY, int size) {
+
+    public Cloud(float x, float y, String imageName) {
         this.x = x;
         this.y = y;
 
-        Log.d("CLOUD", "X: " + x + " Y: " + y);
-
-        maxYSpawn = GameActivity.screenY/2;
-        minYSpawn = GameActivity.screenY/8;
-
-        this.minYSpawn = minY;
-        this.maxYSpawn = maxY;
-
-        this.size = size;
+        this.image =  com.funnums.funnums.maingame.GameView.loadBitmap(imageName, false);
     }
 
-    public void update(long deltaTime) {
+    public void update() {
 
         //float delta = deltaTime*1.0f / com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS;
 
         x += VEL_X; //* delta;
-        if (x <= -200) {
+        if (x <= -image.getWidth()) {
             // wrap x so that cloud respawns on right side of the screen
-            x += GameActivity.screenX + 400;
-            // new y spawn point is between the given max and min span points
-            y = r.nextInt(maxYSpawn - minYSpawn) + minYSpawn;
+            x += GameActivity.screenX + image.getWidth();
         }
     }
 
     public void draw(Canvas canvas, Paint paint){
-        paint.setColor(Color.argb(255, 255, 255, 255));
-        canvas.drawCircle(x, y, size, paint);
+        canvas.drawBitmap(image, x, y,  paint);
+    }
+
+    public int getWidth(){
+        return image.getWidth();
     }
 }

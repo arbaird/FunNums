@@ -6,7 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Bitmap;
 import android.util.Log;
 /**
- * An owl for the owl game.
+ * An Object that floats to the top of the screen
  */
 
 public class FloatingObject {
@@ -14,20 +14,14 @@ public class FloatingObject {
     //coords
     float x, y;
 
-    float minY;
-    float maxY;
-
-    //maximum velocity that the owl will reach
+    //maximum velocity that the object will reach
     public float maxYVelocity;
 
-    //velocity, only y is used for now, might be nice to have x values just in case
+    //velocity in x and y direction
     public float xVelocity, yVelocity;
 
-    //velocity the owl flies at when it increases altitude
+    //velocity the object flies at when it increases altitude
     public float flyVelocity;
-
-    //size of the owl, jsust used to draw a circle for now
-    int size;
 
 
     public float gravity;
@@ -35,18 +29,14 @@ public class FloatingObject {
     public Bitmap image;
 
     /*
-        we can tweak the max velociy and fly velocity to make game more playable once this "owl"
-        is integrated into the game
+        constructor with hardcoded, default values for gravity and velocity
      */
     public FloatingObject(int x, int y, Bitmap image){
         this.x = x;
         this.y = y;
 
         maxYVelocity = 0.1f;
-
         flyVelocity = -0.1f;
-
-        size = 100;
 
         gravity = -0.05f;
 
@@ -59,15 +49,14 @@ public class FloatingObject {
 
         maxYVelocity = 0.5f;
 
-        flyVelocity = 2.0f;
+        this.flyVelocity = flyVelocity;
 
-        size = 100;
 
-        gravity = 0.5f;
+        this.gravity = gravity;
     }
 
     /*
-        Add velocity to the owl. Makes sure velocity does not exceed the max velocity
+        Add velocity to the object. Makes sure velocity does not exceed the max velocity
     */
     public void addVelocity(float x, float y){
         xVelocity += x;
@@ -85,7 +74,7 @@ public class FloatingObject {
     }
 
     /*
-        update the owl by applying gravity to its velocity
+        update the object by applying gravity to its velocity
      */
     public void update(long deltaTime){
         //convert nanoseconds to seconds
@@ -93,47 +82,26 @@ public class FloatingObject {
         //apply gravity to the owl's velocity, we can change gravity in OwlGame if needed
         addVelocity(0, gravity * delta);
         move();
-        //Log.d("HOTAIR", y + " " + minY + " " +maxY + " " + gravity);
-
     }
 
     /*
-        Right now, just draw a circle where the owl will be
+        Draw the object
      */
     public void draw(Canvas canvas, Paint paint){
-        //paint.setColor(Color.argb(255, 100, 100, 100));
         canvas.drawBitmap(image, (int)x, (int)y, paint);
     }
 
     /*
-        Move the owl
+        Move the object
      */
     void move() {
         x += xVelocity;
         y += yVelocity;
     }
 
-    /*
-        Call when you want the owl to increase altitude
-     */
-    public void increaseAltitude(){
-        addVelocity(0, -flyVelocity);
-    }
-
-    public void increaseFlyVelocity(float addVelocity){
-        flyVelocity += addVelocity;
-    }
-
-    public float getFlyVelocty(){
-        return flyVelocity;
-    }
-
     public float getY(){
         return y;
     }
 
-    public float getSize(){
-        return size;
-    }
 
 }

@@ -12,21 +12,20 @@ import android.view.MotionEvent;
 import com.funnums.funnums.maingame.GameActivity;
 
 /**
- * Created by austinbaird on 10/31/17.
+ *  Adapted from James Cho's "Beginner's Guide to Android Game Development
+ *  Menu displayed when the game is over
  */
 
 public class GameFinishedMenu
 {
     public String VIEW_LOG_TAG = "gameFinished";
 
-    //will use when we have a cooler background for pause menu
+    //back ground (board) for the menu
     private Bitmap bg;
-
+    //fade the current game behind this menu
     private Rect fade;
-
+    //buttons for the player to choose from
     private UIButton playAgain, mainMenu;
-
-    private Rect backDropRect;
 
     //space between each button
     private int padding;
@@ -37,80 +36,47 @@ public class GameFinishedMenu
     //the message displayed on the game over menu
     private String gameFinishedMessage;
 
+    //coords, along with dimensions
     int x;
     int y;
     int width, height;
-
+    //scale of the text size so it fits inside the menu
     float xScale;
-
-    public GameFinishedMenu(int left, int top, int right, int bottom,
-                     UIButton resumeButton,  UIButton menuButton, int score) {
-        backDropRect = new Rect(left, top, right, bottom);
-        fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
-
-        playAgain = resumeButton;
-        mainMenu = menuButton;
-
-        padding = backDropRect.height()/8;//100;
-
-        int centeredButtonX = backDropRect.centerX() - playAgain.getWidth()/2;
-
-
-        int buttonY = backDropRect.centerY();
-        int numButtons = 2;
-        int spaceBetweenButtons = (backDropRect.height() - backDropRect.centerY()) / numButtons;
-
-        playAgain.setRect(centeredButtonX, buttonY);
-        //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
-        mainMenu.setRect(centeredButtonX, buttonY + spaceBetweenButtons*1);
-
-
-        gameFinishedMessage = "Great Job! Your Score is ";
-
-        this.score = String.valueOf(score);
-
-    }
 
     public GameFinishedMenu(int left, int top, int width, int height,
                      UIButton resumeButton,  UIButton menuButton, Bitmap bg, Paint paint) {
 
-        /*
-        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
-        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
 
-
-new PauseMenu(GameActivity.screenX/4,
-                                    offset,
-                                    GameActivity.screenX * 3/4,
-                                    GameActivity.screenY - offset,
-                                    resumeButton,
-                                    menuButton);
-
-         */
         x = left;
         y = top;
         this.width = width;
         this.height = height;
-        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        //create a scaled version of the given background image for the board;
         this.bg =  Bitmap.createScaledBitmap(bg, left + width,top + height,true);
+        //create translucent Rect to draw over game behind the menu
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
-        //UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
+        //create the buttons the player can use
         playAgain = new UIButton(0,0,0,0, resumeButton.getImg(), resumeButton.getImgDown());
         mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
 
+        //magic number for spacing, but seems to look good across different sized phones
         padding = 100;
-
-        int buttonY = y + height/2;//.centerY();
+        //Y coord for the buttons
+        int buttonY = y + height/2;
+        //in case we add more buttons, spacing between buttons will already be handled
         int numButtons = 2;
+        //calculate space between buttons based on number of buttons
+        //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
         int spaceBetweenButtons = (height - buttonY) / numButtons;
         int centeredButtonX = (x+width/2) - playAgain.getWidth()/4;
 
+        //set region corresponding to button clicks
         playAgain.setRect(centeredButtonX, buttonY);
-        //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
         mainMenu.setRect(centeredButtonX, buttonY + spaceBetweenButtons*1);
-
+        //give message for game over screen
         gameFinishedMessage = "Great Job! Your Score is ";
+        //adjust the size of the text so it fits inside the menu
         adjustTextScale(paint, gameFinishedMessage);
     }
 
@@ -125,20 +91,18 @@ new PauseMenu(GameActivity.screenX/4,
         paint.setColor(Color.argb(126, 0, 0, 0));
         canvas.drawRect(fade, paint);
 
-        //draw the rectangle containing the pasue menu buttons
-        //paint.setColor(Color.argb(255, 100, 100, 100));
-        //canvas.drawRect(backDropRect, paint);
-
         paint.setColor(Color.argb(255, 100, 100, 100));
-        //TODO uncomment when we have a cool backdrop for menu instead of a grey rectangle
+        //draw the board
         canvas.drawBitmap(bg, x, y, paint);
 
-        int centeredX = GameActivity.screenX/2;//(x+x+width)/2;
-        //Draw Current
+        //center of screen
+        int centeredX = GameActivity.screenX/2;
+        //Set up the text appropriately
         paint.setColor(Color.argb(255, 0, 0, 255));
         paint.setTextSize(45);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextScaleX(xScale);
+        //draw the text
         canvas.drawText(gameFinishedMessage, centeredX, y + padding*2, paint);
         canvas.drawText(score,  centeredX, y + padding*3, paint);
 
@@ -152,6 +116,7 @@ new PauseMenu(GameActivity.screenX/4,
     {
         int x = (int)e.getX();
         int y = (int)e.getY();
+        //if user touches down, change button appearances so they look pressed
         if (e.getAction() == MotionEvent.ACTION_DOWN)
         {
             playAgain.onTouchDown(x, y);
@@ -159,6 +124,7 @@ new PauseMenu(GameActivity.screenX/4,
         }
         if (e.getAction() == MotionEvent.ACTION_UP)
         {
+            //check if either button is pressed down, and perform appropriate actions for each button if they are
             if (playAgain.isPressed(x, y))
             {
                 playAgain.cancel();
@@ -172,6 +138,7 @@ new PauseMenu(GameActivity.screenX/4,
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 com.funnums.funnums.maingame.GameActivity.gameView.getContext().startActivity(i);
             }
+            //otherwise make buttons appear unselected
             else
             {
                 playAgain.cancel();
@@ -181,28 +148,29 @@ new PauseMenu(GameActivity.screenX/4,
         return true;
     }
 
+    /*
+        Adjust the x scale of the text so it fits inside the menu
+     */
     void adjustTextScale(Paint paint, String text) {
         // do calculation with scale of 1.0 (no scale)
         paint.setTextScaleX(1.0f);
         Rect bounds = new Rect();
-        // ask the paint for the bounding rect if it were to draw this
-        // text.
+        // ask the paint for the bounding rect if it were to draw this text.
         paint.setTextSize(45);
         paint.getTextBounds(text, 0, text.length(), bounds);
         // determine the width
         int w = bounds.right - bounds.left;
-        // calculate the baseline to use so that the
-        // entire text is visible including the descenders
-        int text_h = bounds.bottom-bounds.top;
-        //mTextBaseline=bounds.bottom+((height-text_h)/2);
         // determine how much to scale the width to fit the view
-        float xscale = ((float) (width/*-getPaddingLeft()-getPaddingRight()*/)) / w;
+        float xscale = ((float) width) / w;
         // set the scale for the text paint
         paint.setTextScaleX(xscale);
 
         this.xScale = xscale;
     }
 
+    /*
+        Change the backdrop image
+     */
     public void setBackDrop(Bitmap bg){
         this.bg =  Bitmap.createScaledBitmap(bg, x + width,y + height,true);
     }

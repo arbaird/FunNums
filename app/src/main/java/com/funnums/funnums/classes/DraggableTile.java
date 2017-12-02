@@ -1,5 +1,6 @@
 package com.funnums.funnums.classes;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -24,8 +25,10 @@ public class DraggableTile extends DraggableObject{
     //for now they make the code easier to read)
     float left, top, right, bottom;
 
+    Bitmap image;
+
     // Constructor:
-    public DraggableTile(float x, float y, float tileLength,  String value) {
+    public DraggableTile(float x, float y, float tileLength,  String value, Bitmap image) {
 
         super(x, y, tileLength);
         this.value = value;
@@ -41,6 +44,9 @@ public class DraggableTile extends DraggableObject{
 
         used = false;
         isOperator = false;
+
+        this.image = image;
+        this.image = Bitmap.createScaledBitmap(image, (int)tileLength, (int)tileLength ,false);
     }
 
     //Getter methods
@@ -86,7 +92,7 @@ public class DraggableTile extends DraggableObject{
         paint.setColor(Color.argb(255, 245, 228, 118));
         //Different color for operators
         if (isOperator) paint.setColor(Color.argb(255, 245, 191, 0));
-        canvas.drawRect(left, top, right, bottom, paint);
+        canvas.drawBitmap(image, left, top,  paint);
 
         //draw the value of the number in the center of the rectangle (tile)
         paint.setColor(Color.argb(100, 0, 0, 0));

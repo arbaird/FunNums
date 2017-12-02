@@ -16,20 +16,19 @@ import android.content.Context;
 public class GameCountdownTimer extends CountDownTimer {
 
     private String displayTime;/*String representation of the Countdown*/
-    //GameCountdownTimer gameTimer;
-
-
+    //time til the timer is complete
     private long timeLeft;
 
     public boolean isPaused;
-
+    //context used to call android functions from surface view
     public Context context;
 
     //Constructor
     public GameCountdownTimer(long millisInFuture, long countDownInterval) {
         super(millisInFuture, countDownInterval);
+        //initially not paused
         isPaused = false;
-
+        //perform first tick
         onTick(millisInFuture);
     }
 
@@ -42,10 +41,7 @@ public class GameCountdownTimer extends CountDownTimer {
                 TimeUnit.MILLISECONDS.toSeconds(timeLeft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft)));
     }
 
-    /*
-        OnFinish, set flag to display game finished menu and set the score to be displayed. Also
-        update high score, if applicable
-     */
+    //perform end game logic and reset timer values
     @Override
     public void onFinish() {
         completeGame();
@@ -54,18 +50,17 @@ public class GameCountdownTimer extends CountDownTimer {
         displayTime = "0:00";
     }
 
-    public static void completeGame(){
-        com.funnums.funnums.maingame.GameActivity.gameView.currentGame.isFinished = true;
-        int score = com.funnums.funnums.maingame.GameActivity.gameView.currentGame.score;
-        com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);
-
-        com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
+    /*
+        OnFinish, set flag to display game finished menu and set the score to be displayed. Also
+        update high score, if applicable
+     */
+    public void completeGame(){
+        com.funnums.funnums.maingame.GameActivity.gameView.currentGame.onFinish();
     }
 
     public long getTime() {
         return timeLeft;
     }
-
 
     //String representation of countdown
     @Override
