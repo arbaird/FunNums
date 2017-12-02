@@ -186,7 +186,7 @@ public class OwlGame extends MiniGame {
 
         initBackgrounds();
 
-        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/FunCartoon2.ttf");
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Mantop.ttf");
         GameActivity.gameView.paint.setTypeface(tf);
     }
 
@@ -913,12 +913,12 @@ public class OwlGame extends MiniGame {
         ScrollingBackground bg1 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/Mountains.png", screenY/8, screenY * 3/8 + overlap, 1f);
+                "OwlGame/Mountains.png", screenY/8, screenY * 1/2 + overlap, 1f);
 
         ScrollingBackground bg2 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/Beach.png", screenY * 3/8,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
+                "OwlGame/Beach.png", screenY * 1/2,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
         ScrollingBackground bg3 = new ScrollingBackground(
                 screenX,
                 screenY,
