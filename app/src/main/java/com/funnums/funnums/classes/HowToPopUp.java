@@ -43,7 +43,7 @@ public class HowToPopUp extends Activity {
     //TODO set proper images
     private final int [] bubbleImages  = { R.drawable.bubble1, R.drawable.bubble2, R.drawable.bubble3, R.drawable.bubble4, R.drawable.bubble5 };
     private final int [] balloonImages  = { R.drawable.balloon1, R.drawable.balloon2, R.drawable.balloon3, R.drawable.balloon4, R.drawable.balloon5 };
-    private final int [] owlImages  = {R.drawable.owl_popup3, R.drawable.owl_popup, R.drawable.owl_popup2};
+    private final int [] owlImages  = { R.drawable.owl1, R.drawable.owl2, R.drawable.owl3, R.drawable.owl4, R.drawable.owl5 };
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
