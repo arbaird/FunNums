@@ -19,7 +19,6 @@ import com.funnums.funnums.R;
  */
 
 public class HowToPopUp extends Activity {
-    static final public String TAG = "PopUp";
 
     final private double POPUP_XSCREEN_PERCENT_USED = 0.80;   /*80%*/
     final private double POPUP_YSCREEN_PERCENT_USED = 0.80;   /*80%*/
@@ -34,17 +33,19 @@ public class HowToPopUp extends Activity {
     private int [] imagesUsed;
 
     //PopUp View Resources
-    //private int numberOfTips;
     private Button nextTipButton;
     private Button previousTipButton;
     private RelativeLayout rl;
 
     //Image Resources
-    //TODO set proper images
-    private final int [] bubbleImages  = { R.drawable.bubble1, R.drawable.bubble2, R.drawable.bubble3, R.drawable.bubble4, R.drawable.bubble5 };
-    private final int [] balloonImages  = { R.drawable.balloon1, R.drawable.balloon2, R.drawable.balloon3, R.drawable.balloon4, R.drawable.balloon5 };
-    private final int [] owlImages  = { R.drawable.owl1, R.drawable.owl2, R.drawable.owl3, R.drawable.owl4, R.drawable.owl5 };
+    private final int [] bubbleImages  = { R.drawable.bubble1, R.drawable.bubble2,
+                        R.drawable.bubble3, R.drawable.bubble4, R.drawable.bubble5 };
+    private final int [] balloonImages  = { R.drawable.balloon1, R.drawable.balloon2,
+                        R.drawable.balloon3, R.drawable.balloon4, R.drawable.balloon5 };
+    private final int [] owlImages  = { R.drawable.owl1, R.drawable.owl2, R.drawable.owl3,
+                        R.drawable.owl4, R.drawable.owl5 };
 
+    /*Generates a new pop up activity with the proper background images (How to play each game)*/
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -78,11 +79,11 @@ public class HowToPopUp extends Activity {
                 (int) (screenY * POPUP_YSCREEN_PERCENT_USED)
         );
 
-        Log.d(TAG, "PopUp window created");
     }
 
+    /* Next_button event handling updates the background picture if there are more pictures to show
+    * Disables next button if last image is being shown, and reveals previous button if needed.*/
     public void onPressedNextTip(View v) {
-        Log.d(TAG, "Next Tip Pressed");
 
         //New image if another one is available
         if ( currentImageIndex < imagesUsed.length - 1){
@@ -101,8 +102,9 @@ public class HowToPopUp extends Activity {
 
     }
 
+    /* Previous_button event handling going back to previous pictures shown if there are any
+    * Disables previous button if first image is being shown, and reveals next button if needed.*/
     public void onPressedPreviousTip(View v) {
-        Log.d(TAG, "Previous Tip Pressed");
 
         //New image if another one is available
         if ( currentImageIndex > 0){
@@ -120,7 +122,7 @@ public class HowToPopUp extends Activity {
         }
     }
 
-    //Return Proper Array of Images
+    //Return Proper Array of Images based on the game type passed as extra info by the event handler
     private int [] getImages() {
         int [] imageArr = null;
 

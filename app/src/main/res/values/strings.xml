@@ -20,6 +20,6 @@
     <string name="game2">Balloons</string>
     <string name="game3">Owl</string>
 
-    <string name="pop_up_next">Next Tip</string>
-    <string name="pop_up_prev">Previous Tip</string>
+    <string name="pop_up_next">Next</string>
+    <string name="pop_up_prev">Previous</string>
 </resources>
