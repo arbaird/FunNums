@@ -136,7 +136,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
         //do not update high score if given score is lower
         if(currentHighScore > score)
-            return;
+            score = currentHighScore;
         else{
             editor.putLong(currentMiniGame + "HighScore", score);
             editor.apply();

@@ -43,6 +43,8 @@ public class GameFinishedMenu
     //scale of the text size so it fits inside the menu
     float xScale;
 
+    float TEXT_SIZE = 60;
+
     public GameFinishedMenu(int left, int top, int width, int height,
                      UIButton resumeButton,  UIButton menuButton, Bitmap bg, Paint paint) {
 
@@ -63,13 +65,13 @@ public class GameFinishedMenu
         //magic number for spacing, but seems to look good across different sized phones
         padding = 100;
         //Y coord for the buttons
-        int buttonY = y + height/2;
+        int buttonY = y + height *5/8;
         //in case we add more buttons, spacing between buttons will already be handled
         int numButtons = 2;
         //calculate space between buttons based on number of buttons
         //if there were more buttons, each would be placed at buttonY + spaceBetweenButtons*n
         int spaceBetweenButtons = (height - buttonY) / numButtons;
-        int centeredButtonX = (x+width/2) - playAgain.getWidth()/4;
+        int centeredButtonX = GameActivity.screenX/2 - playAgain.getWidth()/2;
 
         //set region corresponding to button clicks
         playAgain.setRect(centeredButtonX, buttonY);
@@ -77,6 +79,7 @@ public class GameFinishedMenu
         //give message for game over screen
         gameFinishedMessage = "Great Job! Your Score is ";
         //adjust the size of the text so it fits inside the menu
+        //adjustTextSize(paint, gameFinishedMessage);
         adjustTextScale(paint, gameFinishedMessage);
     }
 
@@ -99,12 +102,12 @@ public class GameFinishedMenu
         int centeredX = GameActivity.screenX/2;
         //Set up the text appropriately
         paint.setColor(Color.argb(255, 0, 0, 255));
-        paint.setTextSize(45);
+        paint.setTextSize(TEXT_SIZE);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextScaleX(xScale);
         //draw the text
-        canvas.drawText(gameFinishedMessage, centeredX, y + padding*2, paint);
-        canvas.drawText(score,  centeredX, y + padding*3, paint);
+        canvas.drawText(gameFinishedMessage, centeredX, y + height/3, paint);
+        canvas.drawText(score,  centeredX, y + + height/3 + padding, paint);
 
         //draw the buttons
         playAgain.render(canvas, paint);
@@ -156,7 +159,7 @@ public class GameFinishedMenu
         paint.setTextScaleX(1.0f);
         Rect bounds = new Rect();
         // ask the paint for the bounding rect if it were to draw this text.
-        paint.setTextSize(45);
+        paint.setTextSize(TEXT_SIZE);
         paint.getTextBounds(text, 0, text.length(), bounds);
         // determine the width
         int w = bounds.right - bounds.left;
@@ -174,4 +177,26 @@ public class GameFinishedMenu
     public void setBackDrop(Bitmap bg){
         this.bg =  Bitmap.createScaledBitmap(bg, x + width,y + height,true);
     }
+
+    /*
+        Adjust text size, in Y direction
+     */
+    void adjustTextSize(Paint paint, String text) {
+        //start with large size
+        paint.setTextSize(100);
+        paint.setTextScaleX(1.0f);
+        Rect bounds = new Rect();
+        // ask the paint for the bounding rect if it were to draw this large text
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        // get the height that would have been produced
+        int w = bounds.right - bounds.left;
+        // make the text text up 80% of the height
+        float target = (float)width *.8f;
+        // figure out what textSize setting would create that height of text
+        float size = ((target/w)*100f);
+        // and set it into the paint
+        paint.setTextSize(size);
+        TEXT_SIZE = size;
+    }
+
 }

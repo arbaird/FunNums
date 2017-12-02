@@ -20,6 +20,7 @@ import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.ExpressionGenerator;
 import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
+import com.funnums.funnums.uihelpers.HUDSquare;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.classes.Owl;
@@ -117,7 +118,7 @@ public class OwlGame extends MiniGame {
     private int clickId;
     private int flappId;
 
-
+    HUDSquare curHUD;
 
     public synchronized void init() {
 
@@ -173,21 +174,17 @@ public class OwlGame extends MiniGame {
             gameTimer.cancel();
         gameTimer = null;
 
-        //set up the pause button
-        int offset = 100;
-        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
-        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
 
-        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
-
-        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
-        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+        //set the backdrop for the menu and pause screen
+        com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("OwlGame/OwlMenuBoard.png");
 
         initBackgrounds();
 
         Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Mantop.ttf");
         GameActivity.gameView.paint.setTypeface(tf);
+
+        Paint paint = new Paint();
+        curHUD = new HUDSquare(0,0, 100, 100, "Score", String.valueOf(score), paint);
     }
 
     //Update method to be called by game loop
@@ -226,6 +223,8 @@ public class OwlGame extends MiniGame {
             //draw the clouds
             for(Cloud c : clouds)
                 c.draw(canvas, paint);
+
+            curHUD.draw(canvas, paint, String.valueOf(score));
 
             //draw the owl
             owl.draw(canvas, paint);

@@ -38,7 +38,7 @@ public class HUDSquare {
 
     public Bitmap image;
 
-    public HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint, Bitmap image) {
+    public HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint) {
         this.left = x;
         this.top = y;
         this.height = height;
@@ -58,8 +58,10 @@ public class HUDSquare {
         adjustTextSize(paint, height, msg);
         adjustTextScale(paint, height, msg);
 
-        this.image = image;
+        this.image = com.funnums.funnums.maingame.GameView.loadBitmap("HUD element.png", false);
         this.image = Bitmap.createScaledBitmap(image, (int)width, (int)height ,false);
+
+
     }
 
 
@@ -83,23 +85,15 @@ public class HUDSquare {
         draw the square with message and value
      */
     public void draw(Canvas canvas, Paint paint, String val){
-        //draw border
-        /*paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(10);*/
+
         canvas.drawBitmap(image, left, top,  paint);
 
-        //fill the square, less large since we are only drawing the value
-        /*paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
-        canvas.drawRect(left, top, right, bottom-MARGIN*2, paint);*/
-
         //prepare the text
-        paint.setColor(Color.argb(255, 255, 0, 0));
+        paint.setColor(Color.argb(255, 0, 0, 0));
         paint.setTextSize(TEXT_SIZE);
         paint.setTextScaleX(xScale);
         paint.setTextAlign(Paint.Align.CENTER);
-        //draaw the message and value underneath the message
+        //draw the message and value underneath the message
         canvas.drawText(msg, (left + right)/2 , (top + bottom)/2 - height/8, paint);
         canvas.drawText(val, (left + right)/2 , bottom -  height/8, paint);
 

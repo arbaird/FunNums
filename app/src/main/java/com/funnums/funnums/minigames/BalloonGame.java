@@ -156,12 +156,6 @@ public class BalloonGame extends MiniGame {
         //Initialize timer to 60 seconds, update after 1 sec interval
         initTimer(60000);
 
-        //set up the pause button
-        //magic number for offset, but seems to look fine across different sized phones
-        int offset = 100;
-        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
-        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
 
         balloonsProcessed = 0;
         inBalloonGenBuffer = false;
@@ -177,9 +171,7 @@ public class BalloonGame extends MiniGame {
         bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
 
         //set the backdrop for the menu and pause screen
-        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
-        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
-        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+        com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("BalloonGame/BalloonMenuBoard.png");
 
         initHud();
 
@@ -353,6 +345,8 @@ public class BalloonGame extends MiniGame {
        if the balloon popped satisfies the given inequality, and deducts points otherwise
     */
     private synchronized void processScore(TouchableBalloon num, int value) {
+        if(isFinished)
+            return;
         if(num.getX() <= screenX/2)
             processCorrect(num, value);
         else
@@ -570,6 +564,10 @@ public class BalloonGame extends MiniGame {
 
     //return true if the number satisfies the current inequality, false otherwise
     private synchronized boolean satisfiesInequality(TouchableBalloon num, String inequality){
+        if(num.getValue().get_key() <= 0 ||num.getValue().get_key() >= 1) {
+            Log.e(VIEW_LOG_TAG, "Invalid fraction value: " + num.getValue().toString());
+            return false;
+        }
         switch (inequality){
             case ">":
                 return num.getValue().get_key() > target.get_key();
@@ -602,12 +600,12 @@ public class BalloonGame extends MiniGame {
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
         Paint paint = GameActivity.gameView.paint;
-        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
+
         //set up HUDSquares and place them based on size of phone
-        inequalityHUD = new HUDSquareNoLabel(screenX * 7/16, topBuffer - offset*2, screenX/8, offset*2, "<=", paint, img);
-        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", target.toString(), paint, img);
-        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint, img);
-        scoreHUD = new HUDSquare(screenX * 1/8, offset/5,  screenX * 5/32, offset*2*4/5, "Score", String.valueOf(score), paint, img);
+        inequalityHUD = new HUDSquareNoLabel(screenX * 7/16, topBuffer - offset*2, screenX/8, offset*2, "<=", paint);
+        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", target.toString(), paint);
+        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint);
+        scoreHUD = new HUDSquare(screenX * 1/8, offset/5,  screenX * 5/32, offset*2*4/5, "Score", String.valueOf(score), paint);
     }
 
     /*

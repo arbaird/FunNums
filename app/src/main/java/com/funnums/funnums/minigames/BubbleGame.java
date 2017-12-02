@@ -168,16 +168,6 @@ public class BubbleGame extends MiniGame {
 
 
 
-
-
-
-        //set up the pause button
-        int offset = 100;
-        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
-        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
-
-
         Log.d(TAG, "init pauseButton: " + pauseButton);
 
 
@@ -198,11 +188,8 @@ public class BubbleGame extends MiniGame {
         //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
 
 
-        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
-        int menuOffset = 100;
-
-        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
-        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+        //set the backdrop for the menu and pause screen
+        com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("BubbleMenuBoard.png");
 
 
         initHud();
@@ -600,14 +587,13 @@ public class BubbleGame extends MiniGame {
     private synchronized void initHud(){
         int offset = 50;
         Paint paint = GameActivity.gameView.paint;
-        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
         //HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint)
-        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint, img);
+        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint);
         //curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
-        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint, img);
+        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint);
         //targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
         //timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
-        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint, img);
+        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint);
     }
 
 

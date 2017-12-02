@@ -12,6 +12,8 @@ import android.graphics.Rect;
 import android.graphics.Bitmap;
 import android.view.MotionEvent;
 
+import com.funnums.funnums.maingame.GameActivity;
+
 public class PauseMenu {
 
     public String VIEW_LOG_TAG = "pause";
@@ -53,11 +55,11 @@ public class PauseMenu {
         mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
 
         //determine the space between buttons
-        padding = height/4;
+        padding = height/3;
 
         //set region corresponding to button clicks
-        resume.setRect(left + width/2 - resume.getWidth()/4, top +padding);
-        mainMenu.setRect(left + width/2- resume.getWidth()/4, top + padding*2);
+        resume.setRect(GameActivity.screenX/2 - resume.getWidth()/2, top +padding);
+        mainMenu.setRect(GameActivity.screenX/2- resume.getWidth()/2, top + padding*2);
     }
 
 

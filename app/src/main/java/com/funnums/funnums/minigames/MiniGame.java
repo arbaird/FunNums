@@ -1,6 +1,7 @@
 package com.funnums.funnums.minigames;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.media.AudioManager;
@@ -35,6 +36,16 @@ public abstract class MiniGame {
     float volume = GameActivity.gameView.volume;
     public SoundPool soundPool;
     public int gameOverSoundId;
+
+    public MiniGame(){
+        //set up the pause button
+        //magic number for offset, but seems to look fine across different sized phones
+
+        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pauseButton.png", true);
+        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pauseButtonDown.png", true);
+        int offset = pauseImg.getHeight();
+        pauseButton = new UIButton(com.funnums.funnums.maingame.GameActivity.screenX - pauseImg.getWidth(), 0, com.funnums.funnums.maingame.GameActivity.screenX, offset, pauseImg, pauseImgDown);
+    }
 
     public void setCurrentMiniGame(MiniGame newGame) {
         com.funnums.funnums.maingame.GameActivity.gameView.setCurrentMiniGame(newGame);

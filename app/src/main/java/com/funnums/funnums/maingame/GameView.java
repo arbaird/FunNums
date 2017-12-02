@@ -99,19 +99,19 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setTypeface(tf);
 
         //set up buttons for game finished menu and pause screen
-        Bitmap resumeDown = loadBitmap("button_resume_down.png", true);
-        Bitmap resume = loadBitmap("button_resume.png", true);
+        Bitmap resumeDown = loadBitmap("resumebuttonDown.png", true);
+        Bitmap resume = loadBitmap("resumebutton.png", true);
         UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
 
-        Bitmap menuDown = loadBitmap("button_quit_down.png", true);
-        Bitmap menu = loadBitmap("button_quit.png", true);
+        Bitmap menuDown = loadBitmap("quitbuttonDown.png", true);
+        Bitmap menu = loadBitmap("quitbutton.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
         //get the stored data on this phone
         prefs = context.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
 
         //set up backdrop for menus
-        Bitmap backdrop = loadBitmap("MenuBoard.png", true);
+        Bitmap backdrop = loadBitmap("BubbleMenuBoard.png", true);
 
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
@@ -361,6 +361,14 @@ public class GameView extends SurfaceView implements Runnable {
         });
     }
 
+    /*
+        Sets the image for the menu backdrop, should vary based on current game
+     */
+    public void setMenuBackdrop(String fileName){
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap(fileName, false);
+        pauseScreen.setBackDrop(backdrop);
+        gameFinishedMenu.setBackDrop(backdrop);
+    }
 
 }
 

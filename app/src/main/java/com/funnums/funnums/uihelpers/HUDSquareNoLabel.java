@@ -10,8 +10,8 @@ import android.graphics.Bitmap;
  */
 
 public class HUDSquareNoLabel extends HUDSquare {
-    public HUDSquareNoLabel(float x, float y, float width, float height, String value, Paint paint, Bitmap image) {
-        super(x, y, width, height, value, value, paint, image);
+    public HUDSquareNoLabel(float x, float y, float width, float height, String value, Paint paint) {
+        super(x, y, width, height, value, value, paint);
         this.image = Bitmap.createScaledBitmap(image, (int)width, (int)height-MARGIN*2 ,false);
     }
 
@@ -19,19 +19,12 @@ public class HUDSquareNoLabel extends HUDSquare {
        Draw only the value, no label
     */
     public void draw(Canvas canvas, Paint paint, String val){
-        //draw border
-        /*paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(10);*/
+
         canvas.drawBitmap(image, left, top,  paint);
 
-        //fill the square, less large since we are only drawing the value
-        /*paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
-        canvas.drawRect(left, top, right, bottom-MARGIN*2, paint);*/
 
         //prepare the text
-        paint.setColor(Color.argb(255, 255, 0, 0));
+        paint.setColor(Color.argb(255, 0, 0, 0));
         paint.setTextSize(TEXT_SIZE);
         paint.setTextScaleX(xScale);
         paint.setTextAlign(Paint.Align.CENTER);
