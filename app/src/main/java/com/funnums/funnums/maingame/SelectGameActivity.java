@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.funnums.funnums.classes.PopUp;
+import com.funnums.funnums.classes.HowToPopUp;
 
 /**
  * Created by Derek on 10/25/2017.
@@ -57,7 +57,7 @@ public class SelectGameActivity extends AppCompatActivity {
 
     public void onPressedHowToBubbles(View v) {
         Log.d(TAG, "How To Bubble game pressed");
-        Intent i = new Intent(this, PopUp.class);
+        Intent i = new Intent(this, HowToPopUp.class);
 
         i.putExtra("minigame", "bubble");
 
@@ -66,7 +66,7 @@ public class SelectGameActivity extends AppCompatActivity {
 
     public void onPressedHowToBalloons(View v) {
         Log.d(TAG, "How To Balloon game pressed");
-        Intent i = new Intent(this, PopUp.class);
+        Intent i = new Intent(this, HowToPopUp.class);
 
         i.putExtra("minigame", "balloon");
 
@@ -75,7 +75,7 @@ public class SelectGameActivity extends AppCompatActivity {
 
     public void onPressedHowToOwl(View v) {
         Log.d(TAG, "How To Owl game pressed");
-        Intent i = new Intent(this, PopUp.class);
+        Intent i = new Intent(this, HowToPopUp.class);
 
         i.putExtra("minigame", "owl");
 

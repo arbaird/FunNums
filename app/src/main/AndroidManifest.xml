@@ -31,7 +31,7 @@
             android:screenOrientation="portrait">
         </activity>
 
-        <activity android:name=".classes.PopUp"
+        <activity android:name=".classes.HowToPopUp"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.CustomPopUpTheme">
         </activity>
