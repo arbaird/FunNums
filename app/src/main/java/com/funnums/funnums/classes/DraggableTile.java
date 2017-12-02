@@ -27,8 +27,10 @@ public class DraggableTile extends DraggableObject{
 
     Bitmap image;
 
+    float tileLength;
+
     // Constructor:
-    public DraggableTile(float x, float y, float tileLength,  String value, Bitmap image) {
+    public DraggableTile(float x, float y, float tileLength,  String value) {
 
         super(x, y, tileLength);
         this.value = value;
@@ -45,8 +47,10 @@ public class DraggableTile extends DraggableObject{
         used = false;
         isOperator = false;
 
-        this.image = image;
+        this.image = com.funnums.funnums.maingame.GameView.loadBitmap("OwlGame/tile1.png", false);
         this.image = Bitmap.createScaledBitmap(image, (int)tileLength, (int)tileLength ,false);
+
+        this.tileLength = tileLength;
     }
 
     //Getter methods
@@ -67,7 +71,11 @@ public class DraggableTile extends DraggableObject{
     //Setter methods
     public void setUsed(boolean used){ this.used = used; }
 
-    public void setIsOperator(boolean isOperator){ this.isOperator = isOperator; }
+    public void setIsOperator(boolean isOperator){
+        this.isOperator = isOperator;
+        this.image = com.funnums.funnums.maingame.GameView.loadBitmap("OwlGame/tile2.png", false);
+        this.image = Bitmap.createScaledBitmap(image, (int)tileLength, (int)tileLength ,false);
+    }
 
     //Abstract overloaded methods
     @Override

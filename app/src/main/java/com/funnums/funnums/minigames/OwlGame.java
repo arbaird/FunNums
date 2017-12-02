@@ -468,7 +468,7 @@ public class OwlGame extends MiniGame {
 
     // Generates a draggable tiles on screen
     private synchronized void generateTiles() {
-        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
+
 
         float x, y;
         String value;
@@ -482,7 +482,7 @@ public class OwlGame extends MiniGame {
 
             value = expr[i];
 
-            til = new DraggableTile (x, y, tLength, value, img);
+            til = new DraggableTile (x, y, tLength, value);
             tileList.add(til);
 
             //Set to operator type
@@ -499,7 +499,7 @@ public class OwlGame extends MiniGame {
 
     //Generate  a tile to represent the target as well as equal sign
     private void generateTargetTile(){
-        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
+
 
         float x, y;
         String value;
@@ -512,7 +512,7 @@ public class OwlGame extends MiniGame {
         y = space.y;
         value = "=";
 
-        equalsTile = new DraggableTile (x, y, tLength, value, img);
+        equalsTile = new DraggableTile (x, y, tLength, value);
         space.setTile(equalsTile);
 
         //Generate target tile
@@ -522,7 +522,7 @@ public class OwlGame extends MiniGame {
         y = space.y;
         value = String.valueOf(target);
 
-        targetTile = new DraggableTile (x, y, tLength, value, img);
+        targetTile = new DraggableTile (x, y, tLength, value);
         space.setTile(targetTile);
     }
 
