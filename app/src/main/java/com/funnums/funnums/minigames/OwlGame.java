@@ -1,18 +1,24 @@
 package com.funnums.funnums.minigames;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.ExpressionGenerator;
+import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.classes.GameCountdownTimer;
@@ -20,7 +26,7 @@ import com.funnums.funnums.classes.Owl;
 import com.funnums.funnums.classes.TilePlaceHolder;
 
 import com.funnums.funnums.classes.Cloud;
-import com.funnums.funnums.uihelpers.UIButton;
+import com.funnums.funnums.classes.ScrollingBackground;
 
 
 public class OwlGame extends MiniGame {
@@ -56,9 +62,6 @@ public class OwlGame extends MiniGame {
      */
     private ArrayList<MotionEvent> events = new ArrayList<>();
 
-    //clouds to draw
-    Cloud cloud1;
-    Cloud cloud2;
     //our master, the owl
     Owl owl;
 
@@ -104,6 +107,18 @@ public class OwlGame extends MiniGame {
     private boolean isSingleTouch;
     private int countTouches;
 
+
+    private Bitmap bg;
+    private ArrayList<ScrollingBackground> topBackgrounds;
+    private ArrayList<ScrollingBackground> bottomBackgrounds;
+    private ArrayList<Cloud> clouds;
+
+    //sound effects
+    private int clickId;
+    private int flappId;
+
+
+
     public synchronized void init() {
 
         //Game only finished when owl has died :P
@@ -129,6 +144,12 @@ public class OwlGame extends MiniGame {
         tileBuffer = (float) (screenY * T_BUFFER_RATIO);
         exprBuffer = (float) (screenY * E_BUFFER_RATIO);
 
+        //initialize soundPool to load sound effects
+        soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC,0);
+        clickId = soundPool.load(context, R.raw.click,1);
+        flappId = soundPool.load(context,R.raw.flapp,1);
+        gameOverSoundId = soundPool.load(context,R.raw.drown,1);
+
         //Generate tile coordinates
         generateTileSpaceHolders();
         generateExprSpaceHolders();
@@ -146,14 +167,6 @@ public class OwlGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
-        Log.d("OWL", "INIT CLOUDS");
-        int cloudSize = 75;
-        //arguments for new cloud are initial x, initial y, min spawn point, max span paint, size)
-        cloud1 = new Cloud(screenX/2, screenY/8, screenY/8, screenY *3/8, cloudSize);
-        cloud2 = new Cloud(screenX*3/2,  screenY -tileBuffer - exprBuffer - cloudSize/2, screenY /2, (int)(screenY -tileBuffer - exprBuffer- cloudSize/2), cloudSize);
-        Log.d("OWL", "Clouds initialized");
-        //cloud3 = new Cloud(screenX * 3/2, 300);
-
         //we don't use a gametimer in this game, make sure that any left over timer from another game
         //isn't used for this one
         if(gameTimer != null)
@@ -164,8 +177,17 @@ public class OwlGame extends MiniGame {
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
 
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
+
+        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
+        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+
+        initBackgrounds();
+
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Mantop.ttf");
+        GameActivity.gameView.paint.setTypeface(tf);
     }
 
     //Update method to be called by game loop
@@ -175,17 +197,18 @@ public class OwlGame extends MiniGame {
 
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
-        if(owl.getY() - owl.getSize() > screenY -tileBuffer - exprBuffer){
-            GameCountdownTimer.completeGame();
+        if(owl.getY() + owl.getSize()/2> screenY -tileBuffer - exprBuffer && !isFinished) {
+            onFinish();
         }
-        //if owl is at top of screen, make sure it won't go off the screen
-        else if(owl.getY() < owl.getSize()){
-            owl.yVelocity = 0;
-        }
-        cloud1.update(delta);
-        cloud2.update(delta);
 
         processEvents();
+
+        for(ScrollingBackground bg : topBackgrounds)
+            bg.update();
+        for(ScrollingBackground bg : bottomBackgrounds)
+            bg.update();
+        for(Cloud c : clouds)
+            c.update();
     }
 
     //Draw method
@@ -195,26 +218,32 @@ public class OwlGame extends MiniGame {
             canvas = ourHolder.lockCanvas();
 
             // Rub out the last frame
-            canvas.drawColor(Color.argb(255, 0, 0, 0));
+            canvas.drawBitmap(bg, 0, 0, paint);
+
+            for(ScrollingBackground bg : topBackgrounds)
+                bg.draw(canvas, paint);
 
             //draw the clouds
-            cloud1.draw(canvas, paint);
-            cloud2.draw(canvas, paint);
+            for(Cloud c : clouds)
+                c.draw(canvas, paint);
 
             //draw the owl
             owl.draw(canvas, paint);
 
+            for(ScrollingBackground bg : bottomBackgrounds)
+                bg.draw(canvas, paint);
+
             paint.setColor(Color.argb(255, 0, 0, 255));
 
             //draw tile buffer
-            paint.setColor(Color.argb(255, 100, 150, 155));
+            /*paint.setColor(Color.argb(255, 100, 150, 155));
             canvas.drawRect( (float)0, (float)(screenY-tileBuffer - exprBuffer), (float)screenX,
-                    (float)screenY - exprBuffer, paint);
+                    (float)screenY - exprBuffer, paint);*/
 
             //draw expr buffer
-            paint.setColor(Color.argb(255, 150, 150, 155));
+            /*paint.setColor(Color.argb(255, 150, 150, 155));
             canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
-                    (float)screenY, paint);
+                    (float)screenY, paint);*/
 
             //Draw all the tiles
             for(DraggableTile t : tileList)
@@ -271,63 +300,68 @@ public class OwlGame extends MiniGame {
 
         DraggableTile t;
         float x, y;
+        try {
+            for (MotionEvent e : events) {
 
-        for(MotionEvent e : events) {
-
-            x = e.getX();
-            y = e.getY();
-
-
-            if  (e.getActionMasked() == MotionEvent.ACTION_DOWN){       /*First touch*/
-                //Log.d(TAG_OWL, "DOWN event" );
-
-                //Get a reference to the Tile in that coordinate, otherwise null
-                t = getTouchedTile(x, y);
-                //Set the t to be the tile that is the target of a dragging action
-                currentDraggTIle = t;
-
-                //Set the action to be a single touch
-                isSingleTouch = true;
-                countTouches = 0;
+                x = e.getX();
+                y = e.getY();
 
 
-            }else if (e.getActionMasked() == MotionEvent.ACTION_MOVE){      /*Dragging action*/
-                //Log.d(TAG_OWL, "MOVE event" );
+                if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {       /*First touch*/
+                    //Log.d(TAG_OWL, "DOWN event" );
 
-                //Check that a tile has been set as target of the dragging action
-                if (currentDraggTIle != null) {
+                    //Get a reference to the Tile in that coordinate, otherwise null
+                    t = getTouchedTile(x, y);
+                    //Set the t to be the tile that is the target of a dragging action
+                    currentDraggTIle = t;
 
-                    //Update the coordinate of the tile to match the touch
-                    currentDraggTIle.setXY(x - (tLength / 2), y - 60 - (tLength / 2));
+                    //Set the action to be a single touch
+                    isSingleTouch = true;
+                    countTouches = 0;
+
+
+                } else if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {      /*Dragging action*/
+                    //Log.d(TAG_OWL, "MOVE event" );
+
+                    //Check that a tile has been set as target of the dragging action
+                    if (currentDraggTIle != null) {
+
+                        //Update the coordinate of the tile to match the touch
+                        currentDraggTIle.setXY(x - (tLength / 2), y - 60 - (tLength / 2));
 
                     /*Dragging only takes place after a certain number of ACTION_MOVE events have occurred
                     * Otherwise the event is considered a single touch. Without this, even a single touch could be considered
                      * as a dragging instead of a single touch. This is the case because even though we think
                      * that human touch is instantaneous, the program could register more than one touch action.*/
-                    if (countTouches++ >= COUNT_TO_DRAGGING_ACTION)
-                        isSingleTouch = false;
+                        if (countTouches++ >= COUNT_TO_DRAGGING_ACTION)
+                            isSingleTouch = false;
 
 
+                    }
+
+                } else if (e.getActionMasked() == MotionEvent.ACTION_UP) {           /*Final touch/End of dragging action*/
+                    //Log.d(TAG_OWL, "UP event" );
+
+                    //If it is a single touch, continue as before dragging was implemented
+                    if (isSingleTouch) {
+                        checkTouchedTile(x, y);
+
+                    } else if (currentDraggTIle != null) {
+                        //Otherwise there is a dragging action and need to check if the dragged tile needs its position to be updated
+                        findPlaceHolder(x, y);
+                    }
+
+                    //Clear the pointer to dragged tile
+                    currentDraggTIle = null;
+                    //Reset boolean and count
+                    isSingleTouch = false;
+                    countTouches = 0;
                 }
-
-            } else if (e.getActionMasked() == MotionEvent.ACTION_UP){           /*Final touch/End of dragging action*/
-                //Log.d(TAG_OWL, "UP event" );
-
-                //If it is a single touch, continue as before dragging was implemented
-                if (isSingleTouch) {
-                    checkTouchedTile(x,y);
-
-                } else if (currentDraggTIle != null){
-                    //Otherwise there is a dragging action and need to check if the dragged tile needs its position to be updated
-                    findPlaceHolder(x,y);
-                }
-
-                //Clear the pointer to dragged tile
-                currentDraggTIle = null;
-                //Reset boolean and count
-                isSingleTouch = false;
-                countTouches = 0;
             }
+        }
+        //don't let multiple threads working on touch events crash the app
+        catch(ConcurrentModificationException ex){
+            Log.e("ERROR", ex.toString());
         }
 
         events.clear();
@@ -348,7 +382,7 @@ public class OwlGame extends MiniGame {
     }
 
     //Touch handler
-    public synchronized boolean onTouch(MotionEvent e) {
+    public boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
         //in this touch UI thread while our game thread is accessing that same number, the game crashes
@@ -434,6 +468,7 @@ public class OwlGame extends MiniGame {
 
     // Generates a draggable tiles on screen
     private synchronized void generateTiles() {
+        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
 
         float x, y;
         String value;
@@ -447,7 +482,7 @@ public class OwlGame extends MiniGame {
 
             value = expr[i];
 
-            til = new DraggableTile (x, y, tLength, value);
+            til = new DraggableTile (x, y, tLength, value, img);
             tileList.add(til);
 
             //Set to operator type
@@ -464,6 +499,8 @@ public class OwlGame extends MiniGame {
 
     //Generate  a tile to represent the target as well as equal sign
     private void generateTargetTile(){
+        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
+
         float x, y;
         String value;
         TilePlaceHolder space;
@@ -475,7 +512,7 @@ public class OwlGame extends MiniGame {
         y = space.y;
         value = "=";
 
-        equalsTile = new DraggableTile (x, y, tLength, value);
+        equalsTile = new DraggableTile (x, y, tLength, value, img);
         space.setTile(equalsTile);
 
         //Generate target tile
@@ -485,7 +522,7 @@ public class OwlGame extends MiniGame {
         y = space.y;
         value = String.valueOf(target);
 
-        targetTile = new DraggableTile (x, y, tLength, value);
+        targetTile = new DraggableTile (x, y, tLength, value, img);
         space.setTile(targetTile);
     }
 
@@ -508,6 +545,9 @@ public class OwlGame extends MiniGame {
                     moveToExpr(t);
                     Log.d(TAG_OWL, "moveToExpr");
                 }
+
+                //play click sound
+                soundPool.play(clickId,volume,volume,2,0,1);
 
                 if (evaluatesToTarget()) {
                     handleOnCorrect();
@@ -641,8 +681,9 @@ public class OwlGame extends MiniGame {
 
     public void handleOnCorrect() {
         //Give the Owl a push!
-        if(!(owl.getY() < owl.getSize()))
-            owl.increaseAltitude();
+
+        soundPool.play(flappId,volume,volume,1,0,1);
+        owl.increaseAltitude();
 
         targetsReached++;
         score += getPoints();
@@ -788,6 +829,9 @@ public class OwlGame extends MiniGame {
                     numberOfExprSpacesUsed++;
                     numberOfTileSpacesUsed--;
 
+                    //play click sound
+                    soundPool.play(clickId,volume,volume,2,0,1);
+
                     break;
 
                 } else { //there is a tile there, no valid change of position
@@ -823,6 +867,9 @@ public class OwlGame extends MiniGame {
         // If there is a hit
         if (touchInYRange) {
             moveToTiles(currentDraggTIle);
+
+            //play click sound
+            soundPool.play(clickId,volume,volume,2,0,1);
         } else {
             dragTileToOriginalPosition();
         }
@@ -861,6 +908,64 @@ public class OwlGame extends MiniGame {
 
     }
 
+    private void initBackgrounds(){
+        int overlap = 100;//allows images to stack on top of each other, since there is transparency we need images overalapping eachother
+        ScrollingBackground bg1 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/Mountains.png", screenY/8, screenY * 1/2 + overlap, 1f);
 
+        ScrollingBackground bg2 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/Beach.png", screenY * 1/2,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
+        ScrollingBackground bg3 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/BeachBottom.png", (int)(screenY-tileBuffer - exprBuffer-overlap/2),  (int)(screenY -exprBuffer), 1.5f);
+        int waveOffset = overlap/5;//offset for space between the waves
+        ScrollingBackground bg4 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/WaterLayer1.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*3),  (int)(screenY-tileBuffer/2  - exprBuffer), 2f);
+        ScrollingBackground bg5 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/WaterLayer2.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*2),  (int)(screenY-tileBuffer/2  - exprBuffer), 2.5f);
+        ScrollingBackground bg6 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/WaterLayer3.png", (int)(screenY-tileBuffer  - exprBuffer) -waveOffset,  (int)(screenY-tileBuffer/2  - exprBuffer)/*(int)(screenY -exprBuffer)*/, 3f);
+        ScrollingBackground bg7 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/WaterBottom.png", (int)(screenY-exprBuffer-tileBuffer)+overlap/2,  (int)(screenY), 1);
+        ScrollingBackground bg8 = new ScrollingBackground(
+                screenX,
+                screenY,
+                "OwlGame/SeaFloor.png", (int)(screenY-exprBuffer) -waveOffset*2,  (int)(screenY), 2);
+        topBackgrounds = new ArrayList<>();
+        topBackgrounds.add(bg1);
+        topBackgrounds.add(bg2);
+        topBackgrounds.add(bg3);
+        bottomBackgrounds = new ArrayList<>();
+        bottomBackgrounds.add(bg4);
+        bottomBackgrounds.add(bg5);
+        bottomBackgrounds.add(bg6);
+        bottomBackgrounds.add(bg7);
+        bottomBackgrounds.add(bg8);
+
+        clouds = new ArrayList<>();
+        Cloud cloud1 = new Cloud(0,  0, "OwlGame/Cloud1.png");
+        Cloud cloud2 = new Cloud(screenX - cloud1.getWidth(),  0,  "OwlGame/Cloud2.png");
+        Cloud cloud3 = new Cloud(screenX/2 - cloud1.getWidth()/2, 0,  "OwlGame/Cloud3.png");
+        clouds.add(cloud1);
+        clouds.add(cloud2);
+        clouds.add(cloud3);
+
+        //initialize the background
+        bg = com.funnums.funnums.maingame.GameView.loadBitmap("OwlGame/SunsetBackground.png", false);
+        bg = Bitmap.createScaledBitmap(bg, screenX, screenY * 1/4,false);
+    }
 
 }

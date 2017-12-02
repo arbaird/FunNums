@@ -11,16 +11,19 @@ import android.graphics.Paint;
 //make canvas text fade, move, etc
 //TODO, make text that can move across screen, if we ned that
 public class TextAnimator {
+    //text to display
     String text;
-
+    //current elapsed time
     float currentElapsed;
-
     //interval thhat we want to update alpha, move text, etc.
     double interval;
-
+    //current alpha of the text, i.e how faded the text is
     public int alpha;
+    //coors
     float x, y;
+    //color values
     int r,g,b;
+    //size of text
     int size;
 
     public TextAnimator(String text, float x, float y, int r, int g, int b) {
@@ -31,7 +34,7 @@ public class TextAnimator {
         this.g = g;
         this.b = b;
 
-        //start text as being fully visible
+        //start text as being fully visible, i.e not faded at all
         alpha = 255;
 
         //if no interval is given, default to updating every tenth of a second
@@ -61,17 +64,14 @@ public class TextAnimator {
      */
     public void update(float increment) {
         currentElapsed += increment;
-
         if(currentElapsed > interval) {
             alpha = Math.max(0, alpha -= 10);
-            //currentElapsed = 0;
         }
     }
 
-
-
-
-
+    /*
+        Draw the text
+     */
     public void render(Canvas canvas, Paint paint) {
         paint.setTextSize(size);
         paint.setColor(Color.argb(alpha, r, g, b));

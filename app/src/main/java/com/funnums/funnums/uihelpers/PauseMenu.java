@@ -1,7 +1,8 @@
 package com.funnums.funnums.uihelpers;
 
 /**
- * Created by austinbaird on 10/19/17.
+ *  Adapted from James Cho's "Beginner's Guide to Android Game Development
+ *  Pause menu displayed when user pauses the game
  */
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -18,79 +19,57 @@ public class PauseMenu {
     //will use when we have a cooler background for pause menu
     private Bitmap backdrop;
 
+    //translucent rect to fade the entire screen behind the pause menu
     private Rect fade;
 
+    //buttons to select
     private UIButton resume, mainMenu;
 
-    private Rect backDropRect;
+    //backdrop image
     private Bitmap bg;
 
     //space between each button
     private int padding;
 
+    //coords and dimensions
     int x, y;
+    int width, height;
 
-    public PauseMenu(int left, int top, int right, int bottom,
-                     UIButton resumeButton,  UIButton menuButton) {
-
-        backDropRect = new Rect(left, top, right, bottom);
-        fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
-
-        resume = resumeButton;
-        mainMenu = menuButton;
-
-        padding = 100;
-
-        resume.setRect(left + padding, top +padding);
-        mainMenu.setRect(left + padding, top + padding*2);
-
-
-    }
 
     public PauseMenu(int left, int top, int width, int height,
                      UIButton resumeButton,  UIButton menuButton, Bitmap bg) {
 
-        /*
-        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
-        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
-
-
-new PauseMenu(GameActivity.screenX/4,
-                                    offset,
-                                    GameActivity.screenX * 3/4,
-                                    GameActivity.screenY - offset,
-                                    resumeButton,
-                                    menuButton);
-
-         */
         x = left;
         y = top;
-        //bg = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
+        this.width = width;
+        this.height = height;
+        //create a scaled version of the given background image for the board;
         this.bg =  Bitmap.createScaledBitmap(bg, left + width,top + height,true);
+        //create translucent Rect to draw over game behind the menu
         fade = new Rect(0, 0, com.funnums.funnums.maingame.GameActivity.screenX, com.funnums.funnums.maingame.GameActivity.screenY);
 
-        resume = resumeButton;
-        mainMenu = menuButton;
+        //create the buttons the player can use
+        resume = new UIButton(0,0,0,0, resumeButton.getImg(), resumeButton.getImgDown());
+        mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
 
-        padding = 100;
+        //determine the space between buttons
+        padding = height/4;
 
-        resume.setRect(left + padding, top +padding);
-        mainMenu.setRect(left + padding, top + padding*2);
-
-
+        //set region corresponding to button clicks
+        resume.setRect(left + width/2 - resume.getWidth()/4, top +padding);
+        mainMenu.setRect(left + width/2- resume.getWidth()/4, top + padding*2);
     }
 
 
     public void draw(Canvas canvas, Paint paint) {
 
         paint.setColor(Color.argb(126, 0, 0, 0));
+        //fade the game behind the pause menu
         canvas.drawRect(fade, paint);
 
         //draw the rectangle containing the pasue menu buttons
         paint.setColor(Color.argb(255, 100, 100, 100));
-        //canvas.drawRect(backDropRect, paint);
-
-        //TODO uncomment when we have a cool backdrop for menu instead of a grey rectangle
+        //draw the backdrop for menu
         canvas.drawBitmap(bg, x, y, paint);
 
         //draw the buttons
@@ -103,12 +82,12 @@ new PauseMenu(GameActivity.screenX/4,
 
         int x = (int)e.getX();
         int y = (int)e.getY();
-
+        //if user touches down, change button appearances so they look pressed
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
             resume.onTouchDown(x, y);
             mainMenu.onTouchDown(x, y);
         }
-
+        //check if either button is pressed down, and perform appropriate actions for each button if they are
         if (e.getAction() == MotionEvent.ACTION_UP) {
             if (resume.isPressed(x, y)) {
                 resume.cancel();
@@ -123,11 +102,16 @@ new PauseMenu(GameActivity.screenX/4,
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 com.funnums.funnums.maingame.GameActivity.gameView.getContext().startActivity(i);
             }
+            //otherwise make buttons appear unselected
             else {
                 resume.cancel();
                 mainMenu.cancel();
             }
         }
         return true;
+    }
+
+    public void setBackDrop(Bitmap bg){
+        this.bg =  Bitmap.createScaledBitmap(bg, x + width,y + height,true);
     }
 }

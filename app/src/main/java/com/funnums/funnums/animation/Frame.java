@@ -14,7 +14,7 @@ public class Frame {
 
     public Frame(Bitmap image, double duration) {
         this.image = image;
-        this.duration = duration;
+        this.duration = duration* com.funnums.funnums.maingame.GameView.NANOS_TO_SECONDS;//duration;
     }
 
     public double getDuration() {

@@ -14,11 +14,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Random;
 import android.graphics.Bitmap;
 
 import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.HUDSquare;
+import com.funnums.funnums.uihelpers.HUDSquareNoLabel;
 
 import com.funnums.funnums.R;
 import com.funnums.funnums.classes.ExpressionEvaluator;
@@ -35,6 +37,7 @@ import com.funnums.funnums.classes.GameCountdownTimer;
 import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.maingame.MainMenuActivity;
 
+import com.funnums.funnums.uihelpers.PauseMenu;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
@@ -100,16 +103,15 @@ public class BubbleGame extends MiniGame {
     private int bRadius;
 
     //used to implement sound
-    private SoundPool soundPool;
     private int bubblePopId;
     private int correctId;
     private int splashId;
     private int wrongId;
 
+
     //game over menu
     private GameFinishedMenu gameFinishedMenu;
 
-    private Bitmap background;
     private Bitmap HUDBoard;
     private Bitmap bg;
 
@@ -126,15 +128,15 @@ public class BubbleGame extends MiniGame {
         //game only finished when timer is done
         isFinished = false;
 
-        //gets the context to be used in soundPool
-        Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
-
         //initializes soundPool
-        soundPool   = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        bubblePopId = soundPool.load(context,R.raw.bubble, 1);
-        correctId   = soundPool.load(context,R.raw.correct,1);
-        splashId    = soundPool.load(context,R.raw.splash, 1);
-        wrongId     = soundPool.load(context,R.raw.wrong,  1);
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        bubblePopId = soundPool.load(context,R.raw.bubble,1);
+        correctId = soundPool.load(context,R.raw.correct,1);
+        splashId = soundPool.load(context,R.raw.splash,1);
+        wrongId = soundPool.load(context,R.raw.wrong,1);
+        gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
+
+
 
         //initalize random generator
         r = new Random();
@@ -151,7 +153,7 @@ public class BubbleGame extends MiniGame {
           */
 
         Log.d("DIMENSIONS", screenX + " " + screenY);
-        speed = (int)Math.round((screenX * screenY) * 0.000005865);
+        speed = (int)Math.round(screenX  * 0.00694) - 1;
         Log.d("DIMENSIONS", speed + "");
 
         bRadius = (int) (screenX * .13);
@@ -187,9 +189,6 @@ public class BubbleGame extends MiniGame {
         Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", false);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
-        background = com.funnums.funnums.maingame.GameView.loadBitmap("bubbleBackground.png", false);
-        background = Bitmap.createScaledBitmap(background, screenX,screenY/2,true);
-
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
@@ -198,12 +197,13 @@ public class BubbleGame extends MiniGame {
 
         //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
 
-        gameFinishedMenu = new GameFinishedMenu(screenX * 1/8,
-                offset,
-                screenX * 7/8,
-                screenY - offset,
-                resumeButton,
-                menuButton, sum);
+
+        Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
+        int menuOffset = 100;
+
+        GameActivity.gameView.pauseScreen.setBackDrop(backdrop);
+        GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
+
 
         initHud();
     }
@@ -339,20 +339,23 @@ public class BubbleGame extends MiniGame {
     private synchronized void processEvents() {
 
         boolean removedNum = false;
-        for(MotionEvent e : events) {
-            if(e.getActionMasked()==MotionEvent.ACTION_DOWN) {
-                int x = (int) e.getX();
-                int y = (int) e.getY();
+        try {
+            for (MotionEvent e : events) {
+                if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    int x = (int) e.getX();
+                    int y = (int) e.getY();
 
-                if (checkTouchRadius(x, y)) {
-                    removedNum = true;
-                    break;
+                    if (checkTouchRadius(x, y)) {
+                        break;
+                    }
                 }
             }
         }
+        //don't let multiple threads working on touch events crash the app
+        catch(ConcurrentModificationException ex){
+            Log.e("ERROR", ex.toString());
+        }
         events.clear();
-        if(removedNum)
-            System.gc();
     }
 
     private boolean valueAlreadyOnScreen(int value) {
@@ -374,17 +377,19 @@ public class BubbleGame extends MiniGame {
             //Trig! (x,y) is in a circle if (x - center_x)^2 + (y - center_y)^2 < radius^2
             if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2) && !num.popping) {
                 processScore(num);
+
+                soundPool.play(bubblePopId,volume,volume,1,0,1);
+                numberList.remove(num);
+
                 numGen.decrement(num.getValue()); //maintain the count of the number on the screen
                 num.pop();
 
-                soundPool.play(bubblePopId,1,1,1,0,1);
-                //numberList.remove(num);
                 return true;
 
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
             }else{
-                soundPool.play(splashId,1,1,0,0,1);
+                soundPool.play(splashId,volume,volume,0,0,1);
             }
         }
         return false;
@@ -405,13 +410,13 @@ public class BubbleGame extends MiniGame {
         scoreAnimations.add(textAnimator);
 
         if (sum == target) {
-            soundPool.play(correctId,1,1,2,0,1);
+            soundPool.play(correctId,volume,volume,2,0,1);
             makeNewTarget();
             long newTime = 1000;
             com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
 
         } else if (sum > target) {
-            soundPool.play(wrongId,1,1,1,0,1);
+            soundPool.play(wrongId,volume,volume,2,0,1);
             resetGame();
 
             long newTime = -1000;
@@ -424,7 +429,7 @@ public class BubbleGame extends MiniGame {
     */
     private void makeNewTarget() {
         //text, x, y, r, g, b, interval, size
-        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
+        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 220, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
         TextAnimator addTimetextAnimator = new TextAnimator("+1", screenX * 1/2, timerHUD.bottom-timerHUD.MARGIN, 0, 255, 0);
         scoreAnimations.add(addTimetextAnimator);
@@ -508,9 +513,6 @@ public class BubbleGame extends MiniGame {
             paint.setColor(Color.argb(255, 70, 103, 234));
             //canvas.drawRect(0, topBuffer, screenX, screenY, paint);
 
-            //canvas.drawBitmap(bg, 0 , topBuffer , paint);
-            //canvas.drawBitmap(background, 0 , screenY/2 , paint);
-
             canvas.drawBitmap(bg, 0, 0, paint);
 
             canvas.drawBitmap(HUDBoard, 0 , 0 , paint);
@@ -532,7 +534,7 @@ public class BubbleGame extends MiniGame {
 
             curHUD.draw(canvas, paint, String.valueOf(sum));
             targetHUD.draw(canvas, paint, String.valueOf(target));
-            timerHUD.drawNoLabel(canvas, paint, gameTimer.toString());
+            timerHUD.draw(canvas, paint, gameTimer.toString());
 
 
             //draw all text animations
@@ -595,12 +597,17 @@ public class BubbleGame extends MiniGame {
 
     }
 
-    private void initHud(){
-        int offset = 60;
+    private synchronized void initHud(){
+        int offset = 50;
         Paint paint = GameActivity.gameView.paint;
-        curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
-        targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
-        timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
+        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
+        //HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint)
+        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint, img);
+        //curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
+        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint, img);
+        //targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
+        //timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
+        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint, img);
     }
 
 

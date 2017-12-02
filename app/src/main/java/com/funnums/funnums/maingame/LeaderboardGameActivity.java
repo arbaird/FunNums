@@ -61,7 +61,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
     public void initLeaderBoardListView() {
         //initialize the arralist holing the top ten player scores
-        playerScoreList = new ArrayList<PlayerScore>();
+        playerScoreList = new ArrayList<>();
         //initialize the adapter that acts as middle man between data in arraylist and listview on the screen
         playerScoreAdapter = new ScoreListAdapter(this, com.funnums.funnums.R.layout.score_list_element, playerScoreList);
         //initalize listview from xml file
@@ -79,7 +79,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
         //empty the arraylist so we don't keep adding ten scores to it everytime we call this function
         playerScoreList.clear();
         playerScoreAdapter.notifyDataSetChanged();
-
+        //get the scores for the specified mini game
         playerScoreCloudEndPoint = mDatabase.child(game + "Scores");
         //order scores by the ten highest scores
         playerScoreCloudEndPoint.orderByChild("hiScore").limitToLast(10).addChildEventListener(new ChildEventListener() {
@@ -102,7 +102,6 @@ public class LeaderboardGameActivity extends AppCompatActivity {
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 PlayerScore removedScore = dataSnapshot.getValue(PlayerScore.class);
                 Log.d(TAG, "The user named " + removedScore.name + " has been deleted from leaderboard");
-
             }
 
             @Override
@@ -121,7 +120,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
     public static void storeHighScore(long score) {
 
         SharedPreferences prefs = MainMenuActivity.prefs;
-
+        //get context from gameView if main menu prefs is not available
         if(prefs == null){
             Context context = com.funnums.funnums.maingame.GameActivity.gameView.context;
             prefs = context.getSharedPreferences("HighScore", MODE_PRIVATE);
@@ -135,6 +134,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
 
         long currentHighScore = prefs.getLong(currentMiniGame+ "HighScore", 0);
 
+        //do not update high score if given score is lower
         if(currentHighScore > score)
             return;
         else{
@@ -163,7 +163,7 @@ public class LeaderboardGameActivity extends AppCompatActivity {
     }
 
     /*
-        Method called when a button is clicked ot display keaderboard for the given game
+        Method called when a button is clicked ot display leaderboard for the given game
      */
     public void chooseGameScores(View v){
         int clickedButtonId = v.getId(); //get the android id of the clicked button

@@ -36,6 +36,10 @@
             android:theme="@style/AppTheme.CustomPopUpTheme">
         </activity>
 
+        <activity android:name="com.funnums.funnums.maingame.SettingsActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
     </application>
 
 </manifest>
