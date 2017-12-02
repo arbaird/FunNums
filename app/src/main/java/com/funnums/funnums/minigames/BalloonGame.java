@@ -1,7 +1,10 @@
 package com.funnums.funnums.minigames;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import android.graphics.Paint;
 import android.view.MotionEvent;
@@ -11,6 +14,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Random;
 import android.graphics.Bitmap;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.CollisionDetector;
 import com.funnums.funnums.classes.TouchableBalloon;
 import com.funnums.funnums.classes.FloatingObject;
@@ -80,6 +84,11 @@ public class BalloonGame extends MiniGame {
     private int xRadius;
     private int yRadius;
 
+    //for implementing sound effects
+    private int balloonDeflateId;
+    private int balloonPopId;
+    private int balloonInflateId;
+    private int wooshId;
 
     private int balloonsProcessed;
 
@@ -109,6 +118,15 @@ public class BalloonGame extends MiniGame {
     public synchronized void init() {
         //game only finished when timer is done
         isFinished = false;
+
+        //initializes soundPool
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+        balloonDeflateId = soundPool.load(context, R.raw.balloondeflate,1);
+        balloonInflateId = soundPool.load(context,R.raw.ballooninflate,1);
+        balloonPopId = soundPool.load(context,R.raw.balloonpop,1);
+        wooshId=soundPool.load(context,R.raw.woosh,1);
+        gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
+
         //initalize random generator and make the first target between 5 and 8
         r = new Random();
         int mode = r.nextInt(5);
@@ -143,6 +161,7 @@ public class BalloonGame extends MiniGame {
         balloonsProcessed = 0;
         inBalloonGenBuffer = false;
 
+
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
@@ -160,7 +179,6 @@ public class BalloonGame extends MiniGame {
         hotAir1 = new HotAirBalloon(hotAirImg1.getWidth()/16, topBuffer+hotAirImg1.getHeight()/4, hotAirImg1);
         Bitmap hotAirImg2 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir2.png", false);
         hotAir2 = new HotAirBalloon(screenX - hotAirImg2.getWidth(), topBuffer, hotAirImg2);
-
 
         Bitmap directionBoardImg = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/DirectionBoard.png", false);
         directionBoard = new FloatingObject(screenX *1/2 - directionBoardImg.getWidth()/2, topBuffer, directionBoardImg);
@@ -366,15 +384,15 @@ public class BalloonGame extends MiniGame {
         processScore(isCorrect, value);
     }
 
-    /*
-    Allan Add sounds here
-     */
+
     private synchronized void processScore(boolean correct, int value){
 
         TextAnimator textAnimator;
         if (correct) {
+            soundPool.play(balloonPopId,volume,volume,1,0,1);
             textAnimator = new TextAnimator("+" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
         } else {
+            soundPool.play(balloonDeflateId,volume,volume,1,0,1);
             textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
             value = -value;
         }
@@ -437,6 +455,9 @@ public class BalloonGame extends MiniGame {
         //add text animation
         TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
+
+        //play balloon inflating sound effect
+        soundPool.play(balloonInflateId,volume,volume,2,0,1);
     }
 
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remove balloon.
@@ -600,6 +621,7 @@ public class BalloonGame extends MiniGame {
                     num.setXVelocity(10);
                 else
                     num.setXVelocity(-10);
+                soundPool.play(wooshId,volume,volume,1,0,1);
                 return true;
                 //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
                 //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now

@@ -6,10 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.DraggableTile;
 import com.funnums.funnums.classes.ExpressionEvaluator;
 import com.funnums.funnums.classes.ExpressionGenerator;
@@ -105,6 +108,11 @@ public class OwlGame extends MiniGame {
     private boolean isSingleTouch;
     private int countTouches;
 
+    //sound effects
+    private int clickId;
+    private int flappId;
+
+
     public synchronized void init() {
 
         //Game only finished when owl has died :P
@@ -129,6 +137,12 @@ public class OwlGame extends MiniGame {
         tLength = (float) (screenX * TILE_LENGTH_RATIO);
         tileBuffer = (float) (screenY * T_BUFFER_RATIO);
         exprBuffer = (float) (screenY * E_BUFFER_RATIO);
+
+        //initialize soundPool to load sound effects
+        soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC,0);
+        clickId = soundPool.load(context, R.raw.click,1);
+        flappId = soundPool.load(context,R.raw.flapp,1);
+        gameOverSoundId = soundPool.load(context,R.raw.drown,1);
 
         //Generate tile coordinates
         generateTileSpaceHolders();
@@ -181,7 +195,7 @@ public class OwlGame extends MiniGame {
 
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
-        if(owl.getY() - owl.getSize() > screenY -tileBuffer - exprBuffer){
+        if(owl.getY() - owl.getSize() > screenY -tileBuffer - exprBuffer&&!isFinished){
             GameCountdownTimer.completeGame();
         }
         //if owl is at top of screen, make sure it won't go off the screen
@@ -515,6 +529,9 @@ public class OwlGame extends MiniGame {
                     Log.d(TAG_OWL, "moveToExpr");
                 }
 
+                //play click sound
+                soundPool.play(clickId,volume,volume,2,0,1);
+
                 if (evaluatesToTarget()) {
                     handleOnCorrect();
                 }
@@ -648,6 +665,7 @@ public class OwlGame extends MiniGame {
     public void handleOnCorrect() {
         //Give the Owl a push!
         if(!(owl.getY() < owl.getSize()))
+            soundPool.play(flappId,volume,volume,1,0,1);
             owl.increaseAltitude();
 
         targetsReached++;
@@ -794,6 +812,9 @@ public class OwlGame extends MiniGame {
                     numberOfExprSpacesUsed++;
                     numberOfTileSpacesUsed--;
 
+                    //play click sound
+                    soundPool.play(clickId,volume,volume,2,0,1);
+
                     break;
 
                 } else { //there is a tile there, no valid change of position
@@ -829,6 +850,9 @@ public class OwlGame extends MiniGame {
         // If there is a hit
         if (touchInYRange) {
             moveToTiles(currentDraggTIle);
+
+            //play click sound
+            soundPool.play(clickId,volume,volume,2,0,1);
         } else {
             dragTileToOriginalPosition();
         }
