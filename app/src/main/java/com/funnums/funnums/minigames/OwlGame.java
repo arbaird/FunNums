@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
@@ -176,7 +177,7 @@ public class OwlGame extends MiniGame {
         int offset = 100;
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause_down.png", true);
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pause.png", true);
-        pauseButton = new UIButton(screenX *3/4, 0, screenX, offset, pauseImg, pauseImgDown);
+        pauseButton = new UIButton(screenX - pauseImg.getWidth(), 0, screenX, offset, pauseImg, pauseImgDown);
 
         Bitmap backdrop = com.funnums.funnums.maingame.GameView.loadBitmap("MenuBoard.png", true);
 
@@ -184,6 +185,9 @@ public class OwlGame extends MiniGame {
         GameActivity.gameView.gameFinishedMenu.setBackDrop(backdrop);
 
         initBackgrounds();
+
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/FunCartoon2.ttf");
+        GameActivity.gameView.paint.setTypeface(tf);
     }
 
     //Update method to be called by game loop

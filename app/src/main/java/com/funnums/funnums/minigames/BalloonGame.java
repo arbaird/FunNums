@@ -3,6 +3,7 @@ package com.funnums.funnums.minigames;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
@@ -117,6 +118,9 @@ public class BalloonGame extends MiniGame {
     //list of all floating objects, i.e the hot air balloons and the arrows
     ArrayList<FloatingObject> floatingObjects = new ArrayList<>();
 
+    //flag to see if the player got all inequalities correct this round
+    boolean allCorrect;
+
     public synchronized void init() {
         //game only finished when timer is done
         isFinished = false;
@@ -161,6 +165,7 @@ public class BalloonGame extends MiniGame {
 
         balloonsProcessed = 0;
         inBalloonGenBuffer = false;
+        allCorrect = true;
 
 
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
@@ -180,6 +185,9 @@ public class BalloonGame extends MiniGame {
 
 
         initFloatingObjects();
+
+        Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/FunCartoon2.ttf");
+        GameActivity.gameView.paint.setTypeface(tf);
 
     }
 
@@ -377,6 +385,7 @@ public class BalloonGame extends MiniGame {
             soundPool.play(balloonDeflateId,volume,volume,1,0,1);
             textAnimator = new TextAnimator("-" + String.valueOf(value), screenX * 1/8, offset*2*4/5, 0, 255, 0);
             value = -value;
+            allCorrect = false;
         }
         scoreAnimations.add(textAnimator);
         score += value;
@@ -435,11 +444,23 @@ public class BalloonGame extends MiniGame {
         target=rFrac.getTarget();
 
         //add text animation
-        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 185, 185, 1.25, 50);
+        TextAnimator textAnimator = new TextAnimator("New Target!", screenX/2, screenY/2, 44, 220, 185, 1.25, 50);
         scoreAnimations.add(textAnimator);
 
         //play balloon inflating sound effect
         soundPool.play(balloonInflateId,volume,volume,2,0,1);
+
+        if(allCorrect){
+            TextAnimator addTimetextAnimator = new TextAnimator("+15", screenX * 1/2, timerHUD.bottom-timerHUD.MARGIN, 0, 255, 0);
+            scoreAnimations.add(addTimetextAnimator);
+
+            TextAnimator bonusTextAnimator = new TextAnimator("All Correct Bonus!", screenX * 1/2 + (int)timerHUD.width/2, (int)timerHUD.bottom+timerHUD.MARGIN, 0, 255, 0, 1.25, 50);
+            scoreAnimations.add(addTimetextAnimator);
+            scoreAnimations.add(bonusTextAnimator);
+            long newTime = 15000;
+            com.funnums.funnums.maingame.GameActivity.gameView.updateGameTimer(newTime);
+        }
+        allCorrect = true;
     }
 
     //Checks if y coordinate of ballons is greater than -diameter of the ballons. If yes, process/remove balloon.
@@ -559,7 +580,7 @@ public class BalloonGame extends MiniGame {
             case "<=":
                 return num.getValue().get_key() <= target.get_key();
             case "=":
-                return num.getValue().get_key() <= target.get_key();
+                return num.getValue().get_key().equals(target.get_key());
             default:
                 Log.e("ERROR", "Invalide inequality " + inequality);
                 return false;
