@@ -1,6 +1,6 @@
 package com.funnums.funnums.classes;
 /**
- * Created by austinbaird on 10/6/17.
+ * Abstract class representing a number on the screen that the player can interact with through touch
  */
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,11 +16,13 @@ import android.util.Log;
 public abstract class TouchableNumber {
 
     private String VIEW_LOG_TAG = "l";
-    //use bitmap when we add in our own images
-    //private Bitmap bitmap;
+
+    //coords and radius
     public float x, y, radius;
+    //speed of num
     private int speed;
 
+    //individual velocities for x and y directions, calculated based on speed variable
     private float xVelocity, yVelocity;
 
     //the angle the number will travel at
@@ -37,10 +39,10 @@ public abstract class TouchableNumber {
         this.speed = speed;
 
 
-        //Trig! I looked this up on StackOverflow
+        //Trig to determine the x and y velocities based on speed and angle
 
-        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
-        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
+        xVelocity = (float) (getSpeed() * Math.cos(Math.toRadians(angle)));
+        yVelocity =  (float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
 
     }
 
@@ -129,14 +131,6 @@ public abstract class TouchableNumber {
     public float getYVelocity()
     {
         return yVelocity;
-    }
-
-    public void fixAngle()
-    {
-
-        angle = Math.toDegrees(Math.atan2(-yVelocity, xVelocity));
-        xVelocity = /*(int)*/(float) (getSpeed() * Math.cos(Math.toRadians(angle)));
-        yVelocity =  /*(int)*/(float) -(getSpeed() * Math.sin(Math.toRadians(angle )));
     }
 
     public void setRadius(float newRad)

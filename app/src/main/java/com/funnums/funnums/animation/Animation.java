@@ -91,4 +91,8 @@ public class Animation {
         dstRect.set(x, y, x + width, y + height);
         canvas.drawBitmap(currentFrameImage, srcRect, dstRect, p);
     }
+
+    public Bitmap getCurrentBitmap(){
+        return frames[currentFrameIndex].getImage();
+    }
 }

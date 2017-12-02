@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 /**
- * Created by Derek on 10/25/2017.
+ *  Activity displaying the mini game selection and how to play each game
  */
 
 public class SelectGameActivity extends AppCompatActivity {

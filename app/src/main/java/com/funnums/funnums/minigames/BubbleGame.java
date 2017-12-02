@@ -14,11 +14,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Random;
 import android.graphics.Bitmap;
 
 import com.funnums.funnums.maingame.GameActivity;
 import com.funnums.funnums.uihelpers.HUDSquare;
+import com.funnums.funnums.uihelpers.HUDSquareNoLabel;
 
 import com.funnums.funnums.R;
 import com.funnums.funnums.classes.ExpressionEvaluator;
@@ -135,6 +137,7 @@ public class BubbleGame extends MiniGame {
         gameOverSoundId=soundPool.load(context,R.raw.timesup,1);
 
 
+
         //initalize random generator
         r = new Random();
         //get a target from the target generator
@@ -150,7 +153,7 @@ public class BubbleGame extends MiniGame {
           */
 
         Log.d("DIMENSIONS", screenX + " " + screenY);
-        speed = (int)Math.round((screenX * screenY) * 0.000005865);
+        speed = (int)Math.round(screenX  * 0.00694) - 1;
         Log.d("DIMENSIONS", speed + "");
 
         bRadius = (int) (screenX * .13);
@@ -336,20 +339,23 @@ public class BubbleGame extends MiniGame {
     private synchronized void processEvents() {
 
         boolean removedNum = false;
-        for(MotionEvent e : events) {
-            if(e.getActionMasked()==MotionEvent.ACTION_DOWN) {
-                int x = (int) e.getX();
-                int y = (int) e.getY();
+        try {
+            for (MotionEvent e : events) {
+                if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    int x = (int) e.getX();
+                    int y = (int) e.getY();
 
-                if (checkTouchRadius(x, y)) {
-                    removedNum = true;
-                    break;
+                    if (checkTouchRadius(x, y)) {
+                        break;
+                    }
                 }
             }
         }
+        //don't let multiple threads working on touch events crash the app
+        catch(ConcurrentModificationException ex){
+            Log.e("ERROR", ex.toString());
+        }
         events.clear();
-        if(removedNum)
-            System.gc();
     }
 
     private boolean valueAlreadyOnScreen(int value) {
@@ -526,9 +532,9 @@ public class BubbleGame extends MiniGame {
 
 
 
-            curHUD.drawBetter(canvas, paint, String.valueOf(sum));
-            targetHUD.drawBetter(canvas, paint, String.valueOf(target));
-            timerHUD.drawBetterNoLabel(canvas, paint, gameTimer.toString());
+            curHUD.draw(canvas, paint, String.valueOf(sum));
+            targetHUD.draw(canvas, paint, String.valueOf(target));
+            timerHUD.draw(canvas, paint, gameTimer.toString());
 
 
             //draw all text animations
@@ -594,13 +600,14 @@ public class BubbleGame extends MiniGame {
     private synchronized void initHud(){
         int offset = 50;
         Paint paint = GameActivity.gameView.paint;
+        Bitmap img = com.funnums.funnums.maingame.GameView.loadBitmap("TilePlaceHolder.png", false);
         //HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint)
-        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint);
+        curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint, img);
         //curHUD = new HUDSquare(screenX * 1/4, topBuffer - offset, "Current", String.valueOf(sum), paint);
-        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint);
+        targetHUD = new HUDSquare(screenX * 5/8, topBuffer - offset*2, screenX *4/16, offset*2, "Target", String.valueOf(sum), paint, img);
         //targetHUD = new HUDSquare(screenX * 3/4, topBuffer - offset, "Target", String.valueOf(target), paint);
         //timerHUD = new HUDSquare(screenX * 1/2, offset, "0:00", gameTimer.toString(), paint);
-        timerHUD = new HUDSquare(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00", gameTimer.toString(), paint);
+        timerHUD = new HUDSquareNoLabel(screenX * 1/2 - screenX*5/64, offset/5, screenX * 5/32, offset*2, "0:00",  paint, img);
     }
 
 

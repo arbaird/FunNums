@@ -10,22 +10,22 @@ import com.funnums.funnums.animation.Animation;
 import com.funnums.funnums.animation.Frame;
 
 /**
- * Created by austinbaird on 11/2/17.
+ * Extends TouchableNumber to more closely mimic a floating balloon
  */
 
 public class TouchableBalloon extends TouchableNumber {
-    // Constructor
+    // Fraction value for the balloon
     private Fraction frac;
-
+    //animation for balloon
     public Animation anim;
-
+    //the bottom of balloon(the tail), drawn separately to make checking the balloon coords more simple
     public Bitmap bottom;
-
+    //flag indicating if balloon is currently being pooped
     public boolean popping;
-
+    //x and y radius, to allow ellipse shape
     public float xRadius, yRadius;
 
-   // public static Random r = new Random();
+    //the color of the next balloon, used to load a balloon image of different colors
     public static int color = 1;
 
     public TouchableBalloon(int screenX, int screenY, int travelAngle, int xRadius,int yRadius, int speed, Fraction frac) {
@@ -40,34 +40,25 @@ public class TouchableBalloon extends TouchableNumber {
 
 
     public void draw(Canvas canvas, Paint paint) {
-        //draw the circle(bubble)
+
         paint.setColor(Color.argb(255, 255, 255, 255));
-        //canvas.drawCircle(x, y, radius, paint);
-
-        //draw the value of the number in the center of the circle(bubble)
-        /*paint.setColor(Color.argb(255, 50, 50, 50));
-        paint.setTextSize(40);
-        paint.setTextAlign(Paint.Align.CENTER);*/
-
-
 
         //convert to coords that are positioned correctly when drawn.
         int drawX = (int)x -(int)xRadius;
         int drawY = (int)y -(int)yRadius;
-        //scale the image to be the length and width of the diameter of the bubble
-        int xDiameter = (int)xRadius*2;
-        int yDiameter = (int)yRadius*2;
-        //takes x, y coords, then the length and width to scale the image to
-        anim.render(canvas, drawX, drawY, paint);//, xDiameter, yDiameter);
 
+        //takes x, y coords, then the length and width to scale the image to
+        anim.render(canvas, drawX, drawY, paint);
+
+        //if balloon is popping, draw the fraction value
         if(!popping) {
             //draw the value of the number in the center of the circle(bubble)
             paint.setTextSize(40);
             paint.setTextAlign(Paint.Align.CENTER);
 
-
             canvas.drawText(frac.toString(), x, y, paint);
-            canvas.drawBitmap(bottom,x-xRadius, y+(yRadius*24/32), paint);
+            //position the fraction to be drawn
+            canvas.drawBitmap(bottom,x-xRadius, y+(yRadius*3/4), paint);
         }
 
     }
@@ -78,26 +69,26 @@ public class TouchableBalloon extends TouchableNumber {
     }
 
     /*
-       prepare the animation needed for bubble collisions. we can add additional animation for popping as well.
-       right now, there is an alien thing inside each bubble that starts a running animation every time
-       a bubble collides
+       prepare the animations needed for balloons. we can add additional animation for popping as well.
     */
     private void initAnim(){
+        //get number from 1-3 to load new color every time new balloon is generated
         int num = ((color++)%3) +1;
 
-        //get each image for animation
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/Balloon" +num+".png", false);
-        run1= Bitmap.createScaledBitmap(run1, (int) xRadius*2, (int)yRadius*2 ,false);
+        //get each image for top of balloon
+        Bitmap top = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/Balloon" +num+".png", false);
+        top= Bitmap.createScaledBitmap(top, (int) xRadius*2, (int)yRadius*2 ,false);
+        //get image for bottom of balloon
         bottom  = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/BalloonTail"+num+".png", false);
         bottom = Bitmap.createScaledBitmap(bottom, (int) xRadius*2, (int)yRadius*2 ,false);
-        //create Frame objects for each frame in animation
-        Frame f1 = new Frame(run1, .1f);
-
+        //only one frame for now, no animation, but keep this set up in case we want to add an animation later
+        Frame f1 = new Frame(top, .1f);
         //create animation object
         anim = new Animation(f1);
     }
 
     public void pop(){
+        //initialize animation for popping
         Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop larger groupingmdpi.png", false);
         Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop smaller groupingmdpi.png", false);
         //create Frame objects for each frame in animation
@@ -106,6 +97,7 @@ public class TouchableBalloon extends TouchableNumber {
         //create animation object
         anim = new Animation(f1, f2);
         anim.start();
+        //set flag to indicate this balloon is currently popping
         popping = true;
     }
 

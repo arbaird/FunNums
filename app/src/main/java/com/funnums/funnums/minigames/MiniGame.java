@@ -58,9 +58,20 @@ public abstract class MiniGame {
         gameTimer.start();
     }
 
+
+    public void onFinish(){
+        GameActivity.gameView.currentGame.playGameOverSound();
+        isFinished = true;
+        com.funnums.funnums.maingame.GameActivity.gameView.gameFinishedMenu.setScore(score);
+        //update high score, if new one is achieved
+        com.funnums.funnums.maingame.LeaderboardGameActivity.storeHighScore(score);
+    }
+
+
     public void playGameOverSound(){
         soundPool.play(gameOverSoundId,volume,volume,1,0,1);
     }
+
 
 
 }

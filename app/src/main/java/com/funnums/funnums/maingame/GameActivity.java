@@ -6,7 +6,10 @@ import android.util.DisplayMetrics;
 import android.content.res.AssetManager;
 
 
-
+/*
+    The Android Activity for the current game. Holds info on the screen dimensions and sets
+    the view to a GameView so we can have more control over game logic and animation
+ */
 public class GameActivity extends Activity {
 
     // Our object to handle the View
@@ -33,14 +36,12 @@ public class GameActivity extends Activity {
 
         Bundle extras = getIntent().getExtras();
 
-        //see if this activity was started from library activity
+        //see which minigame the player is navigating to
         String type = extras.getString("minigame");
 
-        // Create an instance of our Game
+        // Create an instance of our Game, passing in game type so we start the correct mini game
         gameView = new GameView(this, type);
         gameView.startGame();
-
-
 
         // Make our gameView the view for the Activity, gameView will ahndle all drawing and
         //respond to touch since it implements runnable and SurfaceView.
