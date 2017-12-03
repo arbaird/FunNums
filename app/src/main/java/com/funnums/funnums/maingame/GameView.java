@@ -268,7 +268,6 @@ public class GameView extends SurfaceView implements Runnable {
         }
         gameThread = new Thread(this);
         gameThread.start();
-        gameThread.setPriority(Thread.MIN_PRIORITY);
     }
 
     @Override
