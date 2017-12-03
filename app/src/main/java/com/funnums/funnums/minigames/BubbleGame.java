@@ -161,9 +161,9 @@ public class BubbleGame extends MiniGame {
         initTimer(60000);
 
         //set the backdrop for the menu and pause screen
-        bg = com.funnums.funnums.maingame.GameView.loadBitmap("Bubblescape test 1mdpi.png", false);
+        bg = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubblescape test 1mdpi.png", false);
         bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
-        com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("BubbleMenuBoard.png");
+        com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("BubbleGame/BubbleMenuBoard.png");
 
         initHud();
     }
@@ -535,7 +535,7 @@ public class BubbleGame extends MiniGame {
     private synchronized void initHud(){
 
 
-        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
+        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("Shared/HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
         int offset = pauseButton.getImg().getHeight()/2;

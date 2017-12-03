@@ -58,7 +58,7 @@ public class HUDSquare {
         adjustTextSize(paint, height, msg);
         adjustTextScale(paint, height, msg);
 
-        this.image = com.funnums.funnums.maingame.GameView.loadBitmap("HUD element.png", false);
+        this.image = com.funnums.funnums.maingame.GameView.loadBitmap("Shared/HUD element.png", false);
         this.image = Bitmap.createScaledBitmap(image, (int)width, (int)height ,false);
 
 

@@ -99,19 +99,19 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setTypeface(tf);
 
         //set up buttons for game finished menu and pause screen
-        Bitmap resumeDown = loadBitmap("resumebuttonDown.png", true);
-        Bitmap resume = loadBitmap("resumebutton.png", true);
+        Bitmap resumeDown = loadBitmap("Shared/resumebuttonDown.png", true);
+        Bitmap resume = loadBitmap("Shared/resumebutton.png", true);
         UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
 
-        Bitmap menuDown = loadBitmap("quitbuttonDown.png", true);
-        Bitmap menu = loadBitmap("quitbutton.png", true);
+        Bitmap menuDown = loadBitmap("Shared/quitbuttonDown.png", true);
+        Bitmap menu = loadBitmap("Shared/quitbutton.png", true);
         UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
 
         //get the stored data on this phone
         prefs = context.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
 
-        //set up backdrop for menus
-        Bitmap backdrop = loadBitmap("BubbleMenuBoard.png", true);
+        //set up backdrop for menus, give it bubblegame backdrop to start with, will be changed by each minigame
+        Bitmap backdrop = loadBitmap("BubbleGame/BubbleMenuBoard.png", true);
 
         //set up sound effects
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC,0);
@@ -121,7 +121,6 @@ public class GameView extends SurfaceView implements Runnable {
         //get the volume float from sharedPreferences. Returns 1 (max volume) if no volume is stored.
         volume=prefs.getFloat("volume", 1);
 
-        //Bitmap backdrop = loadBitmap("rounded.png", true);
 
         //magic number, but seems to be good spacing across different sized phones
         int offset = 100;

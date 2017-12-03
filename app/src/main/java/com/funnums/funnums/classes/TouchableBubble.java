@@ -38,10 +38,10 @@ public class TouchableBubble extends TouchableNumber {
      */
     private void initAnim(){
         //get each image for animation
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleTestmdpi.png", false);
-        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble small right ripplemdpi.png", false);
-        Bitmap run3 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
-        Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble right ripplemdpi.png", false);
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/BubbleTestmdpi.png", false);
+        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble small right ripplemdpi.png", false);
+        Bitmap run3 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble right ripplemdpi.png", false);
+        Bitmap run4 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble right ripplemdpi.png", false);
 
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
@@ -85,8 +85,8 @@ public class TouchableBubble extends TouchableNumber {
     }
 
     public void pop(){
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop larger groupingmdpi.png", false);
-        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop smaller groupingmdpi.png", false);
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble pop larger groupingmdpi.png", false);
+        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble pop smaller groupingmdpi.png", false);
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
         Frame f2 = new Frame(run2, .1f);

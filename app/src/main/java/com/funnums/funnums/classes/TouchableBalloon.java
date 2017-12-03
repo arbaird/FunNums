@@ -88,9 +88,9 @@ public class TouchableBalloon extends TouchableNumber {
     }
 
     public void pop(){
-        //initialize animation for popping
-        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop larger groupingmdpi.png", false);
-        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("Bubble pop smaller groupingmdpi.png", false);
+        //initialize animation for popping, popping for bubbles actually works for balloons too, reuse the bubble pop animation
+        Bitmap run1 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble pop larger groupingmdpi.png", false);
+        Bitmap run2 = com.funnums.funnums.maingame.GameView.loadBitmap("BubbleGame/Bubble pop smaller groupingmdpi.png", false);
         //create Frame objects for each frame in animation
         Frame f1 = new Frame(run1, .1f);
         Frame f2 = new Frame(run2, .1f);

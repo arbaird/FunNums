@@ -39,10 +39,10 @@ public abstract class MiniGame {
 
     public MiniGame(){
         //set up the pause button
-        //magic number for offset, but seems to look fine across different sized phones
 
-        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pauseButton.png", true);
-        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("pauseButtonDown.png", true);
+
+        Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("Shared/pauseButton.png", true);
+        Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("Shared/pauseButtonDown.png", true);
         int offset = pauseImg.getHeight();
         pauseButton = new UIButton(com.funnums.funnums.maingame.GameActivity.screenX - pauseImg.getWidth(), 0, com.funnums.funnums.maingame.GameActivity.screenX, offset, pauseImg, pauseImgDown);
     }

@@ -158,10 +158,6 @@ public class BalloonGame extends MiniGame {
         inBalloonGenBuffer = false;
         allCorrect = true;
 
-        //get HUD Board
-        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
-        HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
-
 
         //initialize the background
         bg = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/BalloonBG.png", false);
@@ -598,7 +594,7 @@ public class BalloonGame extends MiniGame {
      */
     private synchronized void initHud(){
 
-        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
+        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("Shared/HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
         Paint paint = GameActivity.gameView.paint;
