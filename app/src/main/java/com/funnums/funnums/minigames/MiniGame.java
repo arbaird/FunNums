@@ -17,7 +17,8 @@ import com.funnums.funnums.classes.GameCountdownTimer;
 
 
 /**
- * Created by austinbaird on 10/19/17.
+ * Abstract class for a minigame, every minigame must provide a method to initialize the game,
+ * update the game logic, draw the game, and handle touch events
  */
 
 public abstract class MiniGame {

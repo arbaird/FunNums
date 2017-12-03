@@ -29,7 +29,9 @@ import com.funnums.funnums.classes.TilePlaceHolder;
 import com.funnums.funnums.classes.Cloud;
 import com.funnums.funnums.classes.ScrollingBackground;
 
-
+/*
+    The owl game to practice creating and slving equations
+ */
 public class OwlGame extends MiniGame {
     public String TAG_OWL = "Owl Game"; //for debugging
 

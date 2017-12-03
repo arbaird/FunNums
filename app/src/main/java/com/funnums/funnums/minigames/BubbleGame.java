@@ -42,7 +42,9 @@ import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 import com.funnums.funnums.uihelpers.GameFinishedMenu;
 
-
+/*
+    The bubble game to practice addition
+ */
 public class BubbleGame extends MiniGame {
 
     public String TAG = "Game"; //for debugging

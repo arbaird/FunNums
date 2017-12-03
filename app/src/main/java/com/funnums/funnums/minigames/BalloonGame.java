@@ -28,7 +28,9 @@ import com.funnums.funnums.uihelpers.HUDSquareNoLabel;
 import com.funnums.funnums.uihelpers.TextAnimator;
 import com.funnums.funnums.uihelpers.UIButton;
 
-
+/*
+    The balloon game to practice solving fraction inequalities
+ */
 public class BalloonGame extends MiniGame {
     //for debugging
     public String VIEW_LOG_TAG = "BallloonGame";
