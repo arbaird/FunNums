@@ -45,15 +45,11 @@ public class BalloonGame extends MiniGame {
     private int screenX;
     private int screenY;
 
-
-    //TODO make this vary based on phone size
     //this is the amount of space at the top of the screen used for the current sum, target, timer, and pause button
     private int topBuffer = 200;
 
     //running time, used to generate new numbers every few seconds
     private long runningMilis = 0;
-
-    private int maxNumsOnScreen = 4;
 
     //target the balloons values will be compared against
     private Fraction target;
@@ -85,7 +81,7 @@ public class BalloonGame extends MiniGame {
     private int balloonInflateId;
     private int wooshId;
 
-
+    //balloons that have been processed this round
     private int balloonsProcessed;
 
     //balloons until we generate before entering buffer, in which no more balloons are generated
@@ -109,7 +105,7 @@ public class BalloonGame extends MiniGame {
     HUDSquare targetHUD;
     HUDSquare timerHUD;
     //space between HUD squared
-    int offset = 50;
+    int offset;
 
     //used to determine swipes on the screen
     private float x1,x2;
@@ -139,29 +135,30 @@ public class BalloonGame extends MiniGame {
         rFrac= new FractionNumberGenerator(mode);
         //set current inequality
         setInequalityString(mode);
-
+        //get starting target
         target = rFrac.getTarget();
 
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
-
+        //scale speed based on phone size
         speed = (int)Math.round(screenY * 0.003378) - 1;
-
+        //get radius for x and y based on phone suze, to draw ellipticall balloons
         xRadius = (int) (screenX * .13);
         yRadius = (int) (screenX * .15);
 
-
+        //generated first balloon
         generateNumber();
 
         //Initialize timer to 60 seconds, update after 1 sec interval
         initTimer(60000);
-
-
+        //get offset for drawing HUD elements
+        offset = pauseButton.getImg().getHeight()/2;
+        //initialize flags for balloon generation and if all answers are correct this round
         balloonsProcessed = 0;
         inBalloonGenBuffer = false;
         allCorrect = true;
 
-
+        //get HUD Board
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
 
@@ -175,9 +172,8 @@ public class BalloonGame extends MiniGame {
 
         initHud();
 
-
         initFloatingObjects();
-
+        //set typeface specific to balloon game
         Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/FunCartoon2.ttf");
         GameActivity.gameView.paint.setTypeface(tf);
 
@@ -368,9 +364,12 @@ public class BalloonGame extends MiniGame {
         processScore(isCorrect, value);
     }
 
-
+    /*
+        Process the score, given a boolean indicating if the balloon being processed correctly
+        satisfies the current inequality or not
+     */
     private synchronized void processScore(boolean correct, int value){
-
+        //play sounds and update score appropriately based on if answer is correct
         TextAnimator textAnimator;
         if (correct) {
             soundPool.play(balloonPopId,volume,volume,1,0,1);
@@ -392,10 +391,8 @@ public class BalloonGame extends MiniGame {
      */
     private synchronized void checkBalloonCount(){
         balloonsProcessed++;
-        Log.d("BUFFER", "Increment balloons: " + balloonsProcessed);
         if(!inBalloonGenBuffer && balloonsProcessed >= balloonsTilBuffer){
             inBalloonGenBuffer = true;
-            Log.d("BUFFER", "Enter the buffer balloonsProcessed: " + balloonsProcessed);
         }
     }
 
@@ -443,7 +440,7 @@ public class BalloonGame extends MiniGame {
 
         //play balloon inflating sound effect
         soundPool.play(balloonInflateId,volume,volume,2,0,1);
-
+        //if all answers were correct for previous round, reward the player with more time and display message
         if(allCorrect){
             TextAnimator addTimetextAnimator = new TextAnimator("+15", screenX * 1/2, timerHUD.bottom-timerHUD.MARGIN, 0, 255, 0);
             scoreAnimations.add(addTimetextAnimator);
@@ -549,7 +546,9 @@ public class BalloonGame extends MiniGame {
     }
 
 
-
+    /*
+        handle touch events
+     */
     public boolean onTouch(MotionEvent e) {
         //add touch event to eventsQueue rather than processing it immediately. This is because
         //onTouchEvent is run in a separate thread by Android and if we touch and delete a number
@@ -584,16 +583,19 @@ public class BalloonGame extends MiniGame {
                 return false;
         }
     }
-    
+    /*
+        Determine if a balloon is done with its popping animation
+     */
     public synchronized boolean isPopped(TouchableBalloon num){
         if(num.popping && !num.anim.playing) {
-            Log.d("pop", "remove it");
             return true;
         }
         return false;
 
     }
-
+    /*
+        initialize the HUD
+     */
     private synchronized void initHud(){
 
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
@@ -609,29 +611,29 @@ public class BalloonGame extends MiniGame {
     }
 
     /*
-   Check if where the player touched the screen is on a touchable number and, if it is, call
-   processScore() to update the number/score/etc
+        Check if where the player touched the screen is on a touchable number and, if it is, call
+        processScore() to update the number/score/etc
     */
     private synchronized boolean checkSwipeX(int y, boolean isSwipeRight) {
         for(TouchableBalloon num : numberList) {
-            //Trig! //(x−h)2r2x+(y−k)2r2y≤1
             if  (Math.abs(num.getY() - y) <= 150 ){
-                //if(Math.pow(x - num.getX(), 2) + Math.pow(y - num.getY(), 2) < Math.pow(num.getRadius(), 2) && !num.popping) {
-                Log.d("SWIPE", "MOVE " + num.getValue().toString());
+                //set velocity based on direction of swipe
                 if(isSwipeRight)
                     num.setXVelocity(10);
                 else
                     num.setXVelocity(-10);
                 soundPool.play(wooshId,volume,volume,1,0,1);
                 return true;
-                //break after removing to avoid concurrent memory modification error, shouldn't be possible to touch two at once anyway
-                //we could have a list of numbers to remove like in the update() function, but let's keep it simple for now
+
             }
         }
         return false;
 
     }
 
+    /*
+        Initialize the floating objects
+     */
     private synchronized void initFloatingObjects() {
         Bitmap hotAirImg1 = com.funnums.funnums.maingame.GameView.loadBitmap("BalloonGame/HotAir1.png", false);
         HotAirBalloon hotAir1 = new HotAirBalloon(hotAirImg1.getWidth() / 16, topBuffer + hotAirImg1.getHeight() / 4, hotAirImg1);

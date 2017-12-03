@@ -1,7 +1,7 @@
 package com.funnums.funnums.classes;
 
 /**
- * Created by austinbaird on 12/1/17.
+ * Holds a background that will scroll to the left at a specified speed
  */
 
 import android.util.Log;
@@ -13,19 +13,22 @@ import android.graphics.Matrix;
 
 public class ScrollingBackground {
 
+    //the image
     Bitmap bitmap;
+    //reverse of the image, for overlapping the image on itself
     Bitmap bitmapReversed;
 
     int width;
     int height;
+    //flag if the reversed image is in front of the regular image or not, so we don't draw the same image twice
     boolean reversedFirst;
     float speed;
 
+    //where the image is joined with itself
     float xClip;
+    //where image starts and ends on y-axis
     int startY;
     int endY;
-
-    int fps = 1;
 
     public ScrollingBackground(int screenWidth, int screenHeight, String bitmapName, int sY, int eY, float s) {
 
@@ -43,8 +46,8 @@ public class ScrollingBackground {
         xClip = 0;
 
         //Position the background vertically
-        startY = sY; //* (screenHeight / 100);
-        endY = eY;// * (screenHeight / 100);
+        startY = sY;
+        endY = eY;
         speed = s;
 
         // Create the bitmap
@@ -53,8 +56,6 @@ public class ScrollingBackground {
         // Save the width and height for later use
         width = bitmap.getWidth();
         height = bitmap.getHeight();
-
-
 
         //Create a mirror image of the background (horizontal flip)
         Matrix matrix = new Matrix();

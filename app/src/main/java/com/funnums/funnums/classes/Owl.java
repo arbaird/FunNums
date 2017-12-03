@@ -113,12 +113,13 @@ public class Owl {
         x += xVelocity;
         y += yVelocity;
     }
-
+    /*
+        make sure owl doesn't fly off screen
+     */
     void correctPos(){
         if(y + getSize()/2 < 0){
             y -= yVelocity;
         }
-
     }
 
     /*
@@ -126,8 +127,10 @@ public class Owl {
      */
     public void increaseAltitude(){
         addVelocity(0, -flyVelocity);
-        anim.start();
-        Log.d("OWL", "FLY!");
+        if(anim.playing)
+            anim.restart();
+        else
+            anim.start();
     }
 
     public int getSize(){

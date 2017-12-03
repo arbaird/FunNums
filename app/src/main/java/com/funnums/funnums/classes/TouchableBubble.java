@@ -29,7 +29,6 @@ public class TouchableBubble extends TouchableNumber {
         this.value = value;
 
         initAnim();
-
     }
 
     /*
@@ -120,6 +119,11 @@ public class TouchableBubble extends TouchableNumber {
 
             canvas.drawText(String.valueOf(value), x, y, paint);
         }
+    }
+
+    //// Constructor for unit tests
+    public TouchableBubble(int screenX, int screenY,  int radius) {
+        super(screenX, screenY, 50, radius, 50);
     }
 
 

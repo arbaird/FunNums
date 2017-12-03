@@ -117,7 +117,7 @@ public class OwlGame extends MiniGame {
     //sound effects
     private int clickId;
     private int flappId;
-
+    //the current score
     HUDSquare curHUD;
 
     public synchronized void init() {
@@ -179,19 +179,16 @@ public class OwlGame extends MiniGame {
         com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("OwlGame/OwlMenuBoard.png");
 
         initBackgrounds();
-
+        //set the font for this game
         Typeface tf =Typeface.createFromAsset(GameActivity.assets,"fonts/Mantop.ttf");
         GameActivity.gameView.paint.setTypeface(tf);
-
+        //init the score HUD
         Paint paint = new Paint();
-        curHUD = new HUDSquare(0,0, 100, 100, "Score", String.valueOf(score), paint);
+        curHUD = new HUDSquare(0,0, pauseButton.getImg().getWidth(), pauseButton.getImg().getHeight(), "Score", String.valueOf(score), paint);
     }
 
     //Update method to be called by game loop
     public synchronized void update(long delta) {
-        if (isPaused)
-            return;
-
         owl.update(delta);
         //if the owl reached the bottom of the screen, the game is over
         if(owl.getY() + owl.getSize()/2> screenY -tileBuffer - exprBuffer && !isFinished) {
@@ -199,7 +196,7 @@ public class OwlGame extends MiniGame {
         }
 
         processEvents();
-
+        //update backgrounds and clouds, update individually so we can draw them as layers on top of each other
         for(ScrollingBackground bg : topBackgrounds)
             bg.update();
         for(ScrollingBackground bg : bottomBackgrounds)
@@ -216,7 +213,7 @@ public class OwlGame extends MiniGame {
 
             // Rub out the last frame
             canvas.drawBitmap(bg, 0, 0, paint);
-
+            //draw top backgrounds before owl, so they don't block the owl
             for(ScrollingBackground bg : topBackgrounds)
                 bg.draw(canvas, paint);
 
@@ -228,21 +225,10 @@ public class OwlGame extends MiniGame {
 
             //draw the owl
             owl.draw(canvas, paint);
-
+            //draw bottom backgrounds(i.e the water) after the owl, so it looks like owl falls into the water
             for(ScrollingBackground bg : bottomBackgrounds)
                 bg.draw(canvas, paint);
 
-            paint.setColor(Color.argb(255, 0, 0, 255));
-
-            //draw tile buffer
-            /*paint.setColor(Color.argb(255, 100, 150, 155));
-            canvas.drawRect( (float)0, (float)(screenY-tileBuffer - exprBuffer), (float)screenX,
-                    (float)screenY - exprBuffer, paint);*/
-
-            //draw expr buffer
-            /*paint.setColor(Color.argb(255, 150, 150, 155));
-            canvas.drawRect( (float)0, (float)(screenY - exprBuffer), (float)screenX,
-                    (float)screenY, paint);*/
 
             //Draw all the tiles
             for(DraggableTile t : tileList)
@@ -906,7 +892,9 @@ public class OwlGame extends MiniGame {
         }
 
     }
-
+    /*
+        Initialize all of the scrolling backgrounds
+     */
     private void initBackgrounds(){
         int overlap = 100;//allows images to stack on top of each other, since there is transparency we need images overalapping eachother
         ScrollingBackground bg1 = new ScrollingBackground(
@@ -953,7 +941,7 @@ public class OwlGame extends MiniGame {
         bottomBackgrounds.add(bg6);
         bottomBackgrounds.add(bg7);
         bottomBackgrounds.add(bg8);
-
+        //initialize the clouds
         clouds = new ArrayList<>();
         Cloud cloud1 = new Cloud(0,  0, "OwlGame/Cloud1.png");
         Cloud cloud2 = new Cloud(screenX - cloud1.getWidth(),  0,  "OwlGame/Cloud2.png");

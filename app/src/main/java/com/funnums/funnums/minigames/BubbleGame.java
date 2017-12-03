@@ -147,72 +147,44 @@ public class BubbleGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
 
-        /*area = 852480
-            speed * factor = area
-            aread * factor = speed
-          */
-
-        Log.d("DIMENSIONS", screenX + " " + screenY);
+        //found factor (0.00694) that scales the speed appropriately across different phones
         speed = (int)Math.round(screenX  * 0.00694) - 1;
-        Log.d("DIMENSIONS", speed + "");
+
 
         bRadius = (int) (screenX * .13);
 
+        //generated nbubbles to fill the screen on start
         for(int i = 0; i < maxNumsOnScreen; i++)
             generateNumber();
-
-
 
         //Initialize timer to 60 seconds, update after 1 sec interval
         initTimer(60000);
 
-
-
-        Log.d(TAG, "init pauseButton: " + pauseButton);
-
-
-        Bitmap resumeDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume_down.png", false);
-        Bitmap resume = com.funnums.funnums.maingame.GameView.loadBitmap("button_resume.png", false);
-        UIButton resumeButton = new UIButton(0,0,0,0, resume, resumeDown);
-
-        Bitmap menuDown = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit_down.png", false);
-        Bitmap menu = com.funnums.funnums.maingame.GameView.loadBitmap("button_quit.png", false);
-        UIButton menuButton = new UIButton(0,0,0,0, menu, menuDown);
-
-        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
-        HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
-
+        //set the backdrop for the menu and pause screen
         bg = com.funnums.funnums.maingame.GameView.loadBitmap("Bubblescape test 1mdpi.png", false);
         bg = Bitmap.createScaledBitmap(bg, screenX, screenY - 0/*topBuffer*/,false);
-
-        //com.funnums.funnums.maingame.GameActivity.gameView.canvas = new Canvas(bg);
-
-
-        //set the backdrop for the menu and pause screen
         com.funnums.funnums.maingame.GameActivity.gameView.setMenuBackdrop("BubbleMenuBoard.png");
-
 
         initHud();
     }
 
 
-
+    /*
+        update the game logic
+     */
     public synchronized void update(long delta) {
-        if(isPaused)
-            return;
-
         //detect and handle collisions
         findCollisions();
-
+        //ist of bubbles to remove, can't remove inside for loop without causing Concurrent Memory Modification Error
         ArrayList<TouchableBubble> toRemove = new ArrayList<>();
 
         for(TouchableBubble num : numberList) {
             //update the number
             num.update(delta);
-
+            //add numers to remove
             if (isPopped(num))
                 toRemove.add(num);
-
+            //check if bubble is drifting off the screen
             if((num.getX() > screenX - num.getRadius() && num.getXVelocity() > 0)
                     || (num.getX() < 0 && num.getXVelocity() < 0) )
                 num.setXVelocity(-num.getXVelocity()); //bounced off vertical edge
@@ -222,9 +194,9 @@ public class BubbleGame extends MiniGame {
                 num.setYVelocity(-num.getYVelocity()); //bounce off horizontal edge
 
         }
+        //remove pooped bubbles
         for(TouchableBubble popped : toRemove) {
             numberList.remove(popped);
-            //System.gc();
         }
 
 
@@ -321,11 +293,9 @@ public class BubbleGame extends MiniGame {
     }
 
     /*
-    Process the touch events
+        Process the touch events
      */
     private synchronized void processEvents() {
-
-        boolean removedNum = false;
         try {
             for (MotionEvent e : events) {
                 if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
@@ -387,7 +357,7 @@ public class BubbleGame extends MiniGame {
        player has reached the target, in which case we make a new target. Else, if the target is
        exceeded, for now we tell the player they exceeded the target and reset the game
 
-       Also if the target is reached add 5 seconds or if the target is exceeded take away 5 seconds
+       Also if the target is reached add 1 second
     */
     private synchronized void processScore(TouchableBubble num) {
 
@@ -427,7 +397,7 @@ public class BubbleGame extends MiniGame {
     }
 
     /*
-        For now, tell player they missed the target and reset the target and current sum
+        Tell player they missed the target and reset the target and current sum
      */
     private void resetGame() {
         //text, x, y, r, g, b, interval, size
@@ -435,10 +405,6 @@ public class BubbleGame extends MiniGame {
         TextAnimator message2 = new TextAnimator("Current reset", screenX/2, screenY/2 + 60, 185, 44, 44, 1.25, 50);
         scoreAnimations.add(message1);
         scoreAnimations.add(message2);
-
-        /*target = r.nextInt(3)+5;
-        sum = 0;
-        score = 0;*/
 
         sum = previousTarget; //reset the current sum to the previous target
 
@@ -517,12 +483,10 @@ public class BubbleGame extends MiniGame {
             for(TouchableNumber num : numberList)
                 num.draw(canvas, paint);
 
-
-
+            //draw HUD Squares
             curHUD.draw(canvas, paint, String.valueOf(sum));
             targetHUD.draw(canvas, paint, String.valueOf(target));
             timerHUD.draw(canvas, paint, gameTimer.toString());
-
 
             //draw all text animations
             for(TextAnimator score : scoreAnimations)
@@ -554,38 +518,27 @@ public class BubbleGame extends MiniGame {
 
         return true;
     }
-
+    /*
+        Tell if a bubble is done with popping animation
+     */
     public synchronized boolean isPopped(TouchableBubble num){
-
         if(num.popping && !num.anim.playing) {
-            Log.d("pop", "remove it");
             return true;
         }
         return false;
 
     }
 
-    public synchronized void drawBoard(SurfaceHolder ourHolder, Canvas canvas, Paint paint){
-        if (true/*ourHolder.getSurface().isValid()*/) {
-            canvas = ourHolder.lockCanvas();
-            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
-            //paint.setColor(Color.argb(255, 0,0,0));
-            canvas.drawBitmap(HUDBoard, 0, 0, paint);
-            ourHolder.unlockCanvasAndPost(canvas);
-            canvas = ourHolder.lockCanvas();
-            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
-            //paint.setColor(Color.argb(255, 0,0,0));
-            canvas.drawBitmap(HUDBoard, 0, 0, paint);
-            ourHolder.unlockCanvasAndPost(canvas);
-        }
-        else {
-            Log.d("DEBUG", ourHolder + " " + canvas + " " + paint + " " + HUDBoard);
-        }
-
-    }
-
+    /*
+        Initialize HUD elements
+     */
     private synchronized void initHud(){
-        int offset = 50;
+
+
+        HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("HudBoard.png", false);
+        HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
+
+        int offset = pauseButton.getImg().getHeight()/2;
         Paint paint = GameActivity.gameView.paint;
         //HUDSquare(float x, float y, float width, float height, String msg, String value, Paint paint)
         curHUD = new HUDSquare(screenX * 1/8, topBuffer - offset*2, screenX/4, offset*2, "Current", String.valueOf(sum), paint);
