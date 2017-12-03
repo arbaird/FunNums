@@ -896,7 +896,8 @@ public class OwlGame extends MiniGame {
         Initialize all of the scrolling backgrounds
      */
     private void initBackgrounds(){
-        int overlap = 100;//allows images to stack on top of each other, since there is transparency we need images overalapping eachother
+        //allows images to stack on top of each other, since there is transparency we need images overalapping eachother
+        int overlap = 100;
         ScrollingBackground bg1 = new ScrollingBackground(
                 screenX,
                 screenY,
@@ -905,24 +906,22 @@ public class OwlGame extends MiniGame {
         ScrollingBackground bg2 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/Beach.png", screenY * 1/2,  (int)(screenY-tileBuffer - exprBuffer-overlap/2), 2f);
-        ScrollingBackground bg3 = new ScrollingBackground(
-                screenX,
-                screenY,
-                "OwlGame/BeachBottom.png", (int)(screenY-tileBuffer - exprBuffer-overlap/2),  (int)(screenY -exprBuffer), 1.5f);
-        int waveOffset = overlap/5;//offset for space between the waves
+                "OwlGame/Beach.png", screenY * 1/2,  (int)(screenY-tileBuffer - exprBuffer/*-overlap/2*/), 2f);
+
+        //offset for space between the waves
+        int waveOffset = overlap/5;
         ScrollingBackground bg4 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/WaterLayer1.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*3),  (int)(screenY-tileBuffer/2  - exprBuffer), 2f);
+                "OwlGame/WaterLayer1.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*3),  (int)(screenY-tileBuffer/2  - exprBuffer), 2.5f);
         ScrollingBackground bg5 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/WaterLayer2.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*2),  (int)(screenY-tileBuffer/2  - exprBuffer), 2.5f);
+                "OwlGame/WaterLayer2.png", (int)(screenY-tileBuffer  - exprBuffer-waveOffset*2),  (int)(screenY-tileBuffer/2  - exprBuffer), 2.9f);
         ScrollingBackground bg6 = new ScrollingBackground(
                 screenX,
                 screenY,
-                "OwlGame/WaterLayer3.png", (int)(screenY-tileBuffer  - exprBuffer) -waveOffset,  (int)(screenY-tileBuffer/2  - exprBuffer)/*(int)(screenY -exprBuffer)*/, 3f);
+                "OwlGame/WaterLayer3.png", (int)(screenY-tileBuffer  - exprBuffer) -waveOffset,  (int)(screenY-tileBuffer/2  - exprBuffer), 3.25f);
         ScrollingBackground bg7 = new ScrollingBackground(
                 screenX,
                 screenY,
@@ -934,7 +933,6 @@ public class OwlGame extends MiniGame {
         topBackgrounds = new ArrayList<>();
         topBackgrounds.add(bg1);
         topBackgrounds.add(bg2);
-        topBackgrounds.add(bg3);
         bottomBackgrounds = new ArrayList<>();
         bottomBackgrounds.add(bg4);
         bottomBackgrounds.add(bg5);
