@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:layout_editor_absoluteY="81dp"
-    tools:layout_editor_absoluteX="0dp">
+    tools:layout_editor_absoluteX="0dp"
+    android:background="@drawable/menu"
+    >
 
 
     <ImageButton
@@ -20,21 +22,38 @@
         android:layout_marginStart="38dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="37dp" />
+        android:layout_marginTop="60dp" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/game1"
-        android:textSize="40sp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/imageButton"
         android:layout_marginLeft="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="29dp"
-        app:layout_constraintHorizontal_bias="0.15" />
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="60dp"
+        android:background="#13c92c"
+        android:text="@string/game1"
+
+        android:textSize="40sp"
+        app:layout_constraintHorizontal_bias="0.157"
+        app:layout_constraintLeft_toRightOf="@+id/imageButton"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewBubbleScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="1dp"
+        android:background="#2a7935"
+        android:text="@string/high_score"
+        android:textSize="13sp"
+        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintLeft_toRightOf="@+id/imageButton"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <Button
         android:id="@+id/button_how_to_bubbles"
@@ -42,7 +61,7 @@
         android:layout_height="wrap_content"
         android:text="@string/how_to_play"
         android:layout_marginTop="5dp"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/textViewBubbleScore"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
         android:onClick="onPressedHowToBubbles"
@@ -70,23 +89,39 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="0dp"
+        android:background="#13c92c"
         android:text="@string/game2"
         android:textSize="40sp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/imageButton2"
-        android:layout_marginLeft="8dp"
         app:layout_constraintHorizontal_bias="0.2"
-        android:layout_marginTop="25dp"
-        app:layout_constraintTop_toBottomOf="@+id/button_how_to_bubbles" />
+        app:layout_constraintLeft_toRightOf="@+id/imageButton2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageButton2" />
+
+    <TextView
+        android:id="@+id/textViewBalloonScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="1dp"
+        android:background="#2a7935"
+        android:text="@string/high_score"
+        android:textSize="13sp"
+        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintLeft_toRightOf="@+id/imageButton2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <Button
         android:id="@+id/button_how_to_balloons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/how_to_play"
-        android:layout_marginTop="5dp"
-        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@+id/textViewBalloonScore"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
         android:onClick="onPressedHowToBalloons"
@@ -112,31 +147,48 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="25dp"
+
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="0dp"
+        android:background="#13c92c"
         android:text="@string/game3"
         android:textSize="40sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.3"
-        app:layout_constraintStart_toEndOf="@+id/imageButton5"
-        app:layout_constraintTop_toBottomOf="@+id/button_how_to_balloons" />
+        app:layout_constraintHorizontal_bias="0.124"
+        app:layout_constraintLeft_toRightOf="@+id/imageButton5"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageButton5"
+        />
+
+    <TextView
+        android:id="@+id/textViewOwlScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="0dp"
+        android:background="#2a7935"
+        android:text="@string/high_score"
+        android:textSize="13sp"
+        app:layout_constraintHorizontal_bias="0.154"
+        app:layout_constraintLeft_toRightOf="@+id/imageButton5"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <Button
         android:id="@+id/button_how_to_owl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="84dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="5dp"
         android:text="@string/how_to_play"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@+id/textViewOwlScore"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         android:onClick="onPressedHowToOwl"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.259"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageButton5"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintLeft_toRightOf="@+id/imageButton5"
+        android:layout_marginLeft="4dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintHorizontal_bias="0.282" />
 
 
 

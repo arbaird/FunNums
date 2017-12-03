@@ -118,7 +118,8 @@ public class LeaderboardGameActivity extends AppCompatActivity {
         store given high score, if it is higher than current high score
      */
     public static void storeHighScore(long score) {
-
+        if(score <= 0)
+            return;
         SharedPreferences prefs = MainMenuActivity.prefs;
         //get context from gameView if main menu prefs is not available
         if(prefs == null){

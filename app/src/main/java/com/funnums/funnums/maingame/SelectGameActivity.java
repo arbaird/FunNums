@@ -5,8 +5,12 @@ import android.content.Intent;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.TextView;
 
+import com.funnums.funnums.R;
 import com.funnums.funnums.classes.HowToPopUp;
+import android.content.SharedPreferences;
+
 
 /**
  *  Activity displaying the mini game selection and how to play each game
@@ -14,7 +18,7 @@ import com.funnums.funnums.classes.HowToPopUp;
 
 public class SelectGameActivity extends AppCompatActivity {
     static final public String TAG = "Select Game";
-
+    SharedPreferences prefs;
     //Create select game activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +26,10 @@ public class SelectGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(com.funnums.funnums.R.layout.select_game);
 
+
+
+
+        prefs = getSharedPreferences("HighScore", MODE_PRIVATE);
     }
 
     //Launch mini game activity (Bubble type)
@@ -83,6 +91,40 @@ public class SelectGameActivity extends AppCompatActivity {
         i.putExtra("minigame", "owl");
 
         startActivity(i);
+    }
+
+    /*
+        Show the player's high score for a given minigame
+     */
+    public void showHighScore(String miniGame){
+        long score = prefs.getLong(miniGame + "HighScore", 0);
+        TextView title;
+        switch (miniGame){
+            case("owl"):
+                title = (TextView) findViewById(R.id.textViewOwlScore);
+                break;
+            case("bubble"):
+                title = (TextView) findViewById(R.id.textViewBubbleScore);
+                break;
+            case("balloon"):
+                title = (TextView) findViewById(R.id.textViewBalloonScore);
+                break;
+            default:
+                return;
+        }
+        //get
+        String scoreText = "High Score: " + String.valueOf(score);
+        title.setText(scoreText);
+    }
+
+    // If the Activity is resumed make sure to resume our thread
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showHighScore("bubble");
+        showHighScore("balloon");
+        showHighScore("owl");
+
     }
 
 

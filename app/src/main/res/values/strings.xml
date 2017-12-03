@@ -22,4 +22,6 @@
 
     <string name="pop_up_next">Next</string>
     <string name="pop_up_prev">Previous</string>
+
+    <string name="high_score">High Score: </string>
 </resources>
