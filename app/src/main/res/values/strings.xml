@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Fun Nums</string>
     <string name="play_button">Select Game</string>
-    <string name="high_score_button">View High Scores</string>
+    <string name="high_score_button">Leader Board</string>
     <string name="settings_button">Settings</string>
     <string name="leaderboard">Leaderboard</string>
 

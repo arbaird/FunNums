@@ -3,7 +3,6 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="8dp"
-    android:background="#2a7935"
     >
 
     <TextView
@@ -11,7 +10,6 @@
         android:layout_height="wrap_content"
         android:text="playerName"
         android:id="@+id/playerName"
-        android:background="#13c92c"
         android:layout_weight="1" />
 
     <TextView
@@ -19,7 +17,6 @@
         android:layout_height="wrap_content"
         android:text="New Button"
         android:id="@+id/playerScore"
-        android:background="#13c92c"
         android:layout_weight="0" />
 
 </LinearLayout>

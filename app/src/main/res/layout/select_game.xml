@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:layout_editor_absoluteY="81dp"
     tools:layout_editor_absoluteX="0dp"
-    android:background="@drawable/menu"
+    android:background="@drawable/menu_no_bg"
     >
 
 
@@ -31,7 +31,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="60dp"
-        android:background="#13c92c"
         android:text="@string/game1"
 
         android:textSize="40sp"
@@ -47,7 +46,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="1dp"
-        android:background="#2a7935"
         android:text="@string/high_score"
         android:textSize="13sp"
         app:layout_constraintHorizontal_bias="0.15"
@@ -92,7 +90,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="0dp"
-        android:background="#13c92c"
         android:text="@string/game2"
         android:textSize="40sp"
         app:layout_constraintHorizontal_bias="0.2"
@@ -107,7 +104,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="1dp"
-        android:background="#2a7935"
         android:text="@string/high_score"
         android:textSize="13sp"
         app:layout_constraintHorizontal_bias="0.15"
@@ -150,7 +146,6 @@
 
         android:layout_marginRight="8dp"
         android:layout_marginTop="0dp"
-        android:background="#13c92c"
         android:text="@string/game3"
         android:textSize="40sp"
         app:layout_constraintHorizontal_bias="0.124"
@@ -166,7 +161,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="0dp"
-        android:background="#2a7935"
         android:text="@string/high_score"
         android:textSize="13sp"
         app:layout_constraintHorizontal_bias="0.154"
