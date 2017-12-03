@@ -63,6 +63,7 @@ public class Animation {
         currentFrameIndex = 0;
         currentTime = 0;
         start();
+        Log.d("ANIM", "RESTART");
     }
 
     /*
