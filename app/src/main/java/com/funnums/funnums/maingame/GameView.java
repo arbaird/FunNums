@@ -123,7 +123,7 @@ public class GameView extends SurfaceView implements Runnable {
 
 
         //magic number, but seems to be good spacing across different sized phones
-        int offset = 100;
+        int offset = (int)(com.funnums.funnums.maingame.GameActivity.screenY * 0.084459);//100;
         //initialize pause menu
         pauseScreen = new PauseMenu(GameActivity.screenX*1/8,
                                     offset,

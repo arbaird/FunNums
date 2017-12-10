@@ -12,12 +12,15 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.funnums.funnums.R;
-
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
+import android.view.View;
 /**
  * Created by alanking on 11/27/17.
  */
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements OnSeekBarChangeListener {
     public static final String TAG = "Settings";
     //for volume radio group
     private static RadioGroup volumeGroup;
@@ -44,57 +47,21 @@ public class SettingsActivity extends AppCompatActivity {
         //get the stored data on this phone
         prefs = getSharedPreferences("HighScore", MODE_PRIVATE);
         //get the current volume data
-        volume=prefs.getFloat("volume", 1);
+        volume=prefs.getFloat("volume", 1)*100;
 
-        //check the radio button that corresponds to the current volume settings
-        if(volume==1){
-            currentVolume=(RadioButton)findViewById(R.id.high);
-            currentVolume.setChecked(true);
-        }else if(volume==0.75f){
-            currentVolume=(RadioButton)findViewById(R.id.mid_high);
-            currentVolume.setChecked(true);
-        }else if(volume==0.5f){
-            currentVolume=(RadioButton)findViewById(R.id.mid);
-            currentVolume.setChecked(true);
-        }else if(volume==0.25f){
-            currentVolume=(RadioButton)findViewById(R.id.mid_low);
-            currentVolume.setChecked(true);
-        }else if(volume==0){
-            currentVolume=(RadioButton)findViewById(R.id.noSound);
-            currentVolume.setChecked(true);
-        }
-
-        //get the editor so we can update stored data
-        final SharedPreferences.Editor editor = prefs.edit();
-
-        //gets the radio group for volume settings
-        volumeGroup = (RadioGroup)findViewById(R.id.volumeGroup);
-        //updates whenever a new radio button is checked
-        volumeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
-                RadioButton rButton = (RadioButton) findViewById(checkedId);
-                switch (checkedId) {
-                    //cases for each radio button selection
-                    case R.id.high:
-                        playAndStoreSound(editor,1);
-                        break;
-                    case R.id.mid_high:
-                        playAndStoreSound(editor,0.75f);
-                        break;
-                    case R.id.mid:
-                        playAndStoreSound(editor,0.5f);
-                        break;
-                    case R.id.mid_low:
-                        playAndStoreSound(editor,0.25f);
-                        break;
-                    case R.id.noSound:
-                        playAndStoreSound(editor,0);
-                        break;
-                }
-            }
-        });
-        Log.d(TAG, "End of onCreate");
+        //initialize the seek bar
+        SeekBar sb = (SeekBar)findViewById(R.id.slider);
+        //max value is 100, somehow that's not the default
+        sb.setMax(100);
+        //set progress to the value the user last stored
+        sb.setProgress((int)volume);
+        //display the precentage
+        TextView tv = (TextView)findViewById(R.id.percent);
+        tv.setText(Integer.toString((int)volume)+"%");
+        //allow this class to repsond when the player changes the seek bar
+        sb.setOnSeekBarChangeListener(this);
+        //set the username string that appears on the screen
+        setUserNameString();
     }
 
     /*
@@ -105,6 +72,50 @@ public class SettingsActivity extends AppCompatActivity {
         soundPool.play(owlHootId, volume, volume, 1, 0, 1);
         editor.putFloat("volume", volume);
         editor.apply();
+    }
+
+    /*
+        Display the volume percentage as the player scrolls the seek bar
+     */
+    @Override
+    public void onProgressChanged(SeekBar v, int progress, boolean isUser) {
+
+        TextView tv = (TextView)findViewById(R.id.percent);
+        tv.setText(Integer.toString(progress)+"%");
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    //Auto-generated method stub, needed to implement OnSeekBarChangeListener
+
+    }
+
+    /*
+        Play the owl sound effect at the volume level the user selected so they can sample the volume
+     */
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        float volume = seekBar.getProgress() / 100f;
+        //get the editor so we can update stored data
+        SharedPreferences.Editor editor = prefs.edit();
+        playAndStoreSound(editor, volume);
+    }
+
+    /*
+        Prepare the alert dialog from the main menu that prompts the user for a new username
+     */
+    public void setUserName(View v){
+        MainMenuActivity m = new MainMenuActivity();
+        m.setContext(this);
+        m.makeAlert("Enter a user name");
+    }
+
+    /*
+        set the username that is displayed on the Settings menu
+     */
+    public void setUserNameString(){
+        TextView userTV = (TextView)findViewById(R.id.username);
+        userTV.setText(prefs.getString("user_name", ""));
     }
 
 }

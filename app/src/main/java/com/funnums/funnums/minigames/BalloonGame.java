@@ -48,7 +48,7 @@ public class BalloonGame extends MiniGame {
     private int screenY;
 
     //this is the amount of space at the top of the screen used for the current sum, target, timer, and pause button
-    private int topBuffer = 200;
+    private int topBuffer;// = 200;
 
     //running time, used to generate new numbers every few seconds
     private long runningMilis = 0;
@@ -57,7 +57,7 @@ public class BalloonGame extends MiniGame {
     private Fraction target;
 
     //speed of the balloons
-    private int speed=4;
+    private int speed;//=4;
 
 
     //list of all the balloons on screen
@@ -143,8 +143,8 @@ public class BalloonGame extends MiniGame {
         screenX = com.funnums.funnums.maingame.GameActivity.screenX;
         screenY = com.funnums.funnums.maingame.GameActivity.screenY;
         //scale speed based on phone size
-        speed = (int)Math.round(screenY * 0.003378) - 1;
-        //get radius for x and y based on phone suze, to draw ellipticall balloons
+        speed = (int)Math.floor(screenY * 0.003378);
+        //get radius for x and y based on phone size, to draw elliptical balloons
         xRadius = (int) (screenX * .13);
         yRadius = (int) (screenX * .15);
 
@@ -207,8 +207,8 @@ public class BalloonGame extends MiniGame {
         }
 
         runningMilis += delta;
-        //generate a new balloon every 2 seconds
-        if (runningMilis > 2 * NANOS_TO_SECONDS) {
+        //generate a new balloon every 2 seconds AND there is enough room, in case speed is low
+        if (runningMilis > 2 * NANOS_TO_SECONDS && isRoomForNewBalloon()) {
             runningMilis = 0;
             //if  we are not in buffer zone, generate a new balloon
             if(!inBalloonGenBuffer)
@@ -251,12 +251,12 @@ public class BalloonGame extends MiniGame {
      */
     private synchronized void generateNumber() {
         int x, y;
-        do {
+        //do {
             //Setting coordinates x and y
             x = r.nextInt(screenX - 2*xRadius) + xRadius;
             y = screenY;
-        }
-        while(findCollisions(x,y));
+        //}
+        //while(findCollisions(x,y));
         //while this new coordinate causes collisions, keep generating a new coordinates until
         //it finds coordinates in a place without collisions
 
@@ -577,7 +577,7 @@ public class BalloonGame extends MiniGame {
             case "=":
                 return num.getValue().get_key().equals(target.get_key());
             default:
-                Log.e("ERROR", "Invalide inequality " + inequality);
+                Log.e("ERROR", "Invalid inequality " + inequality);
                 return false;
         }
     }
@@ -595,6 +595,7 @@ public class BalloonGame extends MiniGame {
         initialize the HUD
      */
     private synchronized void initHud(){
+        topBuffer = offset*4;
 
         HUDBoard = com.funnums.funnums.maingame.GameView.loadBitmap("Shared/HudBoard.png", false);
         HUDBoard = Bitmap.createScaledBitmap(HUDBoard, screenX, topBuffer,false);
@@ -644,5 +645,14 @@ public class BalloonGame extends MiniGame {
         floatingObjects.add(hotAir1);
         floatingObjects.add(hotAir2);
         floatingObjects.add(directionBoard);
+    }
+
+    private boolean isRoomForNewBalloon(){
+        for(TouchableBalloon balloon : numberList){
+            if(balloon.getY() + balloon.yRadius*3 > screenY) {
+                return false;
+            }
+        }
+        return true;
     }
 }

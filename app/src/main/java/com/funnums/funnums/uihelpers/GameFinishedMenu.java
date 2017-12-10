@@ -63,7 +63,7 @@ public class GameFinishedMenu
         mainMenu = new UIButton(0,0,0,0, menuButton.getImg(), menuButton.getImgDown());
 
         //magic number for spacing, but seems to look good across different sized phones
-        padding = 100;
+        padding = (int)(com.funnums.funnums.maingame.GameActivity.screenY * 0.084459);//100;
         //Y coord for the buttons
         int buttonY = y + height *5/8;
         //in case we add more buttons, spacing between buttons will already be handled

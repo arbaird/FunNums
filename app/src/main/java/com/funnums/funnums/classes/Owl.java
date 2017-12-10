@@ -37,11 +37,11 @@ public class Owl {
 
         this.y = y;
 
-        maxYVelocity = 0.5f;
-        flyVelocity = 2f;
 
+        flyVelocity = (float)(com.funnums.funnums.maingame.GameActivity.screenY *0.001689);//2f;
+        maxYVelocity = flyVelocity/4; //0.5f;
 
-        gravity = 0.5f;
+        gravity = maxYVelocity;
 
         initAnim();
 

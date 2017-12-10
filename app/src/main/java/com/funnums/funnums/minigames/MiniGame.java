@@ -44,6 +44,12 @@ public abstract class MiniGame {
 
         Bitmap pauseImg = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("Shared/pauseButton.png", true);
         Bitmap pauseImgDown = com.funnums.funnums.maingame.GameActivity.gameView.loadBitmap("Shared/pauseButtonDown.png", true);
+
+        //resize the pause button
+        int size = (int)(com.funnums.funnums.maingame.GameActivity.screenY * 0.084459);
+        pauseImg = Bitmap.createScaledBitmap(pauseImg, size, size,false);
+        pauseImgDown = Bitmap.createScaledBitmap(pauseImgDown, size, size,false);
+
         int offset = pauseImg.getHeight();
         pauseButton = new UIButton(com.funnums.funnums.maingame.GameActivity.screenX - pauseImg.getWidth(), 0, com.funnums.funnums.maingame.GameActivity.screenX, offset, pauseImg, pauseImgDown);
     }
