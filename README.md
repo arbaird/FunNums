@@ -26,5 +26,6 @@ https://www.phonearena.com/news/How-to-enable-USB-debugging-on-Android_id53909
 
 
 ******Demo******
+
 Here is a link to a demo video
 https://www.youtube.com/watch?v=qpPWwrXrgl4
