@@ -32,7 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.MutableData;
 
-
+//adding to the thing
 
 public class MainMenuActivity extends AppCompatActivity {
     private static final String TAG = "Main Menu";
